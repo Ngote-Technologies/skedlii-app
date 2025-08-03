@@ -123,9 +123,10 @@ const Posts = () => {
         refetchPosts();
       },
       onError: () => {
+        setDeleteConfig({ id: "", isOpen: false, postAccountId: "" });
         toast({
-          title: "Removal failed",
-          description: "Failed to remove the post. Please try again.",
+          title: "Something went wrong",
+          description: "Please try again!",
           variant: "destructive",
         });
       },
