@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../store/hooks";
 import { useToast } from "../../hooks/use-toast";
 import {
@@ -10,21 +10,30 @@ import {
 } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Button } from "../ui/button";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "../../lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
 import { Switch } from "../ui/switch";
 import { InvoiceGrid } from "./InvoiceGrid";
 import { InvoiceTableFallback } from "./InvoiceTableFallback";
 import Subscriptions from "./Subscriptions";
 import Plans from "./Plans";
 import { UpgradeConfirmationDialog } from "./UpgradeConfirmationDialog";
+import { useBillingMutations, useUrlParams } from "./hooks";
+
+const PLAN_TIERS = ["test", "creator", "pro", "enterprise"] as const;
+type PlanTier = (typeof PLAN_TIERS)[number];
+const TAB_ITEMS = [
+  { value: "subscription" as const, label: "Subscription" },
+  { value: "plans" as const, label: "Plans" },
+  { value: "invoices" as const, label: "Invoices" },
+];
+type TabValue = "subscription" | "plans" | "invoices";
 
 const Billing = () => {
   const { user, fetchUserData } = useAuth();
   const { billing } = user;
   const { toast } = useToast();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState("subscription");
+  const [activeTab, setActiveTab] = useState<TabValue>("subscription");
   const [billingInterval, setBillingInterval] = useState("monthly");
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
@@ -34,198 +43,100 @@ const Billing = () => {
     planName: string;
   } | null>(null);
 
-  const tabItems = [
-    { value: "subscription", label: "Subscription" },
-    { value: "plans", label: "Plans" },
-    { value: "invoices", label: "Invoices" },
-  ];
+  const urlParams = useUrlParams();
+
+  const {
+    createCheckoutSession,
+    cancelSubscription,
+    previewSubscriptionChange,
+    performUpgrade,
+  } = useBillingMutations(user, billing, billingInterval, fetchUserData, toast);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const subscribed = searchParams.get("subscribed");
-    const canceled = searchParams.get("canceled");
-    const error = searchParams.get("error");
-
-    const needsFetch = subscribed === "true" || canceled === "true" || error;
+    const {
+      subscribed,
+      subscriptionUpdated,
+      canceled,
+      error,
+      message,
+      upgrade,
+      downgrade,
+      plan,
+    } = urlParams;
+    const needsFetch =
+      subscribed ||
+      subscriptionUpdated ||
+      canceled ||
+      error ||
+      upgrade ||
+      downgrade;
 
     if (needsFetch) {
       fetchUserData();
     }
 
-    if (subscribed === "true") {
+    if (subscribed) {
       toast({
         title: "Subscription created",
         description: "Your subscription has been created successfully",
       });
+    } else if (subscriptionUpdated) {
+      toast({
+        title: "Subscription updated",
+        description: "Your subscription has been updated successfully",
+      });
+    } else if (upgrade === "success") {
+      toast({
+        title: "Subscription upgraded successfully!",
+        description: plan
+          ? `Welcome to ${plan}!`
+          : "Your subscription has been upgraded",
+      });
+    } else if (downgrade === "success") {
+      toast({
+        title: "Subscription downgraded",
+        description: plan
+          ? `Changed to ${plan}`
+          : "Your subscription has been downgraded",
+      });
+    } else if (upgrade === "canceled" || downgrade === "canceled") {
+      toast({
+        title: "Subscription change canceled",
+        description:
+          "Your subscription change was canceled. No changes were made.",
+        variant: "destructive",
+      });
     } else if (error) {
       toast({
-        title: "Subscription creation failed",
-        description:
-          searchParams.get("message") ?? "Failed to create subscription",
+        title: "Subscription operation failed",
+        description: message ?? "Failed to process subscription change",
         variant: "destructive",
       });
     }
 
     window.history.replaceState({}, "", "/dashboard/billing");
-  }, []);
+  }, [urlParams, fetchUserData, toast]);
 
-  const { mutate: createCheckoutSession } = useMutation({
-    mutationFn: async ({
-      priceId,
-      action,
-    }: {
-      priceId: string;
-      action: string;
-    }) => {
-      let billingData: any = {
-        userId: user?._id,
-        email: user?.email,
-        priceId,
-        action,
-        usedTrial: false,
-        billingInterval,
-      };
+  const determineSubscriptionAction = (
+    billing: any | undefined,
+    currentPlanId: string | undefined,
+    targetPlanId: string
+  ): string => {
+    if (!billing || !billing.lastInvoiceStatus) {
+      return "new_subscription";
+    }
 
-      if (billing?.stripeCustomerId) {
-        billingData = {
-          ...billingData,
-          stripeCustomerId: billing?.stripeCustomerId,
-        };
-      }
+    const currentPlanIndex = PLAN_TIERS.indexOf(currentPlanId as PlanTier);
+    const targetPlanIndex = PLAN_TIERS.indexOf(targetPlanId as PlanTier);
 
-      if (billing?.hasUsedTrial || billing?.lastInvoiceStatus === "paid") {
-        billingData = {
-          ...billingData,
-          usedTrial: true,
-        };
-      }
+    if (targetPlanIndex > currentPlanIndex) {
+      return "upgrade";
+    } else if (targetPlanIndex < currentPlanIndex) {
+      return "downgrade";
+    }
 
-      const response = await apiRequest(
-        "POST",
-        "/checkout/create-checkout-session",
-        billingData
-      );
-      window.location.href = response.url;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["/checkout/create-checkout-session"],
-      });
-    },
-  });
-
-  const { mutate: cancelSubscription } = useMutation({
-    mutationFn: async () => {
-      return await apiRequest("POST", "/billing/cancel-subscription", {
-        customerId: billing?.stripeCustomerId,
-        subscriptionId: billing?.subscriptionId,
-      });
-    },
-    onSuccess: (data) => {
-      fetchUserData();
-      toast({
-        title: "Subscription Cancelled",
-        description: data.message,
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Failed to cancel subscription",
-        description: "Something went wrong, please try again.",
-        variant: "destructive",
-      });
-    },
-    onSettled: () => {
-      setShowCancelDialog(false);
-    },
-  });
-
-  const { mutate: previewSubscriptionChange } = useMutation({
-    mutationFn: async ({
-      priceId,
-      action,
-    }: {
-      priceId: string;
-      action: string;
-    }) => {
-      return await apiRequest("POST", "/subscriptions/preview", {
-        priceId,
-        action,
-      });
-    },
-    onSuccess: (data) => {
-      if (data.data?.error) {
-        toast({
-          title: "Preview Error",
-          description: data.data.error,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (data.success && data.data) {
-        // Show preview information to user
-        const previewData = data.data;
-
-        // Show confirmation dialog with preview data
-        setUpgradePreviewData(previewData);
-        setShowUpgradeDialog(true);
-      } else {
-        fetchUserData();
-        toast({
-          title: "Subscription Updated",
-          description:
-            data.message || "Subscription has been updated successfully",
-        });
-      }
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Failed to process subscription change",
-        description:
-          error?.response?.data?.error ||
-          "Something went wrong, please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const { mutate: performUpgrade, isPending: isUpgrading } = useMutation({
-    mutationFn: async ({
-      priceId,
-      action,
-    }: {
-      priceId: string;
-      action: string;
-    }) => {
-      return await apiRequest("POST", "/subscriptions/preview", {
-        priceId,
-        action,
-      });
-    },
-    onSuccess: (data) => {
-      console.log("Upgrade success:", data);
-      setShowUpgradeDialog(false);
-      setUpgradePreviewData(null);
-      setPendingUpgrade(null);
-      fetchUserData();
-
-      toast({
-        title: "Subscription Upgraded!",
-        description:
-          data.message || "Your subscription has been upgraded successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Upgrade Failed",
-        description:
-          error?.response?.data?.error ||
-          "Failed to upgrade subscription. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+    return "new_subscription";
+  };
 
   const { data: plans = [] } = useQuery({
     queryKey: [`/plans`],
@@ -242,74 +153,113 @@ const Billing = () => {
     displayPeriod: billingInterval,
   }));
 
-  function determineSubscriptionAction({
-    billing,
-    currentPlan,
-    targetPlan,
-  }: {
-    billing: any;
-    currentPlan: number;
-    targetPlan: number;
-  }) {
-    let action;
+  // Handlers
+  const handleCancelSubscription = useCallback(() => {
+    cancelSubscription.mutate();
+    setShowCancelDialog(false);
+  }, [cancelSubscription]);
 
-    // If no existing billing, it's always a new subscription
-    if (!billing || !billing?.lastInvoiceStatus) {
-      action = "new_subscription";
-      return action;
-    }
+  const handlePreviewSuccess = useCallback(
+    (data: any) => {
+      if (data.data?.error) {
+        toast({
+          title: "Preview Error",
+          description: data.data.error,
+          variant: "destructive",
+        });
+        return;
+      }
 
-    // Compare plans to determine action type
-    if (targetPlan > currentPlan) {
-      action = "upgrade";
-    } else if (targetPlan < currentPlan) {
-      action = "downgrade";
-    } else {
-      // Same plan level - treat as new subscription
-      action = "new_subscription";
-    }
+      if (data.success && data.data) {
+        setUpgradePreviewData(data.data);
+        setShowUpgradeDialog(true);
+      } else {
+        fetchUserData();
+        toast({
+          title: "Subscription Updated",
+          description:
+            data.message || "Subscription has been updated successfully",
+        });
+      }
+    },
+    [fetchUserData, toast]
+  );
 
-    return action;
-  }
+  const handlePreviewError = useCallback(
+    (error: any) => {
+      toast({
+        title: "Failed to process subscription change",
+        description:
+          error?.response?.data?.error ||
+          "Something went wrong, please try again.",
+        variant: "destructive",
+      });
+    },
+    [toast]
+  );
 
-  const handleUpgradeDowngrade = (plan: any) => {
-    const priceId =
-      billingInterval === "yearly" ? plan.priceYearlyId : plan.priceMonthlyId;
+  const handleUpgradeDowngrade = useCallback(
+    (plan: any) => {
+      const priceId =
+        billingInterval === "yearly" ? plan.priceYearlyId : plan.priceMonthlyId;
 
-    let action: string = "";
-    const planId = plan.id;
-    const tiers = ["test", "creator", "pro", "enterprise"];
+      const action = determineSubscriptionAction(
+        billing,
+        billing?.planId,
+        plan.id
+      );
 
-    const currentPlan = tiers.indexOf(billing?.planId);
-    const targetPlan = tiers.indexOf(planId);
-
-    action = determineSubscriptionAction({
+      if (action === "upgrade") {
+        setPendingUpgrade({ priceId, planName: plan.name || plan.id });
+        previewSubscriptionChange.mutate(
+          { priceId, action: "preview" },
+          {
+            onSuccess: handlePreviewSuccess,
+            onError: handlePreviewError,
+          }
+        );
+      } else {
+        createCheckoutSession.mutate({ priceId, action });
+      }
+    },
+    [
       billing,
-      currentPlan,
-      targetPlan,
-    });
+      billingInterval,
+      createCheckoutSession,
+      previewSubscriptionChange,
+      handlePreviewSuccess,
+      handlePreviewError,
+    ]
+  );
 
-    if (action === "upgrade") {
-      // Store the pending upgrade info for the dialog
-      setPendingUpgrade({ priceId, planName: plan.name || plan.id });
-      previewSubscriptionChange({ priceId, action: "preview" });
-      return;
-    } else {
-      createCheckoutSession({ priceId, action });
-    }
-  };
-
-  const handleUpgradeConfirm = () => {
+  const handleUpgradeConfirm = useCallback(() => {
     if (pendingUpgrade) {
-      performUpgrade({ priceId: pendingUpgrade.priceId, action: "upgrade" });
+      performUpgrade.mutate(
+        { priceId: pendingUpgrade.priceId, action: "upgrade" },
+        {
+          onSettled: () => {
+            setShowUpgradeDialog(false);
+            setUpgradePreviewData(null);
+            setPendingUpgrade(null);
+          },
+        }
+      );
     }
-  };
+  }, [pendingUpgrade, performUpgrade]);
 
-  const handleUpgradeCancel = () => {
+  const handleUpgradeCancel = useCallback(() => {
     setShowUpgradeDialog(false);
     setUpgradePreviewData(null);
     setPendingUpgrade(null);
-  };
+  }, []);
+
+  const toggleBillingInterval = useCallback((checked: boolean) => {
+    setBillingInterval(checked ? "yearly" : "monthly");
+  }, []);
+
+  const toggleViewMode = useCallback(() => {
+    setViewMode((prev) => (prev === "card" ? "table" : "card"));
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -324,10 +274,10 @@ const Billing = () => {
         defaultValue={activeTab}
         className="space-y-4"
         value={activeTab}
-        onValueChange={(value) => setActiveTab(value)}
+        onValueChange={(value) => setActiveTab(value as TabValue)}
       >
         <TabsList>
-          {tabItems.map((item) => (
+          {TAB_ITEMS.map((item) => (
             <TabsTrigger key={item.value} value={item.value}>
               {item.label}
             </TabsTrigger>
@@ -347,8 +297,8 @@ const Billing = () => {
                 billing={billing || {}}
                 showCancelDialog={showCancelDialog}
                 setShowCancelDialog={setShowCancelDialog}
-                cancelSubscription={cancelSubscription}
-                setActiveTab={setActiveTab}
+                cancelSubscription={handleCancelSubscription}
+                setActiveTab={setActiveTab as any}
               />
             </CardContent>
           </Card>
@@ -369,9 +319,7 @@ const Billing = () => {
                 </span>
                 <Switch
                   checked={billingInterval === "yearly"}
-                  onCheckedChange={(value) =>
-                    setBillingInterval(value ? "yearly" : "monthly")
-                  }
+                  onCheckedChange={toggleBillingInterval}
                   aria-label="Toggle yearly billing"
                 />
                 <span
@@ -401,9 +349,7 @@ const Billing = () => {
                 View and download your past invoices
               </CardDescription>
               <Button
-                onClick={() =>
-                  setViewMode(viewMode === "card" ? "table" : "card")
-                }
+                onClick={toggleViewMode}
                 variant="default"
                 size="sm"
                 className="hidden lg:block rounded-lg absolute top-3 right-7"
@@ -427,7 +373,7 @@ const Billing = () => {
         onClose={handleUpgradeCancel}
         onConfirm={handleUpgradeConfirm}
         previewData={upgradePreviewData}
-        isLoading={isUpgrading}
+        isLoading={performUpgrade.isPending}
         planName={pendingUpgrade?.planName}
       />
     </div>
