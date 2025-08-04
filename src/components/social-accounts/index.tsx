@@ -60,7 +60,7 @@ import {
   useRefreshTikTokAccessToken,
   useGetSocialAccounts,
   useConnectMeta,
-} from "./api-mutation";
+} from "../../hooks/useSocialAccounts";
 import PlatformSelector from "./PlatformSelector";
 import { hasValidSubscription } from "../../lib/access";
 import {

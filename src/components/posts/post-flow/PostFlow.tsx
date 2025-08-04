@@ -11,13 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
 import { Loader2, Save, Clock, Send } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../store/hooks";
-import {
-  handleAccountSelection,
-  handleCaptionChange,
-  handleMediaChange,
-  handleSchedulingChange,
-} from "./methods";
-import { MediaItem } from "./mediaUploadComponents";
+import { MediaItem } from "./MediaUpload";
 import TikTokSettingsDrawer, {
   isValidTikTokOptions,
   TikTokOptions,
@@ -30,6 +24,11 @@ import PlatformCaptions from "./PlatformCaption";
 import MediaUpload from "./MediaUpload";
 import SchedulingOptions from "./SchedulingOptions";
 import { usePostSubmission } from "./hooks/usePostSubmission";
+import {
+  handleAccountSelection,
+  handleCaptionChange,
+} from "../../../services/postFlow";
+import { handleMediaChange, handleSchedulingChange } from "../../../lib/utils";
 
 export default function PostFlow() {
   const { user } = useAuth();

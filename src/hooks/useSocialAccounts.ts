@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import socialApi from "../../api/socialApi";
-import { toast } from "../../hooks/use-toast";
+import socialApi from "../api/socialApi";
+import { toast } from "./use-toast";
 
 export const useConnectLinkedIn = () => {
   return useMutation({

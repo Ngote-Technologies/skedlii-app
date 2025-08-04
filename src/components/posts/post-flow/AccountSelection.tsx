@@ -19,12 +19,12 @@ import {
   FaThreads,
   FaYoutube,
 } from "react-icons/fa6";
+import { AccountSelectionProps } from "./methods";
 import {
-  AccountSelectionProps,
   countSelectedByPlatform,
   getPlatformColor,
   platformCounts,
-} from "./methods";
+} from "../../../lib/utils";
 
 export default function AccountSelection({
   accounts,

@@ -1,29 +1,9 @@
-import { useMemo } from "react";
 import { useToast } from "../../hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "../../lib/queryClient";
 import { User } from "../../types";
 
-export const useUrlParams = () => {
-  const searchParams = useMemo(
-    () => new URLSearchParams(window.location.search),
-    []
-  );
-
-  return {
-    subscribed: searchParams.get("subscribed") === "true",
-    subscriptionUpdated: searchParams.get("subscription_updated") === "true",
-    canceled: searchParams.get("canceled") === "true",
-    error: searchParams.get("error"),
-    message: searchParams.get("message"),
-    // New parameters for hosted checkout redirects
-    upgrade: searchParams.get("upgrade"),
-    downgrade: searchParams.get("downgrade"),
-    plan: searchParams.get("plan"),
-  };
-};
-
-export const useBillingMutations = (
+export const useBillingQueries = (
   user: User | undefined,
   billing: any,
   billingInterval: any,
