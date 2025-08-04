@@ -16,7 +16,7 @@ import TikTokSettingsDrawer, {
   isValidTikTokOptions,
   TikTokOptions,
 } from "./TikTokSettingsDrawer";
-import { getTikTokAccountsInfo } from "../../../api/query";
+import { useTikTokAccountsInfo } from "../../../api/query";
 import { useInitializeTikTokDrawer } from "./hooks/useInitializeTikTokDrawer";
 
 import AccountSelection from "./AccountSelection";
@@ -138,7 +138,7 @@ export default function PostFlow() {
   ]);
 
   const { data: accountsData, isLoading: tiktokAccountsLoading } =
-    getTikTokAccountsInfo(tiktokAccountIdsToFetch);
+    useTikTokAccountsInfo(tiktokAccountIdsToFetch);
 
   useEffect(() => {
     if (accountsData) {

@@ -121,27 +121,6 @@ export const handleSchedulingChange = (
   setScheduledDate(date);
 };
 
-// Helper function to get platform color
-export const getPlatformColor = (platform: string): string => {
-  switch (platform.toLowerCase()) {
-    case "instagram":
-      return "bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400";
-    case "twitter":
-      return "bg-[#1DA1F2]";
-    case "facebook":
-      return "bg-[#1877F2]";
-    case "linkedin":
-      return "bg-[#0A66C2]";
-    case "tiktok":
-      return "bg-[#010101]";
-    case "threads":
-      return "bg-black dark:bg-white dark:text-black";
-    case "youtube":
-      return "bg-[#FF0000]";
-    default:
-      return "bg-gray-500";
-  }
-};
 
 // Helper to count selected accounts per platform
 export const countSelectedByPlatform = (
@@ -156,3 +135,4 @@ export const countSelectedByPlatform = (
       return acc;
     }, {} as Record<string, number>);
 };
+

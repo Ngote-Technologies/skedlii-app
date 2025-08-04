@@ -759,8 +759,7 @@ export function getMediaDimensions(
         resolve({ width: img.width, height: img.height, type: "image" });
         URL.revokeObjectURL(url);
       };
-      img.onerror = (err: any) => {
-        console.log({ err });
+      img.onerror = () => {
         reject(new Error("Could not load image to determine dimensions"));
         URL.revokeObjectURL(url);
       };
@@ -776,8 +775,7 @@ export function getMediaDimensions(
         });
         URL.revokeObjectURL(url);
       };
-      video.onerror = (err: any) => {
-        console.log({ err });
+      video.onerror = () => {
         reject(new Error("Could not load video to determine dimensions"));
         URL.revokeObjectURL(url);
       };

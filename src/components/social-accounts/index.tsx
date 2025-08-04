@@ -216,9 +216,8 @@ export default function SocialAccounts() {
 
       // Legacy: ?error=someType
       if (searchParams.get("error")) {
-        const errorType = searchParams.get("error");
         const message = searchParams.get("message");
-        console.log("OAuth error:", errorType, message);
+        // OAuth error will be displayed in the toast below
         toast({
           title: "Social account connection failed",
           description: message ?? "Failed to connect social account",

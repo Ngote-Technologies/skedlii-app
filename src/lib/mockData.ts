@@ -486,45 +486,7 @@ export const mockAnalyticsData: AnalyticsData = {
   },
 };
 
-// Helper function to get platform icon
-export function getPlatformIcon(platform: string): string {
-  switch (platform.toLowerCase()) {
-    case "instagram":
-      return "instagram";
-    case "twitter":
-      return "twitter";
-    case "facebook":
-      return "facebook";
-    case "linkedin":
-      return "linkedin";
-    case "tiktok":
-      return "tiktok";
-    case "threads":
-      return "threads";
-    default:
-      return "globe";
-  }
-}
 
-// Helper function to get platform color
-export function getPlatformColor(platform: string): string {
-  switch (platform.toLowerCase()) {
-    case "instagram":
-      return "from-purple-600 via-pink-500 to-orange-400";
-    case "twitter":
-      return "bg-[#1DA1F2]";
-    case "facebook":
-      return "bg-[#1877F2]";
-    case "linkedin":
-      return "bg-[#0A66C2]";
-    case "tiktok":
-      return "bg-[#010101]";
-    case "threads":
-      return "bg-black dark:bg-white dark:text-black";
-    default:
-      return "bg-gray-500";
-  }
-}
 
 // Create a mock service for fetching data
 export const mockService = {

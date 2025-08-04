@@ -112,7 +112,6 @@ export const postContentToTwitter = async (
   try {
     return await postToTwitter(accountId, content.content);
   } catch (error) {
-    console.log({ error });
     // Re-throw the error to be handled by the component
     throw error;
   }
