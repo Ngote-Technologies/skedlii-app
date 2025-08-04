@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { teamsApi } from "../api/teams";
 import { persist } from "zustand/middleware";
 import { Team } from "../types";
-import { useAuthStore } from "./authStore";
 
 interface TeamState {
   // State
@@ -12,10 +11,10 @@ interface TeamState {
   error: string | null;
 
   // Actions
-  fetchTeams: () => Promise<void>;
+  fetchTeams: (organizationId?: string) => Promise<void>;
   setActiveTeam: (team: Team) => void;
   setTeams: (teams: Team[]) => void;
-  createTeam: (name: string) => Promise<void>;
+  createTeam: (name: string, organizationId?: string) => Promise<void>;
 }
 
 export const useTeamStore = create<TeamState>()(
@@ -28,8 +27,7 @@ export const useTeamStore = create<TeamState>()(
       error: null,
 
       // Actions
-      fetchTeams: async () => {
-        const organizationId = useAuthStore.getState().organization?._id;
+      fetchTeams: async (organizationId?: string) => {
         if (!organizationId) return;
 
         set({ isLoading: true });
@@ -59,8 +57,7 @@ export const useTeamStore = create<TeamState>()(
         }
       },
 
-      createTeam: async (name) => {
-        const organizationId = useAuthStore.getState().organization?._id;
+      createTeam: async (name, organizationId?: string) => {
         if (!organizationId) return;
 
         set({ isLoading: true });

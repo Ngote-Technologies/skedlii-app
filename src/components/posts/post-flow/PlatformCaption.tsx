@@ -24,14 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../../ui/tooltip";
-import {
-  FaXTwitter,
-  FaInstagram,
-  FaLinkedin,
-  FaFacebook,
-  FaThreads,
-  FaTiktok,
-} from "react-icons/fa6";
+import { getPlatformIcon, getPlatformTextColor } from "../../../lib/platformUtils";
 
 interface PlatformCaptionsProps {
   accounts: any[];
@@ -104,47 +97,7 @@ export default function PlatformCaptions({
     return platform.charAt(0).toUpperCase() + platform.slice(1);
   };
 
-  // Get platform color
-  const getPlatformColor = (platform: string): string => {
-    switch (platform.toLowerCase()) {
-      case "instagram":
-        return "text-[#E1306C]";
-      case "twitter":
-        return "text-[#1DA1F2]";
-      case "facebook":
-        return "text-[#1877F2]";
-      case "linkedin":
-        return "text-[#0A66C2]";
-      case "tiktok":
-        return "text-[#000000] dark:text-white";
-      case "threads":
-        return "text-[#000000] dark:text-white";
-      default:
-        return "text-primary";
-    }
-  };
 
-  // Get platform icon
-  const getPlatformIcon = (platform: string) => {
-    switch (platform.toLowerCase()) {
-      case "instagram":
-        return <FaInstagram className="h-4 w-4" />;
-      case "twitter":
-        return <FaXTwitter className="h-4 w-4" />;
-      case "facebook":
-        return <FaFacebook className="h-4 w-4" />;
-      case "linkedin":
-        return <FaLinkedin className="h-4 w-4" />;
-      case "tiktok":
-        return <FaTiktok className="h-4 w-4" />;
-      case "threads":
-        return <FaThreads className="h-4 w-4" />;
-      case "global":
-        return <Globe className="h-4 w-4" />;
-      default:
-        return <Globe className="h-4 w-4" />;
-    }
-  };
 
   // Change tab and load appropriate caption
   const handleTabChange = (platform: string) => {
@@ -378,7 +331,7 @@ export default function PlatformCaptions({
                 variant="ghost"
                 size="sm"
                 className={`h-7 gap-1 ${
-                  platformCaptions[platform] ? getPlatformColor(platform) : ""
+                  platformCaptions[platform] ? getPlatformTextColor(platform) : ""
                 }`}
                 onClick={() => handleTabChange(platform)}
               >

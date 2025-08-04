@@ -17,7 +17,8 @@ import { InvoiceTableFallback } from "./InvoiceTableFallback";
 import Subscriptions from "./Subscriptions";
 import Plans from "./Plans";
 import { UpgradeConfirmationDialog } from "./UpgradeConfirmationDialog";
-import { useBillingMutations, useUrlParams } from "./hooks";
+import { useBillingQueries } from "../../api/queryFn/billingQuery";
+import { useUrlParams } from "../../hooks/useUrlParams";
 
 const PLAN_TIERS = ["test", "creator", "pro", "enterprise"] as const;
 type PlanTier = (typeof PLAN_TIERS)[number];
@@ -50,7 +51,7 @@ const Billing = () => {
     cancelSubscription,
     previewSubscriptionChange,
     performUpgrade,
-  } = useBillingMutations(user, billing, billingInterval, fetchUserData, toast);
+  } = useBillingQueries(user, billing, billingInterval, fetchUserData, toast);
 
   useEffect(() => {
     const {

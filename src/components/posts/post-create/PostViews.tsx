@@ -1,17 +1,12 @@
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
 import { Loader2, X } from "lucide-react";
-import { getSocialIcon, uploadToCloudinary } from "../../../lib/utils";
+import { getSocialIcon } from "../../../lib/utils";
 import { SelectItem } from "../../ui/select";
 import { useRef, useState } from "react";
 import { toast } from "../../../hooks/use-toast";
-
-export type UploadedMedia = {
-  url: string;
-  publicId: string;
-  type: "image" | "video";
-  resourceType: string;
-};
+import { UploadedMedia } from "../../../types/media";
+import { uploadToCloudinary } from "../../../api/upload";
 
 export function InstagramMediaDropzone({
   uploadedMedia,

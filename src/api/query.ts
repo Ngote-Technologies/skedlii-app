@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import socialApi from "./socialApi";
 
-export const getTikTokAccountsInfo = (accountIds: string[]) => {
+export const useTikTokAccountsInfo = (accountIds: string[]) => {
   const sortedAccountIds = [...accountIds].sort((a, b) => a.localeCompare(b));
   return useQuery({
     queryKey: ["tiktok-accounts-info", ...sortedAccountIds],

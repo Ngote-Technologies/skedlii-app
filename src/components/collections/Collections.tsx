@@ -26,7 +26,7 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Loader2, Plus } from "lucide-react";
-import { getCollectionsView } from "./methods";
+import { CollectionsView } from "./CollectionView";
 
 const collectionSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -176,13 +176,13 @@ export default function Collections() {
         </Button>
       </div>
 
-      {getCollectionsView({
-        isLoading,
-        collections,
-        setIsCreating,
-        handleEdit,
-        deleteCollection,
-      })}
+      <CollectionsView
+        isLoading={isLoading}
+        collections={collections}
+        setIsCreating={setIsCreating}
+        handleEdit={handleEdit}
+        deleteCollection={deleteCollection}
+      />
 
       {/* Create Collection Dialog */}
       <Dialog open={isCreating} onOpenChange={setIsCreating}>

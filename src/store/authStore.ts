@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { authApi } from "../api/auth";
 import { Organization, Team } from "../types";
-import { useTeamStore } from "./teamStore";
 
 interface AuthState {
   // State
@@ -35,7 +34,7 @@ export const logoutUser = async () => {
       organization: null,
       teams: [],
     });
-    useTeamStore.setState({ activeTeam: null, teams: [] });
+    // Team store will be cleared by components that use both stores
     localStorage.removeItem("skedlii-storage");
     localStorage.removeItem("skedlii-team-storage");
     localStorage.removeItem("skedlii-theme");
@@ -73,11 +72,8 @@ export const useAuthStore = create<AuthState>()(
               data.user?.role === "org_owner",
           });
 
-          const teamStore = useTeamStore.getState();
-          if (data.teams && data.teams.length > 0) {
-            teamStore.setTeams(data.teams);
-            teamStore.setActiveTeam(data.teams[0]);
-          }
+          // Store teams in auth state; components will sync with team store
+          set({ teams: data.teams || [] });
 
           return { success: true, data };
         } catch (error: any) {

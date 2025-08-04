@@ -26,6 +26,7 @@ import {
 } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { formatDate, getSocialIcon } from "../../lib/utils";
+import { getPlatformSimpleTextColor } from "../../lib/platformUtils";
 import { Skeleton } from "../ui/skeleton";
 import {
   DropdownMenu,
@@ -183,26 +184,6 @@ const Posts = () => {
         return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
-    }
-  };
-
-  const getPlatformColor = (platform: string) => {
-    switch (platform.toLowerCase()) {
-      case "twitter":
-        return "text-blue-500";
-      case "instagram":
-      case "tiktok":
-        return "text-pink-500";
-      case "facebook":
-        return "text-blue-600";
-      case "linkedin":
-        return "text-blue-700";
-      case "threads":
-        return "text-white-500 dark:text-white";
-      case "youtube":
-        return "text-red-500";
-      default:
-        return "text-gray-500";
     }
   };
 
@@ -380,15 +361,11 @@ const Posts = () => {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div
-                        className={`p-2 rounded-lg ${getPlatformColor(platform)
-                          .replace("text-", "bg-")
-                          .replace("-500", "-100")} dark:bg-opacity-20`}
-                      >
+                      <div>
                         <i
                           className={`${getSocialIcon(
                             platform
-                          )} text-lg ${getPlatformColor(platform)}`}
+                          )} text-lg ${getPlatformSimpleTextColor(platform)}`}
                         />
                       </div>
                       <div className="space-y-0.5">
