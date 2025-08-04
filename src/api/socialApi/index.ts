@@ -78,6 +78,18 @@ export const socialApi = {
     return response;
   },
 
+  connectViaMeta: async ({
+    platform,
+  }: {
+    platform: "facebook" | "instagram";
+  }) => {
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/meta/direct-auth?platform=${platform}`
+    );
+    return response;
+  },
+
   connectInstagram: async () => {
     const response = await apiRequest(
       "GET",

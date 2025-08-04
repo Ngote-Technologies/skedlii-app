@@ -1,5 +1,6 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import axiosInstance from "../api/axios";
+import { useProgressStore } from "../store/progressStore";
 
 type UnauthorizedBehavior = "returnNull" | "throw";
 
@@ -36,6 +37,14 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchOnWindowFocus: false,
       retry: 1,
+    },
+    mutations: {
+      onMutate: () => {
+        useProgressStore.getState().startProgress();
+      },
+      onSettled: () => {
+        useProgressStore.getState().finishProgress();
+      },
     },
   },
 });

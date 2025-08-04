@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../store/hooks";
 import { useToast } from "../../hooks/use-toast";
 import {
@@ -10,137 +10,134 @@ import {
 } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Button } from "../ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../ui/alert-dialog";
-import { Badge } from "../ui/badge";
-import {
-  CheckCircle2,
-  AlertCircle,
-  PauseCircle,
-  ArrowRightCircle,
-} from "lucide-react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "../../lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
 import { Switch } from "../ui/switch";
-import { formatDate } from "../../lib/utils";
-import { InvoiceTable } from "./Invoice";
+import { InvoiceGrid } from "./InvoiceGrid";
 import { InvoiceTableFallback } from "./InvoiceTableFallback";
+import Subscriptions from "./Subscriptions";
+import Plans from "./Plans";
+import { UpgradeConfirmationDialog } from "./UpgradeConfirmationDialog";
+import { useBillingQueries } from "../../api/queryFn/billingQuery";
+import { useUrlParams } from "../../hooks/useUrlParams";
+
+const PLAN_TIERS = ["test", "creator", "pro", "enterprise"] as const;
+type PlanTier = (typeof PLAN_TIERS)[number];
+const TAB_ITEMS = [
+  { value: "subscription" as const, label: "Subscription" },
+  { value: "plans" as const, label: "Plans" },
+  { value: "invoices" as const, label: "Invoices" },
+];
+type TabValue = "subscription" | "plans" | "invoices";
 
 const Billing = () => {
   const { user, fetchUserData } = useAuth();
   const { billing } = user;
   const { toast } = useToast();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState("subscription");
-  const [isYearly, setIsYearly] = useState(false);
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [activeTab, setActiveTab] = useState<TabValue>("subscription");
+  const [billingInterval, setBillingInterval] = useState("monthly");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [upgradePreviewData, setUpgradePreviewData] = useState<any>(null);
+  const [pendingUpgrade, setPendingUpgrade] = useState<{
+    priceId: string;
+    planName: string;
+  } | null>(null);
 
-  const tabItems = [
-    { value: "subscription", label: "Subscription" },
-    { value: "plans", label: "Plans" },
-    { value: "invoices", label: "Invoices" },
-  ];
+  const urlParams = useUrlParams();
+
+  const {
+    createCheckoutSession,
+    cancelSubscription,
+    previewSubscriptionChange,
+    performUpgrade,
+  } = useBillingQueries(user, billing, billingInterval, fetchUserData, toast);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const subscribed = searchParams.get("subscribed");
-    const canceled = searchParams.get("canceled");
-    const error = searchParams.get("error");
-
-    const needsFetch = subscribed === "true" || canceled === "true" || error;
+    const {
+      subscribed,
+      subscriptionUpdated,
+      canceled,
+      error,
+      message,
+      upgrade,
+      downgrade,
+      plan,
+    } = urlParams;
+    const needsFetch =
+      subscribed ||
+      subscriptionUpdated ||
+      canceled ||
+      error ||
+      upgrade ||
+      downgrade;
 
     if (needsFetch) {
       fetchUserData();
     }
 
-    if (subscribed === "true") {
+    if (subscribed) {
       toast({
         title: "Subscription created",
         description: "Your subscription has been created successfully",
       });
+    } else if (subscriptionUpdated) {
+      toast({
+        title: "Subscription updated",
+        description: "Your subscription has been updated successfully",
+      });
+    } else if (upgrade === "success") {
+      toast({
+        title: "Subscription upgraded successfully!",
+        description: plan
+          ? `Welcome to ${plan}!`
+          : "Your subscription has been upgraded",
+      });
+    } else if (downgrade === "success") {
+      toast({
+        title: "Subscription downgraded",
+        description: plan
+          ? `Changed to ${plan}`
+          : "Your subscription has been downgraded",
+      });
+    } else if (upgrade === "canceled" || downgrade === "canceled") {
+      toast({
+        title: "Subscription change canceled",
+        description:
+          "Your subscription change was canceled. No changes were made.",
+        variant: "destructive",
+      });
     } else if (error) {
       toast({
-        title: "Subscription creation failed",
-        description:
-          searchParams.get("message") ?? "Failed to create subscription",
+        title: "Subscription operation failed",
+        description: message ?? "Failed to process subscription change",
         variant: "destructive",
       });
     }
 
     window.history.replaceState({}, "", "/dashboard/billing");
-  }, []);
+  }, [urlParams, fetchUserData, toast]);
 
-  const { mutate: createCheckoutSession } = useMutation({
-    mutationFn: async ({ priceId }: { priceId: string }) => {
-      let billingData: any = {
-        userId: user?._id,
-        email: user?.email,
-          priceId,
-        };
+  const determineSubscriptionAction = (
+    billing: any | undefined,
+    currentPlanId: string | undefined,
+    targetPlanId: string
+  ): string => {
+    if (!billing || !billing.lastInvoiceStatus) {
+      return "new_subscription";
+    }
 
-        if (billing?.stripeCustomerId) {
-          billingData = {
-            ...billingData,
-            stripeCustomerId: billing?.stripeCustomerId,
-          };
-        }
+    const currentPlanIndex = PLAN_TIERS.indexOf(currentPlanId as PlanTier);
+    const targetPlanIndex = PLAN_TIERS.indexOf(targetPlanId as PlanTier);
 
-        if (billing?.hasUsedTrial) {
-          billingData = {
-            ...billingData,
-            usedTrial: true,
-          };
-        }
+    if (targetPlanIndex > currentPlanIndex) {
+      return "upgrade";
+    } else if (targetPlanIndex < currentPlanIndex) {
+      return "downgrade";
+    }
 
-        const response = await apiRequest(
-          "POST",
-          "/checkout/create-checkout-session",
-          billingData
-        );
-        window.location.href = response.url;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["/checkout/create-checkout-session"],
-        });
-      },
-    });
-
-  const { mutate: cancelSubscription } = useMutation({
-    mutationFn: async () => {
-      return await apiRequest("POST", "/billing/cancel-subscription", {
-        customerId: billing?.stripeCustomerId,
-        subscriptionId: billing?.subscriptionId,
-      });
-    },
-    onSuccess: () => {
-      fetchUserData();
-      toast({
-        title: "Subscription Cancelled",
-        description:
-          "Your subscription will remain active until the end of the billing period.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Failed to cancel subscription",
-        description: "Something went wrong, please try again.",
-        variant: "destructive",
-      });
-    },
-    onSettled: () => {
-      setShowCancelDialog(false);
-    },
-  });
+    return "new_subscription";
+  };
 
   const { data: plans = [] } = useQuery({
     queryKey: [`/plans`],
@@ -152,139 +149,118 @@ const Billing = () => {
 
   const displayedPlans = plans.map((plan) => ({
     ...plan,
-    displayPrice: isYearly ? plan.priceYearly : plan.priceMonthly,
-    displayPeriod: isYearly ? "yearly" : "monthly",
+    displayPrice:
+      billingInterval === "yearly" ? plan.priceYearly : plan.priceMonthly,
+    displayPeriod: billingInterval,
   }));
 
-  const getStatusBadge = () => {
-    switch (billing?.paymentStatus) {
-      case "paid":
-      case "active":
-        return (
-          <Badge className="bg-green-500 hover:bg-green-600">
-            <CheckCircle2 className="h-3 w-3 mr-1" /> Active
-          </Badge>
+  // Handlers
+  const handleCancelSubscription = useCallback(() => {
+    cancelSubscription.mutate();
+    setShowCancelDialog(false);
+  }, [cancelSubscription]);
+
+  const handlePreviewSuccess = useCallback(
+    (data: any) => {
+      if (data.data?.error) {
+        toast({
+          title: "Preview Error",
+          description: data.data.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data.success && data.data) {
+        setUpgradePreviewData(data.data);
+        setShowUpgradeDialog(true);
+      } else {
+        fetchUserData();
+        toast({
+          title: "Subscription Updated",
+          description:
+            data.message || "Subscription has been updated successfully",
+        });
+      }
+    },
+    [fetchUserData, toast]
+  );
+
+  const handlePreviewError = useCallback(
+    (error: any) => {
+      toast({
+        title: "Failed to process subscription change",
+        description:
+          error?.response?.data?.error ||
+          "Something went wrong, please try again.",
+        variant: "destructive",
+      });
+    },
+    [toast]
+  );
+
+  const handleUpgradeDowngrade = useCallback(
+    (plan: any) => {
+      const priceId =
+        billingInterval === "yearly" ? plan.priceYearlyId : plan.priceMonthlyId;
+
+      const action = determineSubscriptionAction(
+        billing,
+        billing?.planId,
+        plan.id
+      );
+
+      if (action === "upgrade") {
+        setPendingUpgrade({ priceId, planName: plan.name || plan.id });
+        previewSubscriptionChange.mutate(
+          { priceId, action: "preview" },
+          {
+            onSuccess: handlePreviewSuccess,
+            onError: handlePreviewError,
+          }
         );
-      case "trialing":
-        return (
-          <Badge className="bg-blue-500 hover:bg-blue-600">
-            <ArrowRightCircle className="h-3 w-3 mr-1" /> Trial Active
-          </Badge>
-        );
-      case "cancelled":
-        return (
-          <Badge className="bg-yellow-500 hover:bg-yellow-600">
-            <PauseCircle className="h-3 w-3 mr-1" /> Cancelled
-          </Badge>
-        );
-      case "inactive":
-      default:
-        return (
-          <Badge className="bg-gray-500 hover:bg-gray-600">
-            <AlertCircle className="h-3 w-3 mr-1" /> Inactive
-          </Badge>
-        );
-    }
-  };
+      } else {
+        createCheckoutSession.mutate({ priceId, action });
+      }
+    },
+    [
+      billing,
+      billingInterval,
+      createCheckoutSession,
+      previewSubscriptionChange,
+      handlePreviewSuccess,
+      handlePreviewError,
+    ]
+  );
 
-  const handleUpgradeDowngrade = (plan: any) => {
-    const priceId = isYearly ? plan.priceYearlyId : plan.priceMonthlyId;
-    createCheckoutSession({ priceId });
-  };
-
-  const getPlanActionText = (planId: string) => {
-    if (!billing?.planId) {
-      return "Choose Plan";
-    }
-
-    if (billing.planId === planId) return "Current Plan";
-
-    const tiers = ["test", "creator", "pro"];
-    const currentIndex = tiers.indexOf(billing.planId);
-    const targetIndex = tiers.indexOf(planId);
-
-    if (targetIndex > currentIndex) return "Upgrade";
-    if (targetIndex < currentIndex) return "Downgrade";
-
-    return "Current Plan";
-  };
-
-  const renderSubscriptionInfo = () => {
-    if (!billing?.stripeCustomerId || !billing?.renewalDate) {
-      return (
-        <div className="space-y-4">
-          <div className="p-6 border rounded-lg bg-gray-50 dark:bg-gray-800">
-            <h3 className="text-lg font-medium mb-2">No Active Subscription</h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
-              You're currently on the Free plan. Upgrade to unlock premium
-              features.
-            </p>
-            <Button onClick={() => setActiveTab("plans")}>Upgrade Now</Button>
-          </div>
-        </div>
+  const handleUpgradeConfirm = useCallback(() => {
+    if (pendingUpgrade) {
+      performUpgrade.mutate(
+        { priceId: pendingUpgrade.priceId, action: "upgrade" },
+        {
+          onSettled: () => {
+            setShowUpgradeDialog(false);
+            setUpgradePreviewData(null);
+            setPendingUpgrade(null);
+          },
+        }
       );
     }
+  }, [pendingUpgrade, performUpgrade]);
 
-    return (
-      <div className="space-y-4">
-        <div className="p-6 border rounded-lg bg-gray-50 dark:bg-gray-800">
-          <div className="flex flex-wrap justify-between gap-y-4">
-            <div>
-              <h3 className="text-lg font-medium mb-1">
-                {billing?.paymentDescription}
-              </h3>
-              <div className="flex items-center gap-2 mb-1">
-                {getStatusBadge()}
-              </div>
-              {billing?.renewalDate && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Next billing date:{" "}
-                  {formatDate(billing?.renewalDate, "PPP pp")}
-                </p>
-              )}
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                per {billing?.billingInterval}
-              </p>
-            </div>
-          </div>
+  const handleUpgradeCancel = useCallback(() => {
+    setShowUpgradeDialog(false);
+    setUpgradePreviewData(null);
+    setPendingUpgrade(null);
+  }, []);
 
-          {billing?.subscriptionStatus === "active" && (
-            <div className="mt-6 flex flex-wrap gap-2">
-              <AlertDialog
-                open={showCancelDialog}
-                onOpenChange={setShowCancelDialog}
-              >
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="flex items-center">
-                    <PauseCircle className="h-4 w-4 mr-2" />
-                    Cancel Subscription
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Your subscription will remain active until the end of your
-                      current billing period, after which your account will
-                      revert to the Basic plan with limited features.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => cancelSubscription()}>
-                      Cancel Subscription
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
+  const toggleBillingInterval = useCallback((checked: boolean) => {
+    setBillingInterval(checked ? "yearly" : "monthly");
+  }, []);
+
+  const toggleViewMode = useCallback(() => {
+    setViewMode((prev) => (prev === "card" ? "table" : "card"));
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -299,10 +275,10 @@ const Billing = () => {
         defaultValue={activeTab}
         className="space-y-4"
         value={activeTab}
-        onValueChange={(value) => setActiveTab(value)}
+        onValueChange={(value) => setActiveTab(value as TabValue)}
       >
         <TabsList>
-          {tabItems.map((item) => (
+          {TAB_ITEMS.map((item) => (
             <TabsTrigger key={item.value} value={item.value}>
               {item.label}
             </TabsTrigger>
@@ -317,7 +293,15 @@ const Billing = () => {
                 View and manage your current subscription
               </CardDescription>
             </CardHeader>
-            <CardContent>{renderSubscriptionInfo()}</CardContent>
+            <CardContent>
+              <Subscriptions
+                billing={billing || {}}
+                showCancelDialog={showCancelDialog}
+                setShowCancelDialog={setShowCancelDialog}
+                cancelSubscription={handleCancelSubscription}
+                setActiveTab={setActiveTab as any}
+              />
+            </CardContent>
           </Card>
         </TabsContent>
 
@@ -329,78 +313,31 @@ const Billing = () => {
                 Choose the plan that works best for you
               </CardDescription>
               <div className="flex items-center gap-2 mt-4">
-                <span className={!isYearly ? "font-bold" : ""}>Monthly</span>
+                <span
+                  className={billingInterval === "monthly" ? "font-bold" : ""}
+                >
+                  Monthly
+                </span>
                 <Switch
-                  checked={isYearly}
-                  onCheckedChange={setIsYearly}
+                  checked={billingInterval === "yearly"}
+                  onCheckedChange={toggleBillingInterval}
                   aria-label="Toggle yearly billing"
                 />
-                <span className={isYearly ? "font-bold" : ""}>Yearly</span>
+                <span
+                  className={billingInterval === "yearly" ? "font-bold" : ""}
+                >
+                  Yearly
+                </span>
               </div>
             </CardHeader>
 
             <CardContent>
-              <div className="grid gap-6 md:grid-cols-3">
-                {displayedPlans.map((plan) => {
-                  const displayPrice = isYearly
-                    ? plan.priceYearly
-                    : plan.priceMonthly;
-                  const displayPeriod = isYearly ? "yearly" : "monthly";
-                  const isCurrentPlan = billing?.productId === plan.productId;
-
-                  return (
-                    <div
-                      key={plan.id}
-                      className={`border rounded-lg p-6 space-y-4 ${
-                        plan.isPopular
-                          ? "border-primary-500 shadow-lg"
-                          : "border-gray-200 dark:border-gray-700"
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <h3 className="font-bold text-lg capitalize">
-                          {plan.name}
-                        </h3>
-                        {plan.badge && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-300">
-                            {plan.badge}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-baseline">
-                        <span className="text-3xl font-bold">
-                          ${displayPrice}
-                        </span>
-                        <span className="ml-1 text-gray-500 dark:text-gray-400">
-                          {displayPeriod}
-                        </span>
-                      </div>
-
-                      <ul className="space-y-2">
-                        {plan.features.map((feature: string) => (
-                          <li
-                            key={feature}
-                            className="flex items-center space-x-2"
-                          >
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                            <span className="text-sm">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      <Button
-                        className="w-full"
-                        variant={isCurrentPlan ? "secondary" : "default"}
-                        onClick={() => handleUpgradeDowngrade(plan)}
-                        disabled={isCurrentPlan}
-                      >
-                        {getPlanActionText(plan.id)}
-                      </Button>
-                    </div>
-                  );
-                })}
-              </div>
+              <Plans
+                displayedPlans={displayedPlans}
+                isYearly={billingInterval === "yearly"}
+                billing={billing}
+                handleUpgradeDowngrade={handleUpgradeDowngrade}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -413,19 +350,17 @@ const Billing = () => {
                 View and download your past invoices
               </CardDescription>
               <Button
-                onClick={() =>
-                  setViewMode(viewMode === "card" ? "table" : "card")
-                }
+                onClick={toggleViewMode}
                 variant="default"
                 size="sm"
-                className="rounded-lg absolute top-3 right-7"
+                className="hidden lg:block rounded-lg absolute top-3 right-7"
               >
                 Switch to {viewMode === "card" ? "Table" : "Card"} View
               </Button>
             </CardHeader>
             <CardContent>
               {viewMode === "card" ? (
-                <InvoiceTable invoices={invoices} />
+                <InvoiceGrid invoices={invoices} />
               ) : (
                 <InvoiceTableFallback invoices={invoices} />
               )}
@@ -433,6 +368,15 @@ const Billing = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <UpgradeConfirmationDialog
+        isOpen={showUpgradeDialog}
+        onClose={handleUpgradeCancel}
+        onConfirm={handleUpgradeConfirm}
+        previewData={upgradePreviewData}
+        isLoading={performUpgrade.isPending}
+        planName={pendingUpgrade?.planName}
+      />
     </div>
   );
 };

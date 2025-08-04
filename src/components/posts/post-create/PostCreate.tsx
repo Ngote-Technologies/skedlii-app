@@ -35,9 +35,10 @@ import {
   InstagramMediaDropzone,
   MediaLinksInput,
   PostStatusControls,
-  UploadedMedia,
-} from "./methods";
+  // UploadedMedia,
+} from "./PostViews";
 import Preview from "./Preview";
+import { UploadedMedia } from "../../../types/media";
 
 const postSchema = z.object({
   content: z.string().min(1, "Content is required"),

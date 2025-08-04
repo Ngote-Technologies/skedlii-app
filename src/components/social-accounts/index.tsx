@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useToast } from "../../hooks/use-toast";
 import {
   formatDate,
   getClassName,
   getSocialIcon,
   getTextColor,
+  platformCounts,
 } from "../../lib/utils";
 import { Button } from "../ui/button";
 import {
@@ -29,10 +30,12 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
+  Filter,
   Loader2,
   Plus,
   RefreshCw,
   Trash2,
+  X,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -59,13 +62,32 @@ import {
   useRefreshYoutubeAccessToken,
   useRefreshTikTokAccessToken,
   useGetSocialAccounts,
-} from "./api-mutation";
+  useConnectMeta,
+} from "../../hooks/useSocialAccounts";
 import PlatformSelector from "./PlatformSelector";
 import { hasValidSubscription } from "../../lib/access";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
-const socialAccountSchema = z.object({
-  platform: z.string().min(1, "Select One Platform"),
-});
+const socialAccountSchema = z
+  .object({
+    platform: z.string().min(1, "Select One Platform"),
+    instagramAccountType: z.string().optional(),
+  })
+  .refine(
+    (data) =>
+      data.platform !== "instagram" ||
+      (data.platform === "instagram" && data.instagramAccountType),
+    {
+      message: "Please select a login method for Instagram",
+      path: ["instagramAccountType"],
+    }
+  );
 
 type SocialAccountFormData = z.infer<typeof socialAccountSchema>;
 
@@ -73,6 +95,7 @@ export default function SocialAccounts() {
   const { user } = useAuth();
   const { billing } = user;
   const [isAddingAccount, setIsAddingAccount] = useState(false);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [deleteConfig, setDeleteConfig] = useState({
     id: "",
     isOpen: false,
@@ -90,6 +113,8 @@ export default function SocialAccounts() {
     useConnectInstagram();
   const { mutate: connectFacebook, isPending: isConnectingFacebookPending } =
     useConnectFacebook();
+  const { mutate: connectMeta, isPending: isConnectingMetaPending } =
+    useConnectMeta();
   const { mutate: connectTikTok, isPending: isConnectingTikTokPending } =
     useConnectTikTok();
   const { mutate: connectYoutube, isPending: isConnectingYoutubePending } =
@@ -114,10 +139,26 @@ export default function SocialAccounts() {
     refetch: refetchAccounts,
   } = useGetSocialAccounts(user?._id);
 
+  // Get unique platforms and their counts
+  const platformStats = useMemo(() => {
+    const counts = platformCounts(accounts);
+    const uniquePlatforms = Object.keys(counts).sort();
+    return { counts, uniquePlatforms };
+  }, [accounts]);
+
+  // Filter accounts based on selected platforms
+  const filteredAccounts = useMemo(() => {
+    if (selectedPlatforms.length === 0) return accounts;
+    return accounts.filter((account: any) =>
+      selectedPlatforms.includes(account.platform.toLowerCase())
+    );
+  }, [accounts, selectedPlatforms]);
+
   const form = useForm<SocialAccountFormData>({
     resolver: zodResolver(socialAccountSchema),
     defaultValues: {
       platform: "",
+      instagramAccountType: "",
     },
   });
 
@@ -132,9 +173,14 @@ export default function SocialAccounts() {
       case "linkedin":
         connectLinkedIn();
         break;
-      case "instagram":
-        connectInstagram();
+      case "instagram": {
+        if (data.instagramAccountType === "facebook")
+          connectMeta({
+            platform: "instagram",
+          });
+        else connectInstagram();
         break;
+      }
       case "facebook":
         connectFacebook();
         break;
@@ -165,7 +211,8 @@ export default function SocialAccounts() {
     isConnectingYoutubePending ||
     isRefreshingTwitterPending ||
     isRefreshingYoutubePending ||
-    isRefreshingTiktokPending;
+    isRefreshingTiktokPending ||
+    isConnectingMetaPending;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -183,9 +230,8 @@ export default function SocialAccounts() {
 
       // Legacy: ?error=someType
       if (searchParams.get("error")) {
-        const errorType = searchParams.get("error");
         const message = searchParams.get("message");
-        console.log("OAuth error:", errorType, message);
+        // OAuth error will be displayed in the toast below
         toast({
           title: "Social account connection failed",
           description: message ?? "Failed to connect social account",
@@ -267,6 +313,18 @@ export default function SocialAccounts() {
     }
   };
 
+  const togglePlatformFilter = (platform: string) => {
+    setSelectedPlatforms((prev) =>
+      prev.includes(platform)
+        ? prev.filter((p) => p !== platform)
+        : [...prev, platform]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setSelectedPlatforms([]);
+  };
+
   const handleAccountsView = () => {
     if (isLoading) {
       return (
@@ -281,11 +339,26 @@ export default function SocialAccounts() {
     if (accounts.length > 0) {
       return (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-              {accounts.length} connected account
-              {accounts.length !== 1 ? "s" : ""}
-            </p>
+          <div className="flex flex-col sm:flex-row justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <p className="text-sm text-muted-foreground">
+                {selectedPlatforms.length > 0 
+                  ? `${filteredAccounts.length} of ${accounts.length} account${accounts.length !== 1 ? "s" : ""} (filtered)`
+                  : `${accounts.length} connected account${accounts.length !== 1 ? "s" : ""}`
+                }
+              </p>
+              {selectedPlatforms.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="text-xs"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear filters
+                </Button>
+              )}
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -299,8 +372,46 @@ export default function SocialAccounts() {
             </Button>
           </div>
 
+          {/* Platform Filter Pills */}
+          {platformStats.uniquePlatforms.length > 1 && (
+            <div className="flex flex-wrap gap-2 p-4 bg-muted/30 rounded-lg">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mr-2">
+                <Filter className="h-4 w-4" />
+                Filter by platform:
+              </div>
+              {platformStats.uniquePlatforms.map((platform) => (
+                <Button
+                  key={platform}
+                  variant={selectedPlatforms.includes(platform) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => togglePlatformFilter(platform)}
+                  className="flex items-center gap-2 text-xs"
+                >
+                  <i
+                    className={`${getSocialIcon(platform)} text-sm ${
+                      selectedPlatforms.includes(platform) 
+                        ? "text-primary-foreground" 
+                        : getTextColor(platform)
+                    }`}
+                  />
+                  <span className="capitalize">{platform}</span>
+                  <Badge 
+                    variant="secondary" 
+                    className={`ml-1 text-xs ${
+                      selectedPlatforms.includes(platform)
+                        ? "bg-primary-foreground/20 text-primary-foreground"
+                        : ""
+                    }`}
+                  >
+                    {platformStats.counts[platform]}
+                  </Badge>
+                </Button>
+              ))}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {accounts.map((account: any) => {
+            {filteredAccounts.map((account: any) => {
               const imageSrc = getImageSrc(account);
               return (
                 <Card
@@ -523,15 +634,83 @@ export default function SocialAccounts() {
                   >
                     Cancel
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !form.watch("platform")}
-                  >
-                    {isLoading && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    Connect Account
-                  </Button>
+                  {/* {form.watch("platform") === "instagram" && (
+                    <Select
+                      disabled={isLoading}
+                      value={form.watch("instagramAccountType")}
+                      onValueChange={(value) => {
+                        form.setValue("instagramAccountType", value);
+                      }}
+                    >
+                      <SelectTrigger className="bg-primary text-primary-foreground">
+                        <SelectValue placeholder="Connect Account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="instagram">
+                          Instagram Login
+                        </SelectItem>
+                        <SelectItem value="facebook">Facebook Login</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {form.watch("platform") !== "instagram" && (
+                    <Button
+                      type="submit"
+                      disabled={isLoading || !form.watch("platform")}
+                    >
+                      {isLoading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Connect Account
+                    </Button>
+                  )} */}
+
+                  {form.watch("platform") === "instagram" ? (
+                    <div className="flex gap-2 items-center">
+                      <Select
+                        disabled={isLoading}
+                        value={form.watch("instagramAccountType")}
+                        onValueChange={(value) => {
+                          form.setValue("instagramAccountType", value);
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Login Method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="instagram">
+                            Instagram Login
+                          </SelectItem>
+                          <SelectItem value="facebook">
+                            Facebook Login
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="submit"
+                        disabled={
+                          isLoading ||
+                          !form.watch("platform") ||
+                          !form.watch("instagramAccountType")
+                        }
+                      >
+                        {isLoading && (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        Connect Account
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="submit"
+                      disabled={isLoading || !form.watch("platform")}
+                    >
+                      {isLoading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Connect Account
+                    </Button>
+                  )}
                 </div>
               </DialogFooter>
             </form>

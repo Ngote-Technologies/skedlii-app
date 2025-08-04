@@ -6,6 +6,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+CLAUDE.md
+tests/
+tests-examples/
+playwright.config.ts
+playwright-report/
 
 # Build output
 dist
@@ -47,3 +52,9 @@ build
 # PWA files
 public/sw.js
 public/workbox-*.js
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

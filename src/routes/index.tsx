@@ -9,6 +9,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
+import ProgressProvider from "../components/providers/ProgressProvider";
 import Contact from "../pages/Contact";
 import Pricing from "../pages/Pricing";
 import Roadmap from "../pages/Roadmap";
@@ -63,9 +64,10 @@ const AppRoutes = () => {
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <Toaster />
-          <Analytics />
-          <Routes>
+          <ProgressProvider>
+            <Toaster />
+            <Analytics />
+            <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -134,7 +136,8 @@ const AppRoutes = () => {
               <Route path="help/:articleId" element={<HelpArticlePage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
-          </Routes>
+            </Routes>
+          </ProgressProvider>
         </TooltipProvider>
       </QueryClientProvider>
     </BrowserRouter>

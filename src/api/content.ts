@@ -1,6 +1,6 @@
 import axiosInstance from "./axios";
 import { ContentItem, ContentCollection, AnalysisTemplate } from "../types";
-import { AIAssistantRequest, AIAssistantResponse } from "./types";
+import { AIAssistantRequest, AIAssistantResponse } from "../types/aiAssistant";
 
 // AI Content Generation
 export const generateContent = async (

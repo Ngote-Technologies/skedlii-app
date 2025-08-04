@@ -56,7 +56,7 @@ axiosInstance.interceptors.request.use(
       // Add timestamp to help debug caching issues
       config.headers["X-Request-Time"] = new Date().toISOString();
     } else {
-      console.log("[DEBUG] No auth token found in localStorage");
+      // No auth token available - request will proceed without authorization
     }
     return config;
   },

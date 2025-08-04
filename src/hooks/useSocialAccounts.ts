@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import socialApi from "../../api/socialApi";
-import { toast } from "../../hooks/use-toast";
+import socialApi from "../api/socialApi";
+import { toast } from "./use-toast";
 
 export const useConnectLinkedIn = () => {
   return useMutation({
@@ -9,12 +9,10 @@ export const useConnectLinkedIn = () => {
       window.location.href = response;
     },
     onError: (err: any) => {
-      console.log({ err });
+      const errorMsg = err?.response?.data?.error || err?.message;
       toast({
         title: "Connection Failed",
-        description:
-          err?.response?.data?.error ??
-          "Failed to connect to LinkedIn, try again!",
+        description: errorMsg ?? "Failed to connect to LinkedIn, try again!",
         variant: "destructive",
       });
     },
@@ -28,9 +26,10 @@ export const useConnectTwitter = () => {
       window.location.href = response;
     },
     onError: (err: any) => {
+      const errorMsg = err?.response?.data?.error || err?.message;
       toast({
         title: "Connection Failed",
-        description: err.message ?? "Failed to connect to Twitter, try again!",
+        description: errorMsg ?? "Failed to connect to Twitter, try again!",
         variant: "destructive",
       });
     },
@@ -44,9 +43,33 @@ export const useConnectThreads = () => {
       window.location.href = response;
     },
     onError: (err: any) => {
+      const errorMsg = err?.response?.data?.error || err?.message;
       toast({
         title: "Connection Failed",
-        description: err.message ?? "Failed to connect to Threads, try again!",
+        description: errorMsg ?? "Failed to connect to Threads, try again!",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useConnectMeta = () => {
+  return useMutation({
+    mutationFn: async ({
+      platform,
+    }: {
+      platform: "facebook" | "instagram";
+    }) => {
+      const response = await socialApi.connectViaMeta({
+        platform,
+      });
+      window.location.href = response;
+    },
+    onError: (err: any) => {
+      const errorMsg = err?.response?.data?.error || err?.message;
+      toast({
+        title: "Connection Failed",
+        description: errorMsg ?? "Failed to connect to Meta, try again!",
         variant: "destructive",
       });
     },
@@ -60,10 +83,10 @@ export const useConnectInstagram = () => {
       window.location.href = response;
     },
     onError: (err: any) => {
+      const errorMsg = err?.response?.data?.error || err?.message;
       toast({
         title: "Connection Failed",
-        description:
-          err.message ?? "Failed to connect to Instagram, try again!",
+        description: errorMsg ?? "Failed to connect to Instagram, try again!",
         variant: "destructive",
       });
     },
@@ -77,9 +100,10 @@ export const useConnectFacebook = () => {
       window.location.href = response;
     },
     onError: (err: any) => {
+      const errorMsg = err?.response?.data?.error || err?.message;
       toast({
         title: "Connection Failed",
-        description: err.message ?? "Failed to connect to Facebook, try again!",
+        description: errorMsg ?? "Failed to connect to Facebook, try again!",
         variant: "destructive",
       });
     },
@@ -93,9 +117,10 @@ export const useConnectTikTok = () => {
       window.location.href = response;
     },
     onError: (err: any) => {
+      const errorMsg = err?.response?.data?.error || err?.message;
       toast({
         title: "Connection Failed",
-        description: err.message ?? "Failed to connect to TikTok, try again!",
+        description: errorMsg ?? "Failed to connect to TikTok, try again!",
         variant: "destructive",
       });
     },
@@ -109,12 +134,10 @@ export const useConnectYoutube = () => {
       window.location.href = response;
     },
     onError: (err: any) => {
-      console.log({ err });
+      const errorMsg = err?.response?.data?.error || err?.message;
       toast({
         title: "Connection Failed",
-        description:
-          err?.response?.data?.error ??
-          "Failed to connect to Youtube, try again!",
+        description: errorMsg ?? "Failed to connect to Youtube, try again!",
         variant: "destructive",
       });
     },

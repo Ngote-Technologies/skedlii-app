@@ -11,18 +11,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
 import { Loader2, Save, Clock, Send } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../store/hooks";
-import {
-  handleAccountSelection,
-  handleCaptionChange,
-  handleMediaChange,
-  handleSchedulingChange,
-} from "./methods";
-import { MediaItem } from "./mediaUploadComponents";
+import { MediaItem } from "./MediaUpload";
 import TikTokSettingsDrawer, {
   isValidTikTokOptions,
   TikTokOptions,
 } from "./TikTokSettingsDrawer";
-import { getTikTokAccountsInfo } from "../../../api/query";
+import { useTikTokAccountsInfo } from "../../../api/query";
 import { useInitializeTikTokDrawer } from "./hooks/useInitializeTikTokDrawer";
 
 import AccountSelection from "./AccountSelection";
@@ -30,6 +24,11 @@ import PlatformCaptions from "./PlatformCaption";
 import MediaUpload from "./MediaUpload";
 import SchedulingOptions from "./SchedulingOptions";
 import { usePostSubmission } from "./hooks/usePostSubmission";
+import {
+  handleAccountSelection,
+  handleCaptionChange,
+} from "../../../services/postFlow";
+import { handleMediaChange, handleSchedulingChange } from "../../../lib/utils";
 
 export default function PostFlow() {
   const { user } = useAuth();
@@ -139,7 +138,7 @@ export default function PostFlow() {
   ]);
 
   const { data: accountsData, isLoading: tiktokAccountsLoading } =
-    getTikTokAccountsInfo(tiktokAccountIdsToFetch);
+    useTikTokAccountsInfo(tiktokAccountIdsToFetch);
 
   useEffect(() => {
     if (accountsData) {

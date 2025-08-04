@@ -4,9 +4,9 @@ import socialApi from "../../../../api/socialApi";
 import {
   getImageDimensions,
   getMediaDimensions,
-} from "../../../posting/methods";
+} from "../../../../lib/mediaUtils";
 import { TikTokOptions, isValidTikTokOptions } from "../TikTokSettingsDrawer";
-import { MediaItem } from "../mediaUploadComponents";
+import { MediaItem } from "../MediaUpload";
 
 interface Account {
   _id: string;
