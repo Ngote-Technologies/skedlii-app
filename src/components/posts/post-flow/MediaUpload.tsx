@@ -44,7 +44,7 @@ import {
   handleVideoSeek,
   removeMediaItem,
   updateVideoThumbnailTime,
-} from "../../posting/methods";
+} from "../../../lib/mediaUtils";
 
 // Define MediaItem if not already available from props (adjust as per actual type)
 export interface MediaItem {

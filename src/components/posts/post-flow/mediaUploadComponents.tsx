@@ -8,21 +8,7 @@ import {
   TooltipTrigger,
 } from "../../ui/tooltip";
 import { Button } from "../../ui/button";
-
-export interface MediaItem {
-  id: string; // Add a stable unique ID for dnd-kit items
-  file: File;
-  type: "image" | "video";
-  url: string;
-  thumbnailUrl?: string;
-  thumbnailTime?: number;
-  dimensions?: { width: number; height: number };
-}
-
-export interface MediaUploadProps {
-  media: MediaItem[];
-  onChange: (media: MediaItem[]) => void;
-}
+import { MediaItem } from "./MediaUpload";
 
 export function MediaItemDisplayContent({
   item,

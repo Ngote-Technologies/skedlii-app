@@ -1,23 +1,23 @@
-export type SocialPlatform = 'twitter' | 'linkedin' | 'facebook' | 'instagram';
+export type SocialPlatform = "twitter" | "linkedin" | "facebook" | "instagram";
 
-export type ContentTone = 
-  | 'professional'
-  | 'casual'
-  | 'friendly'
-  | 'humorous'
-  | 'informative'
-  | 'persuasive';
+export type ContentTone =
+  | "professional"
+  | "casual"
+  | "friendly"
+  | "humorous"
+  | "informative"
+  | "persuasive";
 
-export type ContentPurpose = 
-  | 'engagement'
-  | 'awareness'
-  | 'lead_generation'
-  | 'sales'
-  | 'education'
-  | 'entertainment';
+export type ContentPurpose =
+  | "engagement"
+  | "awareness"
+  | "lead_generation"
+  | "sales"
+  | "education"
+  | "entertainment";
 
 export interface AIAssistantRequest {
-  type: 'caption' | 'hashtags' | 'variation' | 'optimization';
+  type: "caption" | "hashtags" | "variation" | "optimization";
   content?: string;
   context: {
     platform: SocialPlatform;
@@ -30,14 +30,14 @@ export interface AIAssistantRequest {
     length?: {
       min: number;
       max: number;
-      unit: 'characters' | 'words';
+      unit: "characters" | "words";
     };
   };
   constraints?: {
     mustInclude?: string[];
     mustExclude?: string[];
     hashtagCount?: number;
-    emojiUsage?: 'none' | 'minimal' | 'moderate' | 'heavy';
+    emojiUsage?: "none" | "minimal" | "moderate" | "heavy";
   };
 }
 
@@ -60,8 +60,8 @@ export interface AIAssistantResponse {
     };
   }>;
   improvements?: Array<{
-    type: 'tone' | 'length' | 'hashtags' | 'structure';
+    type: "tone" | "length" | "hashtags" | "structure";
     suggestion: string;
-    impact: 'low' | 'medium' | 'high';
+    impact: "low" | "medium" | "high";
   }>;
 }

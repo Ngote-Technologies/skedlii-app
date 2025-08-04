@@ -197,3 +197,10 @@ export interface AnalysisTemplate {
   createdAt: string;
   updatedAt: string;
 }
+
+// Component Props
+export interface AccountSelectionProps {
+  accounts: any[];
+  selectedAccounts: string[];
+  onSelectionChange: (accountIds: string[]) => void;
+}

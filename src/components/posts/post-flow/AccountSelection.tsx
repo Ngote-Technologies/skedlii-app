@@ -10,21 +10,12 @@ import { Tabs, TabsList, TabsTrigger } from "../../ui/tabs";
 import { Search, Check } from "lucide-react";
 import { Input } from "../../ui/input";
 import { Badge } from "../../ui/badge";
+import { getPlatformIcon, getPlatformBgColor } from "../../../lib/platformUtils";
+import { AccountSelectionProps } from "../../../types";
 import {
-  FaXTwitter,
-  FaInstagram,
-  FaLinkedin,
-  FaFacebook,
-  FaTiktok,
-  FaThreads,
-  FaYoutube,
-} from "react-icons/fa6";
-import {
-  AccountSelectionProps,
   countSelectedByPlatform,
-  getPlatformColor,
   platformCounts,
-} from "./methods";
+} from "../../../lib/utils";
 
 export default function AccountSelection({
   accounts,
@@ -86,27 +77,6 @@ export default function AccountSelection({
     }
   };
 
-  // Helper function to get platform icon
-  const getPlatformIcon = (platform: string) => {
-    switch (platform.toLowerCase()) {
-      case "instagram":
-        return <FaInstagram className="h-4 w-4" />;
-      case "twitter":
-        return <FaXTwitter className="h-4 w-4" />;
-      case "facebook":
-        return <FaFacebook className="h-4 w-4" />;
-      case "linkedin":
-        return <FaLinkedin className="h-4 w-4" />;
-      case "tiktok":
-        return <FaTiktok className="h-4 w-4" />;
-      case "threads":
-        return <FaThreads className="h-4 w-4" />;
-      case "youtube":
-        return <FaYoutube className="h-4 w-4" />;
-      default:
-        return null;
-    }
-  };
 
   const selectedCounts = countSelectedByPlatform(accounts, selectedAccounts);
 
@@ -131,91 +101,93 @@ export default function AccountSelection({
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="w-full border-b mb-4">
-            <TabsTrigger value="all" className="flex-1">
-              All
-              <Badge variant="secondary" className="ml-2">
-                {accounts.length}
-              </Badge>
-            </TabsTrigger>
-            {platformCounts(accounts).instagram && (
-              <TabsTrigger value="instagram" className="flex-1">
-                <div className="flex items-center gap-2">
-                  <FaInstagram className="h-4 w-4" />
-                  <span className="hidden sm:inline">Instagram</span>
-                  <Badge variant="secondary">
-                    {platformCounts(accounts).instagram}
-                  </Badge>
-                </div>
+          <div className="overflow-x-auto scrollbar-hide">
+            <TabsList className="w-max min-w-full border-b mb-4 flex-nowrap">
+              <TabsTrigger value="all" className="flex-shrink-0 whitespace-nowrap">
+                All
+                <Badge variant="secondary" className="ml-2">
+                  {accounts.length}
+                </Badge>
               </TabsTrigger>
-            )}
-            {platformCounts(accounts).facebook && (
-              <TabsTrigger value="facebook" className="flex-1">
-                <div className="flex items-center gap-2">
-                  <FaFacebook className="h-4 w-4" />
-                  <span className="hidden sm:inline">Facebook</span>
-                  <Badge variant="secondary">
-                    {platformCounts(accounts).facebook}
-                  </Badge>
-                </div>
-              </TabsTrigger>
-            )}
-            {platformCounts(accounts).twitter && (
-              <TabsTrigger value="twitter" className="flex-1">
-                <div className="flex items-center gap-2">
-                  <FaXTwitter className="h-4 w-4" />
-                  <span className="hidden sm:inline">Twitter</span>
-                  <Badge variant="secondary">
-                    {platformCounts(accounts).twitter}
-                  </Badge>
-                </div>
-              </TabsTrigger>
-            )}
-            {platformCounts(accounts).linkedin && (
-              <TabsTrigger value="linkedin" className="flex-1">
-                <div className="flex items-center gap-2">
-                  <FaLinkedin className="h-4 w-4" />
-                  <span className="hidden sm:inline">LinkedIn</span>
-                  <Badge variant="secondary">
-                    {platformCounts(accounts).linkedin}
-                  </Badge>
-                </div>
-              </TabsTrigger>
-            )}
-            {platformCounts(accounts).threads && (
-              <TabsTrigger value="threads" className="flex-1">
-                <div className="flex items-center gap-2">
-                  <FaThreads className="h-4 w-4" />
-                  <span className="hidden sm:inline">Threads</span>
-                  <Badge variant="secondary">
-                    {platformCounts(accounts).threads}
-                  </Badge>
-                </div>
-              </TabsTrigger>
-            )}
-            {platformCounts(accounts).tiktok && (
-              <TabsTrigger value="tiktok" className="flex-1">
-                <div className="flex items-center gap-2">
-                  <FaTiktok className="h-4 w-4" />
-                  <span className="hidden sm:inline">TikTok</span>
-                  <Badge variant="secondary">
-                    {platformCounts(accounts).tiktok}
-                  </Badge>
-                </div>
-              </TabsTrigger>
-            )}
-            {platformCounts(accounts).youtube && (
-              <TabsTrigger value="youtube" className="flex-1">
-                <div className="flex items-center gap-2">
-                  <FaYoutube className="h-4 w-4" />
-                  <span className="hidden sm:inline">YouTube</span>
-                  <Badge variant="secondary">
-                    {platformCounts(accounts).youtube}
-                  </Badge>
-                </div>
-              </TabsTrigger>
-            )}
-          </TabsList>
+              {platformCounts(accounts).instagram && (
+                <TabsTrigger value="instagram" className="flex-shrink-0 whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    {getPlatformIcon("instagram")}
+                    <span className="hidden sm:inline">Instagram</span>
+                    <Badge variant="secondary">
+                      {platformCounts(accounts).instagram}
+                    </Badge>
+                  </div>
+                </TabsTrigger>
+              )}
+              {platformCounts(accounts).facebook && (
+                <TabsTrigger value="facebook" className="flex-shrink-0 whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    {getPlatformIcon("facebook")}
+                    <span className="hidden sm:inline">Facebook</span>
+                    <Badge variant="secondary">
+                      {platformCounts(accounts).facebook}
+                    </Badge>
+                  </div>
+                </TabsTrigger>
+              )}
+              {platformCounts(accounts).twitter && (
+                <TabsTrigger value="twitter" className="flex-shrink-0 whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    {getPlatformIcon("twitter")}
+                    <span className="hidden sm:inline">Twitter</span>
+                    <Badge variant="secondary">
+                      {platformCounts(accounts).twitter}
+                    </Badge>
+                  </div>
+                </TabsTrigger>
+              )}
+              {platformCounts(accounts).linkedin && (
+                <TabsTrigger value="linkedin" className="flex-shrink-0 whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    {getPlatformIcon("linkedin")}
+                    <span className="hidden sm:inline">LinkedIn</span>
+                    <Badge variant="secondary">
+                      {platformCounts(accounts).linkedin}
+                    </Badge>
+                  </div>
+                </TabsTrigger>
+              )}
+              {platformCounts(accounts).threads && (
+                <TabsTrigger value="threads" className="flex-shrink-0 whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    {getPlatformIcon("threads")}
+                    <span className="hidden sm:inline">Threads</span>
+                    <Badge variant="secondary">
+                      {platformCounts(accounts).threads}
+                    </Badge>
+                  </div>
+                </TabsTrigger>
+              )}
+              {platformCounts(accounts).tiktok && (
+                <TabsTrigger value="tiktok" className="flex-shrink-0 whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    {getPlatformIcon("tiktok")}
+                    <span className="hidden sm:inline">TikTok</span>
+                    <Badge variant="secondary">
+                      {platformCounts(accounts).tiktok}
+                    </Badge>
+                  </div>
+                </TabsTrigger>
+              )}
+              {platformCounts(accounts).youtube && (
+                <TabsTrigger value="youtube" className="flex-shrink-0 whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    {getPlatformIcon("youtube")}
+                    <span className="hidden sm:inline">YouTube</span>
+                    <Badge variant="secondary">
+                      {platformCounts(accounts).youtube}
+                    </Badge>
+                  </div>
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </div>
 
           {/* Account List */}
           {filteredAccounts.length > 0 ? (
@@ -233,7 +205,7 @@ export default function AccountSelection({
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-10 h-10 rounded-full ${getPlatformColor(
+                      className={`w-10 h-10 rounded-full ${getPlatformBgColor(
                         account.platform
                       )} flex items-center justify-center text-white overflow-hidden`}
                     >

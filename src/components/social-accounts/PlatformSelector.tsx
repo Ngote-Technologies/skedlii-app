@@ -1,6 +1,6 @@
 import { FormItem, FormLabel, FormMessage } from "../ui/form";
 import { cn } from "../../lib/utils";
-import { platformConfigs } from "./platformsConfig";
+import { platformConfigs } from "../../constants/platformConfigs";
 import { FaCheckCircle, FaExternalLinkAlt } from "react-icons/fa";
 
 interface PlatformSelectorProps {

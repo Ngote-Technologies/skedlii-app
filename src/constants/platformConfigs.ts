@@ -10,8 +10,6 @@ import {
 
 const isDev = import.meta.env.VITE_APP_ENV === "development";
 
-console.log({ isDev });
-
 export const platformConfigs = [
   {
     name: "Instagram",

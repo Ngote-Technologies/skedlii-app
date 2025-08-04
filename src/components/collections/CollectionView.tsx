@@ -23,7 +23,7 @@ import {
 } from "../ui/dropdown-menu";
 import { Link } from "react-router-dom";
 
-export function getCollectionsView({
+export function CollectionsView({
   isLoading,
   collections,
   setIsCreating,
