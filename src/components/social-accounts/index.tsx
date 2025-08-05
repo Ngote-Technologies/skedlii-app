@@ -303,6 +303,9 @@ export default function SocialAccounts() {
           },
         });
         break;
+      case "facebook":
+        connectFacebook();
+        break;
       default:
         toast({
           title: "Reauthorization failed",
@@ -342,10 +345,13 @@ export default function SocialAccounts() {
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             <div className="flex items-center gap-4">
               <p className="text-sm text-muted-foreground">
-                {selectedPlatforms.length > 0 
-                  ? `${filteredAccounts.length} of ${accounts.length} account${accounts.length !== 1 ? "s" : ""} (filtered)`
-                  : `${accounts.length} connected account${accounts.length !== 1 ? "s" : ""}`
-                }
+                {selectedPlatforms.length > 0
+                  ? `${filteredAccounts.length} of ${accounts.length} account${
+                      accounts.length !== 1 ? "s" : ""
+                    } (filtered)`
+                  : `${accounts.length} connected account${
+                      accounts.length !== 1 ? "s" : ""
+                    }`}
               </p>
               {selectedPlatforms.length > 0 && (
                 <Button
@@ -382,21 +388,23 @@ export default function SocialAccounts() {
               {platformStats.uniquePlatforms.map((platform) => (
                 <Button
                   key={platform}
-                  variant={selectedPlatforms.includes(platform) ? "default" : "outline"}
+                  variant={
+                    selectedPlatforms.includes(platform) ? "default" : "outline"
+                  }
                   size="sm"
                   onClick={() => togglePlatformFilter(platform)}
                   className="flex items-center gap-2 text-xs"
                 >
                   <i
                     className={`${getSocialIcon(platform)} text-sm ${
-                      selectedPlatforms.includes(platform) 
-                        ? "text-primary-foreground" 
+                      selectedPlatforms.includes(platform)
+                        ? "text-primary-foreground"
                         : getTextColor(platform)
                     }`}
                   />
                   <span className="capitalize">{platform}</span>
-                  <Badge 
-                    variant="secondary" 
+                  <Badge
+                    variant="secondary"
                     className={`ml-1 text-xs ${
                       selectedPlatforms.includes(platform)
                         ? "bg-primary-foreground/20 text-primary-foreground"
