@@ -237,11 +237,11 @@ export function usePostSubmission({
       });
 
       navigate(`/dashboard/${isScheduled ? "scheduled" : "posts"}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Submission error:", err);
       toast({
-        title: "Error",
-        description: "Failed to create post. Please try again.",
+        title: `${err.message}!`,
+        description: `Please try again!`,
         variant: "destructive",
       });
     } finally {
