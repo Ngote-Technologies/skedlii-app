@@ -253,6 +253,14 @@ export default function SocialAccounts() {
         });
         window.history.replaceState({}, "", "/dashboard/accounts");
       }
+
+      if (searchParams.get("status") === "success") {
+        toast({
+          title: "Social account connected",
+          description: "Your social account has been connected successfully",
+        });
+        window.history.replaceState({}, "", "/dashboard/accounts");
+      }
     };
 
     fetchData();
