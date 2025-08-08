@@ -86,7 +86,13 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      const { confirmPassword, ...registerData } = data;
+      const { confirmPassword, organizationName, ...rest } = data;
+
+      const registerData = {
+        ...rest,
+        ...(organizationName !== "" && { organizationName }),
+      };
+
       await register(registerData);
     } finally {
       setIsLoading(false);
