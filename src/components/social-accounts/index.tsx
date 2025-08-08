@@ -603,13 +603,6 @@ export default function SocialAccounts() {
               Manage your connected social media accounts and their permissions
             </p>
           </div>
-          <button
-            onClick={() => {
-              throw new Error("This is your first error!");
-            }}
-          >
-            Break the world
-          </button>
           <Button
             onClick={() => setIsAddingAccount(true)}
             className="w-full sm:w-auto"
