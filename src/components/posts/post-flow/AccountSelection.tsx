@@ -10,10 +10,16 @@ import { Tabs, TabsList, TabsTrigger } from "../../ui/tabs";
 import { Search, Check } from "lucide-react";
 import { Input } from "../../ui/input";
 import { Badge } from "../../ui/badge";
-import { getPlatformIcon, getPlatformBgColor } from "../../../lib/platformUtils";
+import {
+  getPlatformIcon,
+  getPlatformBgColor,
+} from "../../../lib/platformUtils";
 import { AccountSelectionProps } from "../../../types";
 import {
   countSelectedByPlatform,
+  getClassName,
+  getSocialIcon,
+  getTextColor,
   platformCounts,
 } from "../../../lib/utils";
 
@@ -77,7 +83,6 @@ export default function AccountSelection({
     }
   };
 
-
   const selectedCounts = countSelectedByPlatform(accounts, selectedAccounts);
 
   return (
@@ -103,16 +108,26 @@ export default function AccountSelection({
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <div className="overflow-x-auto scrollbar-hide">
             <TabsList className="w-max min-w-full border-b mb-4 flex-nowrap">
-              <TabsTrigger value="all" className="flex-shrink-0 whitespace-nowrap">
+              <TabsTrigger
+                value="all"
+                className="flex-shrink-0 whitespace-nowrap"
+              >
                 All
                 <Badge variant="secondary" className="ml-2">
                   {accounts.length}
                 </Badge>
               </TabsTrigger>
               {platformCounts(accounts).instagram && (
-                <TabsTrigger value="instagram" className="flex-shrink-0 whitespace-nowrap">
+                <TabsTrigger
+                  value="instagram"
+                  className="flex-shrink-0 whitespace-nowrap"
+                >
                   <div className="flex items-center gap-2">
-                    {getPlatformIcon("instagram")}
+                    <i
+                      className={`${getSocialIcon(
+                        "instagram"
+                      )} text-xl ${getTextColor("instagram")}`}
+                    />
                     <span className="hidden sm:inline">Instagram</span>
                     <Badge variant="secondary">
                       {platformCounts(accounts).instagram}
@@ -121,9 +136,16 @@ export default function AccountSelection({
                 </TabsTrigger>
               )}
               {platformCounts(accounts).facebook && (
-                <TabsTrigger value="facebook" className="flex-shrink-0 whitespace-nowrap">
+                <TabsTrigger
+                  value="facebook"
+                  className="flex-shrink-0 whitespace-nowrap"
+                >
                   <div className="flex items-center gap-2">
-                    {getPlatformIcon("facebook")}
+                    <i
+                      className={`${getSocialIcon(
+                        "facebook"
+                      )} text-xl ${getTextColor("facebook")}`}
+                    />
                     <span className="hidden sm:inline">Facebook</span>
                     <Badge variant="secondary">
                       {platformCounts(accounts).facebook}
@@ -132,9 +154,16 @@ export default function AccountSelection({
                 </TabsTrigger>
               )}
               {platformCounts(accounts).twitter && (
-                <TabsTrigger value="twitter" className="flex-shrink-0 whitespace-nowrap">
+                <TabsTrigger
+                  value="twitter"
+                  className="flex-shrink-0 whitespace-nowrap"
+                >
                   <div className="flex items-center gap-2">
-                    {getPlatformIcon("twitter")}
+                    <i
+                      className={`${getSocialIcon(
+                        "twitter"
+                      )} text-xl ${getTextColor("twitter")}`}
+                    />
                     <span className="hidden sm:inline">Twitter</span>
                     <Badge variant="secondary">
                       {platformCounts(accounts).twitter}
@@ -143,9 +172,16 @@ export default function AccountSelection({
                 </TabsTrigger>
               )}
               {platformCounts(accounts).linkedin && (
-                <TabsTrigger value="linkedin" className="flex-shrink-0 whitespace-nowrap">
+                <TabsTrigger
+                  value="linkedin"
+                  className="flex-shrink-0 whitespace-nowrap"
+                >
                   <div className="flex items-center gap-2">
-                    {getPlatformIcon("linkedin")}
+                    <i
+                      className={`${getSocialIcon(
+                        "linkedin"
+                      )} text-xl ${getTextColor("linkedin")}`}
+                    />
                     <span className="hidden sm:inline">LinkedIn</span>
                     <Badge variant="secondary">
                       {platformCounts(accounts).linkedin}
@@ -154,9 +190,16 @@ export default function AccountSelection({
                 </TabsTrigger>
               )}
               {platformCounts(accounts).threads && (
-                <TabsTrigger value="threads" className="flex-shrink-0 whitespace-nowrap">
+                <TabsTrigger
+                  value="threads"
+                  className="flex-shrink-0 whitespace-nowrap"
+                >
                   <div className="flex items-center gap-2">
-                    {getPlatformIcon("threads")}
+                    <i
+                      className={`${getSocialIcon(
+                        "threads"
+                      )} text-xl ${getTextColor("threads")}`}
+                    />
                     <span className="hidden sm:inline">Threads</span>
                     <Badge variant="secondary">
                       {platformCounts(accounts).threads}
@@ -165,9 +208,16 @@ export default function AccountSelection({
                 </TabsTrigger>
               )}
               {platformCounts(accounts).tiktok && (
-                <TabsTrigger value="tiktok" className="flex-shrink-0 whitespace-nowrap">
+                <TabsTrigger
+                  value="tiktok"
+                  className="flex-shrink-0 whitespace-nowrap"
+                >
                   <div className="flex items-center gap-2">
-                    {getPlatformIcon("tiktok")}
+                    <i
+                      className={`${getSocialIcon(
+                        "tiktok"
+                      )} text-xl ${getTextColor("tiktok")}`}
+                    />
                     <span className="hidden sm:inline">TikTok</span>
                     <Badge variant="secondary">
                       {platformCounts(accounts).tiktok}
@@ -176,9 +226,16 @@ export default function AccountSelection({
                 </TabsTrigger>
               )}
               {platformCounts(accounts).youtube && (
-                <TabsTrigger value="youtube" className="flex-shrink-0 whitespace-nowrap">
+                <TabsTrigger
+                  value="youtube"
+                  className="flex-shrink-0 whitespace-nowrap"
+                >
                   <div className="flex items-center gap-2">
-                    {getPlatformIcon("youtube")}
+                    <i
+                      className={`${getSocialIcon(
+                        "youtube"
+                      )} text-xl ${getTextColor("youtube")}`}
+                    />
                     <span className="hidden sm:inline">YouTube</span>
                     <Badge variant="secondary">
                       {platformCounts(accounts).youtube}

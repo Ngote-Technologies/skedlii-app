@@ -182,7 +182,10 @@ export default function SocialAccounts() {
         break;
       }
       case "facebook":
-        connectFacebook();
+        // connectFacebook();
+        connectMeta({
+          platform: "facebook",
+        });
         break;
       case "tiktok":
         connectTikTok();
