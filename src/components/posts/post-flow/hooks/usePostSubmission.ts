@@ -197,9 +197,9 @@ export function usePostSubmission({
                 mediaType: postType,
               }
             : {
-                caption,
+                content: caption,
                 accountId: account.accountId,
-                id: account._id,
+                userId: account._id,
                 media: mediaUrls,
                 accountName: account.accountName,
                 accountType: account.accountType,
