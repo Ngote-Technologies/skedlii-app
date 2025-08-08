@@ -54,7 +54,6 @@ import {
   useConnectTwitter,
   useConnectThreads,
   useConnectInstagram,
-  useConnectFacebook,
   useConnectTikTok,
   useConnectYoutube,
   useDeleteAccount,
@@ -111,8 +110,6 @@ export default function SocialAccounts() {
     useConnectThreads();
   const { mutate: connectInstagram, isPending: isConnectingInstagramPending } =
     useConnectInstagram();
-  const { mutate: connectFacebook, isPending: isConnectingFacebookPending } =
-    useConnectFacebook();
   const { mutate: connectMeta, isPending: isConnectingMetaPending } =
     useConnectMeta();
   const { mutate: connectTikTok, isPending: isConnectingTikTokPending } =
@@ -209,7 +206,6 @@ export default function SocialAccounts() {
     isConnectingThreadsPending ||
     isConnectingLinkedInPending ||
     isConnectingInstagramPending ||
-    isConnectingFacebookPending ||
     isConnectingTikTokPending ||
     isConnectingYoutubePending ||
     isRefreshingTwitterPending ||
