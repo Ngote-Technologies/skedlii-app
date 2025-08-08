@@ -315,7 +315,7 @@ export default function SocialAccounts() {
         });
         break;
       case "facebook":
-        connectFacebook();
+        connectMeta({ platform: "facebook" });
         break;
       default:
         toast({
