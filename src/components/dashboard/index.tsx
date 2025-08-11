@@ -25,7 +25,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "../../store/hooks";
 import { useQuery } from "@tanstack/react-query";
-import { Badge } from "../ui/badge";
+import { Badge, StatusBadge, BadgeGroup } from "../ui/badge";
 import {
   Tooltip,
   TooltipContent,
@@ -240,7 +240,7 @@ export default function DashboardPage() {
               }
               return (
                 <Link to={to} key={label}>
-                  <Card className="hover:shadow-md cursor-pointer transition-shadow duration-200 rounded-xl">
+                  <Card variant="elevated" interactive>
                     <CardHeader className="pb-1 flex flex-row items-center justify-between space-y-0">
                       <CardDescription className="text-sm font-medium">
                         {label}
@@ -273,7 +273,7 @@ export default function DashboardPage() {
             </TabsList>
 
             <TabsContent value="recent" className="space-y-4">
-              <Card>
+              <Card variant="gradient">
                 <CardHeader>
                   <CardTitle>Recent Posts</CardTitle>
                   <CardDescription>
@@ -300,13 +300,15 @@ export default function DashboardPage() {
                             </p>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <span>{getPostStatus(post)}</span>
-                              <Badge
-                                className={`text-xs rounded-md px-2 py-0.5 capitalize text-white ${getStatusColor(
-                                  status
-                                )}`}
-                              >
-                                {post.platform}
-                              </Badge>
+                              <BadgeGroup spacing="tight">
+                                <StatusBadge 
+                                  status={status === "published" || status === "posted" ? "published" : status === "scheduled" ? "pending" : "draft"}
+                                  size="sm"
+                                />
+                                <Badge variant="outline" size="sm" className="capitalize">
+                                  {post.platform}
+                                </Badge>
+                              </BadgeGroup>
                             </div>
                           </div>
                           <Button
@@ -326,7 +328,7 @@ export default function DashboardPage() {
             </TabsContent>
 
             <TabsContent value="upcoming">
-              <Card>
+              <Card variant="gradient">
                 <CardHeader>
                   <CardTitle>Upcoming Posts</CardTitle>
                   <CardDescription>Your scheduled content</CardDescription>
@@ -381,7 +383,7 @@ export default function DashboardPage() {
             </TabsContent>
 
             <TabsContent value="insights">
-              <Card>
+              <Card variant="premium">
                 <CardHeader>
                   <CardTitle>Content Insights</CardTitle>
                   <CardDescription>
@@ -409,7 +411,7 @@ export default function DashboardPage() {
           </Tabs>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
+            <Card variant="outlined">
               <CardHeader>
                 <CardTitle>Quick Links</CardTitle>
                 <CardDescription>Frequently used tools</CardDescription>
@@ -493,7 +495,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card variant="outlined">
               <CardHeader>
                 <CardTitle>Connected Accounts</CardTitle>
                 <CardDescription>Your social media platforms</CardDescription>

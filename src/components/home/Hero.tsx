@@ -32,18 +32,20 @@ export default function Hero() {
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
               <Link to="/register">
                 <Button
-                  size="lg"
-                  className="w-full sm:w-auto px-8 py-6 text-base rounded-xl shadow-lg shadow-primary-500/20 dark:shadow-none hover:scale-105 transition-transform"
+                  variant="gradient"
+                  size="xl"
+                  icon={<ArrowRight className="h-5 w-5" />}
+                  iconPosition="right"
+                  className="w-full sm:w-auto px-8 py-6 text-base rounded-xl font-semibold"
                 >
                   Start Free Trial
-                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/#features">
                 <Button
                   variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto px-8 py-6 text-base rounded-xl border-2 hover:bg-primary-50 dark:hover:bg-gray-800"
+                  size="xl"
+                  className="w-full sm:w-auto px-8 py-6 text-base rounded-xl border-2 font-medium hover:bg-primary-50 dark:hover:bg-gray-800 hover:border-primary-300"
                 >
                   Learn More
                 </Button>

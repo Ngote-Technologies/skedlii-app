@@ -89,49 +89,38 @@ export default function LoginForm({
         <FormField
           control={form.control}
           name="email"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="email" autoComplete="email" {...field} />
+                <Input 
+                  label="Email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  autoComplete="email"
+                  error={fieldState.error?.message}
+                  clearable
+                  onClear={() => field.onChange("")}
+                  {...field} 
+                />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
           name="password"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    {...field}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOffIcon className="h-4 w-4" />
-                    ) : (
-                      <EyeIcon className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">
-                      {showPassword ? "Hide password" : "Show password"}
-                    </span>
-                  </Button>
-                </div>
+                <Input
+                  label="Password"
+                  type="password"
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  error={fieldState.error?.message}
+                  {...field}
+                />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
@@ -162,8 +151,14 @@ export default function LoginForm({
             Forgot password?
           </Button>
         </div>
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Logging in..." : "Log In"}
+        <Button 
+          type="submit" 
+          size="lg"
+          className="w-full font-medium" 
+          loading={isLoading}
+          loadingText="Logging in..."
+        >
+          Log In
         </Button>
       </form>
 

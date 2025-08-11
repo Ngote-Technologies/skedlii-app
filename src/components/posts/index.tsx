@@ -24,7 +24,7 @@ import {
   CardContent,
   CardFooter,
 } from "../ui/card";
-import { Badge } from "../ui/badge";
+import { Badge, StatusBadge } from "../ui/badge";
 import { formatDate, getSocialIcon } from "../../lib/utils";
 import { getPlatformSimpleTextColor } from "../../lib/platformUtils";
 import { Skeleton } from "../ui/skeleton";
@@ -54,13 +54,6 @@ import {
 } from "../ui/select";
 import { hasValidSubscription } from "../../lib/access";
 
-const STATUS_ICONS = {
-  published: CheckCircle2,
-  posted: CheckCircle2,
-  scheduled: Clock,
-  failed: AlertCircle,
-  default: Clock,
-};
 
 const Posts = () => {
   const [deleteConfig, setDeleteConfig] = useState({
@@ -173,19 +166,6 @@ const Posts = () => {
       },
     });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "published":
-      case "posted":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
-      case "scheduled":
-        return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
-      case "failed":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
-    }
-  };
 
   const handleEditPost = (postId: string) => {
     navigate(`/dashboard/edit-post/${postId}`);
@@ -348,9 +328,6 @@ const Posts = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {posts?.data?.map((post: any) => {
-            const StatusIcon =
-              STATUS_ICONS[post.status as keyof typeof STATUS_ICONS] ||
-              STATUS_ICONS.default;
             const platform = post.platform?.toLowerCase() ?? "";
 
             return (
@@ -381,15 +358,10 @@ const Posts = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge
-                        variant="outline"
-                        className={`text-xs font-normal px-2 py-0.5 h-6 ${getStatusColor(
-                          post.status
-                        )}`}
-                      >
-                        <StatusIcon className="h-2.5 w-2.5 mr-1" />
-                        <span className="capitalize">{post.status}</span>
-                      </Badge>
+                      <StatusBadge
+                        status={post.status === "posted" ? "published" : post.status}
+                        size="sm"
+                      />
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button

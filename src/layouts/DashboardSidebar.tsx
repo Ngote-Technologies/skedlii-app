@@ -129,11 +129,13 @@ export default function DashboardSidebar({
         )}
         <div className="flex flex-col gap-2 p-4">
           <Button
+            variant="premium"
             onClick={() => navigate("/dashboard/post-flow")}
-            className="w-full sm:w-auto mb-8"
+            className="w-full sm:w-auto mb-8 font-semibold"
             disabled={!hasValidSubscription(billing?.paymentStatus)}
+            icon={<Plus size={16} />}
+            iconPosition="left"
           >
-            <Plus size={16} className="mr-2" />
             Create Post
           </Button>
           <nav className="space-y-1">

@@ -15,7 +15,6 @@ import {
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -65,8 +64,6 @@ interface RegisterFormProps {
 export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
   const navigate = useNavigate();
   const { register } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<RegisterFormData>({
@@ -105,39 +102,58 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
         <FormField
           control={form.control}
           name="firstName"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>First Name</FormLabel>
               <FormControl>
-                <Input placeholder="John" {...field} />
+                <Input 
+                  label="First Name"
+                  placeholder="Enter your first name"
+                  autoComplete="given-name"
+                  error={fieldState.error?.message}
+                  clearable
+                  onClear={() => field.onChange("")}
+                  {...field} 
+                />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
           name="lastName"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Last Name</FormLabel>
               <FormControl>
-                <Input placeholder="Doe" autoComplete="last-name" {...field} />
+                <Input 
+                  label="Last Name"
+                  placeholder="Enter your last name"
+                  autoComplete="family-name"
+                  error={fieldState.error?.message}
+                  clearable
+                  onClear={() => field.onChange("")}
+                  {...field} 
+                />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
           name="email"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="john@example.com" type="email" {...field} />
+                <Input 
+                  label="Email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  autoComplete="email"
+                  error={fieldState.error?.message}
+                  clearable
+                  onClear={() => field.onChange("")}
+                  {...field} 
+                />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
@@ -168,13 +184,18 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
           <FormField
             control={form.control}
             name="organizationName"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <FormItem>
-                <FormLabel>Organization Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Your Organization Name" {...field} />
+                  <Input 
+                    label="Organization Name"
+                    placeholder="Enter your organization name"
+                    error={fieldState.error?.message}
+                    clearable
+                    onClear={() => field.onChange("")}
+                    {...field} 
+                  />
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )}
           />
@@ -182,75 +203,37 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
         <FormField
           control={form.control}
           name="password"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                    {...field}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOffIcon className="h-4 w-4" />
-                    ) : (
-                      <EyeIcon className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">
-                      {showPassword ? "Hide password" : "Show password"}
-                    </span>
-                  </Button>
-                </div>
+                <Input
+                  label="Password"
+                  type="password"
+                  placeholder="Create a secure password"
+                  autoComplete="new-password"
+                  error={fieldState.error?.message}
+                  helperText="At least 8 characters"
+                  {...field}
+                />
               </FormControl>
-              <FormDescription className="text-xs">
-                At least 8 characters
-              </FormDescription>
-              <FormMessage />
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
           name="confirmPassword"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <Input
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                    {...field}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOffIcon className="h-4 w-4" />
-                    ) : (
-                      <EyeIcon className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">
-                      {showConfirmPassword ? "Hide password" : "Show password"}
-                    </span>
-                  </Button>
-                </div>
+                <Input
+                  label="Confirm Password"
+                  type="password"
+                  placeholder="Confirm your password"
+                  autoComplete="new-password"
+                  error={fieldState.error?.message}
+                  {...field}
+                />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
@@ -278,8 +261,14 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Creating account..." : "Create Account"}
+        <Button 
+          type="submit" 
+          size="lg"
+          className="w-full font-medium" 
+          loading={isLoading}
+          loadingText="Creating account..."
+        >
+          Create Account
         </Button>
       </form>
 
