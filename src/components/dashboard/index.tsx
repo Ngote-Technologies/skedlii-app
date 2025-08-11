@@ -88,32 +88,14 @@ export default function DashboardPage() {
 
   function getPostStatus(post: any) {
     if (post.status === "published" || post.status === "posted") {
-      return `Published • ${formatDate(
-        post.publishedDate ?? post.postedAt,
-        "PPPpp"
-      )}`;
+      return `${formatDate(post.publishedDate ?? post.postedAt, "PPPpp")}`;
     } else if (post.status === "scheduled") {
-      return `Scheduled • ${formatDate(post.scheduleTime, "PPPpp")}`;
+      return `${formatDate(post.scheduleTime, "PPPpp")}`;
     } else {
       return `Draft • Created on ${formatDate(
         post.createdAt ?? new Date(),
         "PPPpp"
       )}`;
-    }
-  }
-
-  function getStatusColor(status: string) {
-    switch (status) {
-      case "completed":
-      case "published":
-      case "posted":
-        return "bg-green-500";
-      case "scheduled":
-        return "bg-amber-500";
-      case "failed":
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
     }
   }
 
@@ -301,11 +283,22 @@ export default function DashboardPage() {
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <span>{getPostStatus(post)}</span>
                               <BadgeGroup spacing="tight">
-                                <StatusBadge 
-                                  status={status === "published" || status === "posted" ? "published" : status === "scheduled" ? "pending" : "draft"}
+                                <StatusBadge
+                                  status={
+                                    status === "published" ||
+                                    status === "posted"
+                                      ? "published"
+                                      : status === "scheduled"
+                                      ? "pending"
+                                      : "draft"
+                                  }
                                   size="sm"
                                 />
-                                <Badge variant="outline" size="sm" className="capitalize">
+                                <Badge
+                                  variant="outline"
+                                  size="sm"
+                                  className="capitalize"
+                                >
                                   {post.platform}
                                 </Badge>
                               </BadgeGroup>
@@ -355,7 +348,17 @@ export default function DashboardPage() {
                             <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                               <CalendarClock size={14} className="mr-1" />
                               <span>Scheduled for {scheduledDate}</span>
-                              {getStatusBadge(status)}
+                              {/* {getStatusBadge(status)} */}
+                              <StatusBadge
+                                status={
+                                  status === "published" || status === "posted"
+                                    ? "published"
+                                    : status === "scheduled"
+                                    ? "pending"
+                                    : "draft"
+                                }
+                                size="sm"
+                              />
                             </div>
                           </div>
                           <Button

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -8,15 +8,15 @@
   /* Main colors */
   --background: 210 40% 98%;
   --foreground: 222 47% 11%;
-  
+
   /* Primary color - vibrant blue (aligned with your Tailwind config) */
   --primary: 214 90% 52%; /* Matches your #4B8EF0 */
   --primary-foreground: 0 0% 100%;
-  
+
   /* Secondary color - success green */
   --secondary: 157 70% 59%; /* Approximates your original #57D8A5 */
   --secondary-foreground: 0 0% 100%;
-  
+
   /* UI element colors */
   --card: 0 0% 100%;
   --card-foreground: 222 47% 11%;
@@ -29,7 +29,7 @@
   --border: 214 32% 91%;
   --input: 214 32% 91%;
   --ring: 214 90% 52%;
-  
+
   /* Feedback colors */
   --destructive: 0 81% 68%; /* Similar to your #FC8181 */
   --destructive-foreground: 210 40% 98%;
@@ -39,7 +39,7 @@
   --warning-foreground: 0 0% 20%;
   --info: 214 90% 52%;
   --info-foreground: 210 40% 98%;
-  
+
   /* Sidebar colors */
   --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 222 47% 11%;
@@ -49,7 +49,7 @@
   --sidebar-accent-foreground: 222 47% 11%;
   --sidebar-border: 214 32% 91%;
   --sidebar-ring: 214 90% 52%;
-  
+
   /* Radius */
   --radius: 0.75rem;
 }
@@ -58,15 +58,15 @@
   /* Main colors for dark mode */
   --background: 222 47% 11%;
   --foreground: 210 40% 98%;
-  
+
   /* Primary color - vibrant blue adjusted for dark */
   --primary: 214 90% 65%;
   --primary-foreground: 0 0% 100%;
-  
+
   /* Secondary color - success green adjusted for dark */
   --secondary: 157 50% 65%;
   --secondary-foreground: 0 0% 100%;
-  
+
   /* UI element colors for dark mode */
   --card: 222 47% 11%;
   --card-foreground: 210 40% 98%;
@@ -79,7 +79,7 @@
   --border: 216 34% 17%;
   --input: 216 34% 17%;
   --ring: 214 90% 65%;
-  
+
   /* Feedback colors for dark mode */
   --destructive: 0 81% 65%;
   --destructive-foreground: 210 40% 98%;
@@ -89,7 +89,7 @@
   --warning-foreground: 0 0% 20%;
   --info: 214 90% 65%;
   --info-foreground: 210 40% 98%;
-  
+
   /* Sidebar colors for dark mode */
   --sidebar-background: 222 47% 12%;
   --sidebar-foreground: 210 40% 98%;
@@ -109,24 +109,29 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
-  
+
   /* Custom heading styles */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading font-bold tracking-tight;
   }
-  
+
   h1 {
     @apply text-4xl md:text-5xl lg:text-6xl;
   }
-  
+
   h2 {
     @apply text-3xl md:text-4xl;
   }
-  
+
   h3 {
     @apply text-2xl md:text-3xl;
   }
-  
+
   /* Custom focus styles */
   *:focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
@@ -138,27 +143,27 @@
   .gradient-heading {
     @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary;
   }
-  
+
   .card-hover {
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
-  
+
   .glass-effect {
     @apply bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-white/80 dark:border-gray-700/80;
   }
-  
+
   .badge {
     @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
   }
-  
+
   .badge-primary {
     @apply bg-primary/10 text-primary border-primary/20 dark:bg-primary/20;
   }
-  
+
   .badge-secondary {
     @apply bg-secondary/10 text-secondary border-secondary/20 dark:bg-secondary/20;
   }
-  
+
   /* Improved buttons */
   .btn-gradient {
     @apply bg-gradient-to-r from-primary to-secondary text-white font-medium shadow-lg hover:shadow-xl transition-shadow;
@@ -181,11 +186,11 @@
 
 /* Set custom fonts */
 :root {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .font-heading {
-  font-family: 'Manrope', 'Inter', system-ui, sans-serif;
+  font-family: "Manrope", "Inter", system-ui, sans-serif;
 }
 
 /* Utility classes */
@@ -198,4 +203,3 @@
   /* Safari and Chrome */
   display: none;
 }
-

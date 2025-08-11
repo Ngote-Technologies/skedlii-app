@@ -3,8 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "../ui/button";
 import {
-  CheckCircle2,
-  Clock,
   AlertCircle,
   Plus,
   RefreshCw,
@@ -24,7 +22,7 @@ import {
   CardContent,
   CardFooter,
 } from "../ui/card";
-import { Badge, StatusBadge } from "../ui/badge";
+import { StatusBadge } from "../ui/badge";
 import { formatDate, getSocialIcon } from "../../lib/utils";
 import { getPlatformSimpleTextColor } from "../../lib/platformUtils";
 import { Skeleton } from "../ui/skeleton";
@@ -53,7 +51,6 @@ import {
   SelectValue,
 } from "../ui/select";
 import { hasValidSubscription } from "../../lib/access";
-
 
 const Posts = () => {
   const [deleteConfig, setDeleteConfig] = useState({
@@ -165,7 +162,6 @@ const Posts = () => {
         });
       },
     });
-
 
   const handleEditPost = (postId: string) => {
     navigate(`/dashboard/edit-post/${postId}`);
@@ -359,7 +355,9 @@ const Posts = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <StatusBadge
-                        status={post.status === "posted" ? "published" : post.status}
+                        status={
+                          post.status === "posted" ? "published" : post.status
+                        }
                         size="sm"
                       />
                       <DropdownMenu>
@@ -502,7 +500,7 @@ const Posts = () => {
           setCollectionConfig({ ...collectionConfig, isOpen: false })
         }
       >
-        <DialogContent>
+        <DialogContent variant="elevated">
           <DialogHeader>
             <DialogTitle>Add to Collection</DialogTitle>
             <DialogDescription>

@@ -146,7 +146,11 @@ interface StatusBadgeProps extends Omit<BadgeProps, "variant"> {
     | "rejected"
     | "draft"
     | "published"
-    | "archived";
+    | "archived"
+    | "expired"
+    | "paid"
+    | "pending"
+    | "failed";
 }
 
 const StatusBadge = React.forwardRef<HTMLDivElement, StatusBadgeProps>(
@@ -157,17 +161,20 @@ const StatusBadge = React.forwardRef<HTMLDivElement, StatusBadgeProps>(
         case "active":
         case "approved":
         case "published":
+        case "paid":
           return "success";
         case "offline":
         case "inactive":
         case "rejected":
         case "archived":
+        case "expired":
           return "destructive";
         case "away":
         case "pending":
         case "draft":
           return "warning";
         case "busy":
+        case "failed":
           return "info";
         default:
           return "default";
@@ -188,6 +195,8 @@ const StatusBadge = React.forwardRef<HTMLDivElement, StatusBadgeProps>(
         case "away":
           return <div className={cn(iconClass, "bg-yellow-400")} />;
         case "busy":
+        case "expired":
+        case "failed":
           return <div className={cn(iconClass, "bg-red-400")} />;
         default:
           return null;

@@ -25,7 +25,7 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Form, FormField } from "../ui/form";
-import { Badge } from "../ui/badge";
+import { Badge, StatusBadge } from "../ui/badge";
 import {
   AlertCircle,
   CheckCircle2,
@@ -464,7 +464,7 @@ export default function SocialAccounts() {
                           </CardDescription>
                         </div>
                       </div>
-                      <Badge
+                      {/* <Badge
                         variant={
                           account.status === "active"
                             ? "default"
@@ -480,7 +480,17 @@ export default function SocialAccounts() {
                         <span className="capitalize">
                           {account.status.replace("_", " ")}
                         </span>
-                      </Badge>
+                      </Badge> */}
+                      <StatusBadge
+                        status={
+                          account.status === "active"
+                            ? "active"
+                            : account.status === "expired"
+                            ? "expired"
+                            : "inactive"
+                        }
+                        size="sm"
+                      />
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-1">

@@ -4,7 +4,7 @@ import {
   PauseCircle,
   AlertCircle,
 } from "lucide-react";
-import { Badge } from "../ui/badge";
+import { Badge, StatusBadge } from "../ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -115,7 +115,7 @@ const Subscriptions = ({
               {billing?.paymentDescription}
             </h3>
             <div className="flex items-center gap-2 mb-1">
-              {getStatusBadge()}
+              <StatusBadge status={billing?.paymentStatus} size="sm" />
             </div>
             {renderBillingStatus()}
           </div>

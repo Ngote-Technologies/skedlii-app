@@ -101,6 +101,7 @@ export default function DashboardSidebar({
   ];
 
   const handleNavigation = () => {
+    console.log("handleNavigationClicked");
     if (closeMenu && isMobile) {
       closeMenu();
     }
@@ -152,7 +153,7 @@ export default function DashboardSidebar({
                 asChild
                 onClick={() => handleNavigation()}
               >
-                <Link to={item.href}>
+                <Link to={item.href} onClick={() => handleNavigation()}>
                   {item.icon}
                   <span className="ml-3">{item.label}</span>
                 </Link>
@@ -175,7 +176,7 @@ export default function DashboardSidebar({
               asChild
               onClick={() => handleNavigation()}
             >
-              <Link to={item.href}>
+              <Link to={item.href} onClick={() => handleNavigation()}>
                 {item.icon}
                 <span className="ml-3">{item.label}</span>
               </Link>

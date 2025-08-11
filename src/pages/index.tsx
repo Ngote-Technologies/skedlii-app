@@ -10,6 +10,7 @@ import FrequentlyAskedQuestions from "../components/home/FAQ";
 import CallToAction from "../components/home/CTA";
 import { Button } from "../components/ui/button";
 import { useQuery } from "@tanstack/react-query";
+import Pricing from "./Pricing";
 
 export default function HomePage() {
   const { data: plans = [], isLoading: plansLoading } = useQuery({
@@ -24,6 +25,7 @@ export default function HomePage() {
         <Hero />
         <Integrations />
         <Features />
+        <Pricing />
         <Solutions skedliiPlans={plans} loading={plansLoading} />
         <Testimonials />
 
