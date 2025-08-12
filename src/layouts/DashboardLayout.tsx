@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import DashboardHeader from "./DashboardHeader";
 import DashboardSidebar from "./DashboardSidebar";
 import MobileBottomNav from "../components/mobile/MobileBottomNav";
@@ -9,6 +9,7 @@ import {
 } from "../components/ui/page-transition";
 import { SkipLinks } from "../components/ui/focus-trap";
 import { useMobileMenuStore } from "../store/layout";
+import { useScrollToTop } from "../hooks/useScrollToTop";
 import { cn } from "../lib/utils";
 
 export default function DashboardLayout() {
@@ -17,6 +18,16 @@ export default function DashboardLayout() {
   const mobileMenuOpen = useMobileMenuStore(
     (state: any) => state.mobileMenuOpen
   );
+
+  // Ref for the main scrollable content container
+  const mainContentRef = useRef<HTMLDivElement>(null);
+
+  // Automatically scroll to top when navigating between dashboard routes
+  // This ensures users start at the top of each new page instead of maintaining scroll position
+  useScrollToTop(mainContentRef, {
+    behavior: "smooth",
+    delay: 100, // Small delay to ensure content is rendered and animations can settle
+  });
 
   // Auto-collapse sidebar on smaller screens
   useEffect(() => {
@@ -57,7 +68,11 @@ export default function DashboardLayout() {
             )}
           >
             {/* Page Content Container */}
-            <div className="flex-1 overflow-y-auto">
+            <div 
+              ref={mainContentRef}
+              data-dashboard-content
+              className="flex-1 overflow-y-auto"
+            >
               <div
                 key={location.pathname}
                 className="min-h-full p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8"

@@ -486,18 +486,18 @@ export default function SocialAccounts() {
                                 className="h-12 w-12 rounded-full object-cover ring-2 ring-offset-2 ring-offset-background transition-all duration-200 group-hover:ring-primary/50"
                               />
                               {/* Platform icon overlay */}
-                              <div className={`absolute -bottom-1 -right-1 p-1 rounded-full ${getClassName(account.platform)} ring-2 ring-background`}>
+                              {/* <div className={`absolute -bottom-1 -right-1 p-1 rounded-full ${getClassName(account.platform)} ring-2 ring-background`}>
                                 <i className={`${getSocialIcon(account.platform)} text-xs ${getTextColor(account.platform)}`} />
-                              </div>
+                              </div> */}
                             </div>
                           ) : (
-                            <div className={`relative p-3 rounded-xl ${getClassName(account.platform)} ring-2 ring-offset-2 ring-offset-background transition-all duration-200 group-hover:ring-primary/50 group-hover:scale-105`}>
+                            <div className={`relative h-12 w-12 rounded-full ${getClassName(account.platform)} ring-2 ring-offset-2 ring-offset-background transition-all duration-200 group-hover:ring-primary/50 group-hover:scale-105 flex items-center justify-center`}>
                               <i className={`${getSocialIcon(account.platform)} text-xl ${getTextColor(account.platform)}`} />
                               
                               {/* Pulse effect for active accounts */}
-                              {account.status === 'active' && (
+                              {/* {account.status === 'active' && (
                                 <div className="absolute -inset-1 rounded-xl bg-green-500/20 animate-pulse" />
-                              )}
+                              )} */}
                             </div>
                           )}
                           

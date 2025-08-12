@@ -213,7 +213,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
                     <Button
                       onClick={() => navigate("/dashboard/post-flow")}
                       variant="gradient"
@@ -240,7 +240,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Enhanced Analytics Cards with Micro-interactions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[
               {
                 label: "Total Posts",
@@ -322,7 +322,7 @@ export default function DashboardPage() {
                         className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}
                       ></div>
 
-                      <CardContent className="relative p-6">
+                      <CardContent className="relative p-4 sm:p-6">
                         <div className="flex items-center justify-between mb-4">
                           <div
                             className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}
@@ -371,7 +371,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Quick Actions Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <Card className="lg:col-span-2 border-0 shadow-lg">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -387,11 +387,11 @@ export default function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                   {[
                     {
                       label: "Create Post",
-                      icon: <Plus className="h-8 w-8 mb-3 text-blue-500" />,
+                      icon: <Plus className="h-6 w-6 sm:h-8 sm:w-8 mb-2 sm:mb-3 text-blue-500" />,
                       description: "New content",
                       color: "hover:bg-blue-50 dark:hover:bg-blue-900/20",
                       onClick: () => {
@@ -408,7 +408,7 @@ export default function DashboardPage() {
                     {
                       label: "Schedule",
                       icon: (
-                        <CalendarClock className="h-8 w-8 mb-3 text-purple-500" />
+                        <CalendarClock className="h-6 w-6 sm:h-8 sm:w-8 mb-2 sm:mb-3 text-purple-500" />
                       ),
                       description: "Plan ahead",
                       color: "hover:bg-purple-50 dark:hover:bg-purple-900/20",
@@ -417,7 +417,7 @@ export default function DashboardPage() {
                     {
                       label: "Analytics",
                       icon: (
-                        <BarChart2 className="h-8 w-8 mb-3 text-green-500" />
+                        <BarChart2 className="h-6 w-6 sm:h-8 sm:w-8 mb-2 sm:mb-3 text-green-500" />
                       ),
                       description: "View stats",
                       color: "hover:bg-green-50 dark:hover:bg-green-900/20",
@@ -425,7 +425,7 @@ export default function DashboardPage() {
                     },
                     {
                       label: "Accounts",
-                      icon: <Users className="h-8 w-8 mb-3 text-orange-500" />,
+                      icon: <Users className="h-6 w-6 sm:h-8 sm:w-8 mb-2 sm:mb-3 text-orange-500" />,
                       description: "Manage links",
                       color: "hover:bg-orange-50 dark:hover:bg-orange-900/20",
                       onClick: () => navigate("/dashboard/accounts"),
@@ -434,14 +434,14 @@ export default function DashboardPage() {
                     <button
                       key={label}
                       onClick={onClick}
-                      className={`group p-6 rounded-2xl transition-all duration-200 text-center border border-gray-100 dark:border-gray-800 ${color} hover:shadow-md hover:scale-105`}
+                      className={`group p-4 sm:p-6 rounded-xl sm:rounded-2xl transition-all duration-200 text-center border border-gray-100 dark:border-gray-800 ${color} hover:shadow-md hover:scale-105 active:scale-95 min-h-[100px] sm:min-h-[120px] flex flex-col justify-center`}
                     >
-                      <div className="flex flex-col items-center">
+                      <div className="flex flex-col items-center justify-center">
                         {icon}
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm sm:text-base">
                           {label}
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-tight">
                           {description}
                         </p>
                       </div>
@@ -687,7 +687,7 @@ export default function DashboardPage() {
             <CardContent>
               {socialAccounts.length > 0 ? (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {socialAccounts
                       .slice(0, 6)
                       .map((account: any) => (
