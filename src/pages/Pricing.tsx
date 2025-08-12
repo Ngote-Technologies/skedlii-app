@@ -37,6 +37,7 @@ interface PricingPlan {
   name: string;
   price: number;
   yearlyPrice: number;
+  yearlyTotal?: number;
   description: string;
   popular?: boolean;
   enterprise?: boolean;
@@ -52,10 +53,87 @@ export default function Pricing() {
   const [isYearly, setIsYearly] = useState(false);
   const [visibleCards, setVisibleCards] = useState<number[]>([]);
 
-  // Fetch plans from backend
-  const { data: backendPlans = [], isLoading: plansLoading } = useQuery({
+  // Fetch plans from backend - with timeout and error handling
+  const {
+    data: backendPlans = [],
+    isLoading: plansLoading,
+    error: plansError,
+  } = useQuery({
     queryKey: [`/plans`],
-  }) as { data: BackendPlan[]; isLoading: boolean };
+    retry: false, // Don't retry on failure
+    staleTime: 0, // Always try to fetch fresh data
+  }) as { data: BackendPlan[]; isLoading: boolean; error: any };
+
+  // Fallback plans in case API fails
+  const fallbackPlans: BackendPlan[] = [
+    {
+      id: "creator",
+      name: "Creator",
+      description:
+        "Perfect for individual creators getting started with social media management",
+      badge: "7-Day Free Trial",
+      badgeColor: "blue",
+      isPopular: true,
+      features: [
+        "Up to 3 social accounts",
+        "Schedule up to 30 posts/month",
+        "Basic analytics",
+        "Content calendar",
+        "Post templates",
+        "7-day free trial",
+      ],
+      priceMonthly: 5,
+      priceYearly: 50,
+      priceMonthlyId: "price_creator_monthly",
+      priceYearlyId: "price_creator_yearly",
+      productId: "prod_creator",
+    },
+    {
+      id: "pro",
+      name: "Pro Influencer",
+      description: "Advanced features for growing creators and small teams",
+      badge: "Power Up Your Social Growth",
+      badgeColor: "purple",
+      isPopular: false,
+      features: [
+        "Up to 10 social accounts",
+        "Unlimited posts",
+        "Advanced analytics & insights",
+        "Team collaboration (3 members)",
+        "Content planning tools",
+        "Custom branding",
+        "Priority support",
+      ],
+      priceMonthly: 25,
+      priceYearly: 250,
+      priceMonthlyId: "price_pro_monthly",
+      priceYearlyId: "price_pro_yearly",
+      productId: "prod_pro",
+    },
+    {
+      id: "enterprise",
+      name: "Enterprise",
+      description: "Complete solution for agencies and large organizations",
+      badge: "Everything Included",
+      badgeColor: "gold",
+      isPopular: false,
+      features: [
+        "Unlimited social accounts",
+        "Unlimited posts & scheduling",
+        "Advanced team management",
+        "White-label solution",
+        "Custom integrations",
+        "Dedicated account manager",
+        "SLA guarantee",
+        "Advanced security & compliance",
+      ],
+      priceMonthly: 50,
+      priceYearly: 500,
+      priceMonthlyId: "price_enterprise_monthly",
+      priceYearlyId: "price_enterprise_yearly",
+      productId: "prod_enterprise",
+    },
+  ];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -106,7 +184,7 @@ export default function Pricing() {
       ],
     };
 
-    // Calculate yearly pricing (backend gives total yearly, we need monthly equivalent)
+    // Use backend yearly pricing directly (backend provides total yearly price)
     const yearlyMonthlyEquivalent =
       Math.round((backendPlan.priceYearly / 12) * 100) / 100;
 
@@ -115,6 +193,7 @@ export default function Pricing() {
       name: backendPlan.name,
       price: backendPlan.priceMonthly,
       yearlyPrice: yearlyMonthlyEquivalent,
+      yearlyTotal: backendPlan.priceYearly, // Add the full yearly price
       description: backendPlan.description,
       popular: backendPlan.isPopular,
       enterprise: backendPlan.id === "enterprise",
@@ -127,10 +206,25 @@ export default function Pricing() {
     };
   };
 
+  // Use fallback plans if backend fails or returns empty data
+  // For development, always use fallback plans to ensure UI works
+  const plansToUse =
+    plansError || backendPlans.length === 0 ? fallbackPlans : backendPlans;
+
   // Filter out test plans and transform for UI
-  const plans: PricingPlan[] = backendPlans
+  const plans: PricingPlan[] = plansToUse
     .filter((plan) => plan.id !== "test") // Exclude test plan
     .map(transformPlan);
+
+  // Debug logging
+  console.log("Pricing Debug:", {
+    plansLoading,
+    plansError,
+    backendPlansLength: backendPlans.length,
+    fallbackPlansLength: fallbackPlans.length,
+    plansToUseLength: plansToUse.length,
+    finalPlansLength: plans.length,
+  });
 
   const yearlyDiscount = (originalPrice: number, yearlyPrice: number) => {
     return Math.round(((originalPrice - yearlyPrice) / originalPrice) * 100);
@@ -220,7 +314,7 @@ export default function Pricing() {
         {/* Pricing Cards */}
         <section className="pb-24 px-4">
           <div className="max-w-7xl mx-auto">
-            {plansLoading ? (
+            {plansLoading && plans.length === 0 ? (
               <div className="flex justify-center items-center h-64">
                 <div className="flex items-center gap-3">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>

@@ -108,7 +108,7 @@ export default function DashboardHeader() {
           {/* Logo - Always visible */}
           <Link to="/dashboard" className="flex items-center space-x-2 mr-6">
             <div className="text-primary-600 text-xl font-bold flex items-center dark:text-primary-400">
-              <Sparkles className="mr-2 h-6 w-6" />
+              <Calendar className="mr-2 h-5 w-5" />
               <span className="font-heading hidden sm:block">Skedlii</span>
             </div>
           </Link>

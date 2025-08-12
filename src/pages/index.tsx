@@ -4,18 +4,18 @@ import Footer from "../components/layout/Footer";
 import Hero from "../components/home/Hero";
 import Integrations from "../components/home/Integrations";
 import Features from "../components/home/Features";
-import Solutions from "../components/home/Solutions";
+// import Solutions from "../components/home/Solutions";
 import Testimonials from "../components/home/Testimonials";
 import FrequentlyAskedQuestions from "../components/home/FAQ";
 import CallToAction from "../components/home/CTA";
 import { Button } from "../components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+// import { useQuery } from "@tanstack/react-query";
 import Pricing from "./Pricing";
 
 export default function HomePage() {
-  const { data: plans = [], isLoading: plansLoading } = useQuery({
-    queryKey: [`/plans`],
-  }) as { data: any[]; isLoading: boolean };
+  // const { data: plans = [], isLoading: plansLoading } = useQuery({
+  //   queryKey: [`/plans`],
+  // }) as { data: any[]; isLoading: boolean };
 
   return (
     <div className="min-h-screen flex flex-col" id="home">
@@ -26,7 +26,7 @@ export default function HomePage() {
         <Integrations />
         <Features />
         <Pricing />
-        <Solutions skedliiPlans={plans} loading={plansLoading} />
+        {/* <Solutions skedliiPlans={plans} loading={plansLoading} /> */}
         <Testimonials />
 
         <section

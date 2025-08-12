@@ -16,10 +16,9 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
 } from "lucide-react";
 import { useAuth } from "../store/hooks";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { hasValidSubscription } from "../lib/access";
 import { Badge } from "../components/ui/badge";
@@ -141,11 +140,7 @@ export default function DashboardSidebar({
           </div>
           
           {/* Header */}
-          <div className="flex justify-between items-center p-4 border-b">
-            <div className="text-primary-600 text-lg font-bold flex items-center dark:text-primary-400">
-              <Sparkles className="mr-2 h-5 w-5" />
-              <span className="font-heading">Menu</span>
-            </div>
+          <div className="flex justify-center items-center p-4 border-b">
             <Button
               variant="ghost"
               size="sm"
@@ -161,13 +156,7 @@ export default function DashboardSidebar({
 
       {/* Desktop Collapse Toggle */}
       {!isMobile && (
-        <div className="flex items-center justify-between p-4 border-b">
-          {!collapsed && (
-            <div className="text-primary-600 text-lg font-bold flex items-center dark:text-primary-400">
-              <Sparkles className="mr-2 h-5 w-5" />
-              <span className="font-heading">Skedlii</span>
-            </div>
-          )}
+        <div className="flex items-center justify-end p-4 border-b">
           <Button
             variant="ghost"
             size="sm"
