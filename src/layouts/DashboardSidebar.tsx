@@ -128,26 +128,34 @@ export default function DashboardSidebar({
     <aside
       className={cn(
         "fixed left-0 top-16 h-[calc(100vh-4rem)] border-r bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 z-40 transition-all duration-300 ease-in-out shadow-xl dark:shadow-gray-900/50",
-        isMobile ? "relative w-full" : collapsed ? "w-20" : "w-64",
+        isMobile ? "relative w-full h-full top-0" : collapsed ? "w-20" : "w-64",
         "flex flex-col"
       )}
     >
-      {/* Mobile Close Button */}
+      {/* Mobile Header with Swipe Indicator */}
       {isMobile && (
-        <div className="flex justify-between items-center p-4 border-b">
-          <div className="text-primary-600 text-lg font-bold flex items-center dark:text-primary-400">
-            <Sparkles className="mr-2 h-5 w-5" />
-            <span className="font-heading">Menu</span>
+        <div className="flex flex-col">
+          {/* Swipe Indicator */}
+          <div className="flex justify-center py-2 border-b border-gray-200/50 dark:border-gray-700/50">
+            <div className="w-8 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => closeMenu?.()}
-            className="relative hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </Button>
+          
+          {/* Header */}
+          <div className="flex justify-between items-center p-4 border-b">
+            <div className="text-primary-600 text-lg font-bold flex items-center dark:text-primary-400">
+              <Sparkles className="mr-2 h-5 w-5" />
+              <span className="font-heading">Menu</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => closeMenu?.()}
+              className="relative hover:bg-gray-100 dark:hover:bg-gray-800 h-10 w-10 touch-manipulation"
+            >
+              <X className="h-5 w-5" />
+              <span className="sr-only">Close</span>
+            </Button>
+          </div>
         </div>
       )}
 
@@ -185,7 +193,10 @@ export default function DashboardSidebar({
                 navigate("/dashboard/post-flow");
                 handleNavigation();
               }}
-              className="w-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
+              className={cn(
+                "w-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group",
+                isMobile ? "h-12 text-base touch-manipulation" : ""
+              )}
               disabled={!hasValidSubscription(billing?.paymentStatus)}
             >
               <Plus className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform duration-200" />
@@ -225,9 +236,11 @@ export default function DashboardSidebar({
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800",
+                      "w-full transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95",
                       collapsed && !isMobile
                         ? "h-12 px-0 justify-center"
+                        : isMobile
+                        ? "justify-start px-4 h-12 text-base touch-manipulation"
                         : "justify-start px-4",
                       location.pathname === item.href &&
                         "bg-primary-50 text-primary-700 border border-primary-200 dark:bg-primary-900/20 dark:text-primary-300 dark:border-primary-800",
@@ -303,9 +316,11 @@ export default function DashboardSidebar({
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800",
+                    "w-full transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95",
                     collapsed && !isMobile
                       ? "h-10 px-0 justify-center"
+                      : isMobile
+                      ? "justify-start px-3 h-12 text-base touch-manipulation"
                       : "justify-start px-3 h-10",
                     location.pathname === item.href &&
                       "bg-primary-50 text-primary-700 border border-primary-200 dark:bg-primary-900/20 dark:text-primary-300 dark:border-primary-800"

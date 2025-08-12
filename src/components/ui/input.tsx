@@ -70,6 +70,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       "placeholder:text-muted-foreground/60",
       "focus:outline-none focus:ring-2 focus:ring-offset-1",
       "disabled:cursor-not-allowed disabled:opacity-50",
+      // Mobile optimizations
+      "touch-manipulation text-base md:text-sm", // Prevent iOS zoom, base size on mobile
       
       // Enhanced focus and state styles
       !error && !success && [
@@ -130,6 +132,16 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onChange={handleChange}
+          // Mobile optimizations
+          autoCapitalize={type === "email" ? "none" : props.autoCapitalize}
+          autoCorrect={type === "email" ? "off" : props.autoCorrect}
+          inputMode={
+            type === "email" ? "email" : 
+            type === "tel" ? "tel" : 
+            type === "number" ? "numeric" : 
+            type === "url" ? "url" :
+            props.inputMode
+          }
           {...props}
         />
 

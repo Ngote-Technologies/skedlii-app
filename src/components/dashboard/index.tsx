@@ -239,7 +239,7 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* Enhanced Analytics Cards */}
+          {/* Enhanced Analytics Cards with Micro-interactions */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
@@ -316,7 +316,7 @@ export default function DashboardPage() {
               }) => {
                 return (
                   <Link to={to} key={label} className="group">
-                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02]">
+                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 group-hover:scale-[1.02] group-hover:-translate-y-1 group-active:scale-[0.98]">
                       {/* Background gradient */}
                       <div
                         className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}
@@ -325,9 +325,9 @@ export default function DashboardPage() {
                       <CardContent className="relative p-6">
                         <div className="flex items-center justify-between mb-4">
                           <div
-                            className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-lg`}
+                            className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}
                           >
-                            <div className="text-white">{icon}</div>
+                            <div className="text-white group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">{icon}</div>
                           </div>
                           <div className="flex items-center space-x-1 text-sm">
                             {trendUp ? (

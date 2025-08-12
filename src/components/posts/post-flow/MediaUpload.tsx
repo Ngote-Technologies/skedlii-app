@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../../ui/card";
-import { Image, Upload, X, AlertTriangle, ImageIcon, Video, Plus, CloudUpload } from "lucide-react";
+import { Image, Upload, X, AlertTriangle, ImageIcon, Video, Plus, CloudUpload, Camera, Smartphone } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { Button } from "../../ui/button";
 import { Label } from "../../ui/label";
@@ -324,14 +324,84 @@ export default function MediaUpload({
                     </p>
                   </div>
 
-                  <Button 
-                    variant="gradient" 
-                    size="lg"
-                    className="shadow-lg hover:shadow-xl transition-all duration-300 group"
-                  >
-                    <Plus className="mr-2 h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
-                    Choose Files
-                  </Button>
+                  {/* Enhanced Upload Options */}
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button 
+                      variant="gradient" 
+                      size="lg"
+                      className="shadow-lg hover:shadow-xl transition-all duration-300 group touch-manipulation h-12 px-8"
+                    >
+                      <Plus className="mr-2 h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
+                      Choose Files
+                    </Button>
+
+                    {/* Mobile Camera Options */}
+                    <div className="flex gap-2 sm:hidden">
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="flex-1 h-12 touch-manipulation active:scale-95"
+                        onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = 'image/*';
+                          input.capture = 'environment'; // Back camera
+                          input.onchange = (e) => {
+                            const files = (e.target as HTMLInputElement).files;
+                            if (files && files.length > 0) {
+                              handleFileInputChange(
+                                e as any,
+                                fileInputRef,
+                                media,
+                                onChange,
+                                setIsUploading,
+                                setUploadProgress,
+                                selectedPlatforms,
+                                setValidationMessage,
+                                validationMessage
+                              );
+                            }
+                          };
+                          input.click();
+                        }}
+                      >
+                        <Camera className="mr-2 h-4 w-4" />
+                        Camera
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="flex-1 h-12 touch-manipulation active:scale-95"
+                        onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = 'video/*';
+                          input.capture = 'environment'; // Back camera for video
+                          input.onchange = (e) => {
+                            const files = (e.target as HTMLInputElement).files;
+                            if (files && files.length > 0) {
+                              handleFileInputChange(
+                                e as any,
+                                fileInputRef,
+                                media,
+                                onChange,
+                                setIsUploading,
+                                setUploadProgress,
+                                selectedPlatforms,
+                                setValidationMessage,
+                                validationMessage
+                              );
+                            }
+                          };
+                          input.click();
+                        }}
+                      >
+                        <Video className="mr-2 h-4 w-4" />
+                        Video
+                      </Button>
+                    </div>
+                  </div>
 
                   {/* File Type Indicators */}
                   <div className="flex items-center justify-center gap-6 pt-4">
@@ -342,6 +412,10 @@ export default function MediaUpload({
                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                       <Video className="h-4 w-4" />
                       <span>Videos</span>
+                    </div>
+                    <div className="sm:hidden flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <Smartphone className="h-4 w-4" />
+                      <span>Camera</span>
                     </div>
                   </div>
 

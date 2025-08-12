@@ -5,7 +5,7 @@ import { cn } from "../../lib/utils";
 
 // Enhanced Textarea with variants
 const textareaVariants = cva(
-  "flex w-full rounded-lg border bg-background px-4 py-3 text-base transition-all duration-200 resize-vertical placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
+  "flex w-full rounded-lg border bg-background px-4 py-3 text-base transition-all duration-200 resize-vertical placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation text-base md:text-sm",
   {
     variants: {
       variant: {

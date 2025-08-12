@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../../ui/button";
+import { useSwipeNavigation } from "../../../hooks/useSwipeNavigation";
 import {
   Card,
   CardContent,
@@ -95,6 +96,32 @@ export default function PostFlow() {
     },
   ];
 
+  // Mobile swipe navigation
+  const navigateToNextTab = () => {
+    const currentIndex = tabItems.findIndex(tab => tab.value === activeTab);
+    if (currentIndex < tabItems.length - 1) {
+      const nextTab = tabItems[currentIndex + 1];
+      if (!nextTab.disabled) {
+        setActiveTab(nextTab.value);
+      }
+    }
+  };
+
+  const navigateToPreviousTab = () => {
+    const currentIndex = tabItems.findIndex(tab => tab.value === activeTab);
+    if (currentIndex > 0) {
+      setActiveTab(tabItems[currentIndex - 1].value);
+    }
+  };
+
+  // Set up swipe navigation for mobile
+  const swipeRef = useSwipeNavigation({
+    onSwipeLeft: navigateToNextTab,
+    onSwipeRight: navigateToPreviousTab,
+    minSwipeDistance: 50,
+    maxVerticalDistance: 100,
+  });
+
   const { handleSubmit } = usePostSubmission({
     selectedAccounts,
     globalCaption,
@@ -189,7 +216,7 @@ export default function PostFlow() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div ref={swipeRef as any} className="space-y-8 touch-pan-y">
       {/* Enhanced Header with Step Progress */}
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -310,6 +337,15 @@ export default function PostFlow() {
                   );
                 })}
               </TabsList>
+            </div>
+            
+            {/* Mobile Swipe Indicator */}
+            <div className="sm:hidden flex items-center justify-center mb-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-0.5 bg-muted-foreground/30 rounded-full"></div>
+                <span>Swipe to navigate</span>
+                <div className="w-4 h-0.5 bg-muted-foreground/30 rounded-full"></div>
+              </div>
             </div>
 
             <TabsContent value="accounts" className="space-y-6">
