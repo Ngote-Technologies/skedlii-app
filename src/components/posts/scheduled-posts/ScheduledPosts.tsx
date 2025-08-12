@@ -21,7 +21,8 @@ import {
 } from "../../ui/dialog";
 import { Calendar } from "../../ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
-import { Loader2, Calendar as CalendarIcon, Plus } from "lucide-react";
+import { Loader2, Calendar as CalendarIcon, Plus, List, Sparkles, Clock } from "lucide-react";
+import { cn } from "../../../lib/utils";
 import { getScheduledPostListView } from "./listView";
 import { getScheduledPostCalendarView } from "./calendarView";
 import { hasValidSubscription } from "../../../lib/access";
@@ -141,71 +142,152 @@ export default function ScheduledPosts() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-bold">Content Schedule</h2>
-          <p className="text-muted-foreground">
-            Manage your scheduled social media posts
-          </p>
+    <div className="space-y-8">
+      {/* Enhanced Header */}
+      <div className="flex flex-col sm:flex-row justify-between gap-6">
+        <div className="flex items-center space-x-4">
+          <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+            <Clock className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+              Content Schedule
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Manage and preview your scheduled social media posts
+            </p>
+          </div>
         </div>
-        <Button
-          disabled={!hasValidSubscription(billing?.paymentStatus)}
-          onClick={() => navigate("/dashboard/post-flow")}
-        >
-          <Plus size={16} className="mr-2" />
-          Create Post
-        </Button>
+        
+        <div className="flex items-center gap-3">
+          {/* Stats Summary */}
+          <div className="hidden sm:flex items-center gap-4 px-4 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+            <div className="text-center">
+              <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                {scheduledPosts.data.length}
+              </div>
+              <div className="text-xs text-gray-500">Total</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                {filterPostsByDate(selectedDate).length}
+              </div>
+              <div className="text-xs text-gray-500">Today</div>
+            </div>
+          </div>
+          
+          <Button
+            disabled={!hasValidSubscription(billing?.paymentStatus)}
+            onClick={() => navigate("/dashboard/post-flow")}
+            variant="gradient"
+            className="shadow-lg hover:shadow-xl transition-all duration-300 group"
+          >
+            <Plus size={16} className="mr-2 group-hover:rotate-90 transition-transform duration-200" />
+            Create Post
+          </Button>
+        </div>
       </div>
 
-      <Tabs defaultValue="calendar" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="calendar">Calendar View</TabsTrigger>
-          <TabsTrigger value="list">List View</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="calendar" className="space-y-6">
+        <div className="flex justify-center">
+          <TabsList className="bg-gray-50 dark:bg-gray-800/50 p-1 rounded-xl">
+            <TabsTrigger 
+              value="calendar"
+              className={cn(
+                "flex items-center gap-2 px-6 py-3 rounded-lg transition-all duration-300",
+                "data-[state=active]:bg-white data-[state=active]:shadow-lg dark:data-[state=active]:bg-gray-900"
+              )}
+            >
+              <CalendarIcon className="h-4 w-4" />
+              <span className="font-medium">Calendar View</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="list"
+              className={cn(
+                "flex items-center gap-2 px-6 py-3 rounded-lg transition-all duration-300",
+                "data-[state=active]:bg-white data-[state=active]:shadow-lg dark:data-[state=active]:bg-gray-900"
+              )}
+            >
+              <List className="h-4 w-4" />
+              <span className="font-medium">List View</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="calendar" className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <Card className="md:w-[300px] h-full">
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Enhanced Calendar Card */}
+            <Card className="lg:w-[350px] border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalendarIcon size={18} />
-                  Calendar
-                </CardTitle>
-                <CardDescription>
-                  Select a date to view scheduled posts
-                </CardDescription>
+                <div className="flex items-center space-x-3">
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                    <CalendarIcon className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle>Calendar</CardTitle>
+                    <CardDescription>
+                      Select a date to view scheduled posts
+                    </CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="p-0">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  modifiers={{
-                    hasPost: (date) => scheduleHasPostsForDate(new Date(date)),
-                  }}
-                  modifiersStyles={{
-                    hasPost: {
-                      fontWeight: "bold",
-                      borderBottom: "1px solid green",
-                      borderRadius: "0.375rem",
-                    },
-                  }}
-                  className="rounded-md border"
-                />
+              <CardContent className="p-4">
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-2 shadow-inner">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    modifiers={{
+                      hasPost: (date) => scheduleHasPostsForDate(new Date(date)),
+                    }}
+                    modifiersStyles={{
+                      hasPost: {
+                        fontWeight: "bold",
+                        background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                        color: "white",
+                        borderRadius: "0.5rem",
+                      },
+                    }}
+                    className="rounded-lg"
+                  />
+                </div>
+                
+                {/* Calendar legend */}
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-3 h-3 rounded bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                    <span className="text-blue-700 dark:text-blue-300">Days with scheduled posts</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
+            {/* Enhanced Posts Card */}
             <div className="flex-1">
-              <Card>
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
                 <CardHeader>
-                  <CardTitle>
-                    Posts for{" "}
-                    {selectedDate ? formatDate(selectedDate, "PPP") : "today"}
-                  </CardTitle>
-                  <CardDescription>
-                    {filterPostsByDate(selectedDate).length} posts scheduled
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
+                        <Sparkles className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl">
+                          Posts for{" "}
+                          {selectedDate ? formatDate(selectedDate, "PPP") : "today"}
+                        </CardTitle>
+                        <CardDescription>
+                          {filterPostsByDate(selectedDate).length} posts scheduled for this date
+                        </CardDescription>
+                      </div>
+                    </div>
+                    
+                    {filterPostsByDate(selectedDate).length > 0 && (
+                      <div className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 px-3 py-1 rounded-full text-sm font-medium">
+                        {filterPostsByDate(selectedDate).length} post{filterPostsByDate(selectedDate).length !== 1 ? 's' : ''}
+                      </div>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {getScheduledPostCalendarView({
@@ -223,10 +305,28 @@ export default function ScheduledPosts() {
         </TabsContent>
 
         <TabsContent value="list">
-          <Card>
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
             <CardHeader>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <CardTitle>All Posts</CardTitle>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex items-center space-x-3">
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
+                    <List className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">All Scheduled Posts</CardTitle>
+                    <CardDescription>
+                      Complete overview of your content pipeline
+                    </CardDescription>
+                  </div>
+                </div>
+                
+                {scheduledPosts.data.length > 0 && (
+                  <div className="flex items-center gap-3">
+                    <div className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 px-3 py-1 rounded-full text-sm font-medium">
+                      {scheduledPosts.data.length} total post{scheduledPosts.data.length !== 1 ? 's' : ''}
+                    </div>
+                  </div>
+                )}
               </div>
             </CardHeader>
             <CardContent>
