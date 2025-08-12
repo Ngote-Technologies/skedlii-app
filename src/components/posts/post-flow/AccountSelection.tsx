@@ -130,7 +130,10 @@ export default function AccountSelection({
               >
                 <Filter className="h-4 w-4" />
                 All Platforms
-                <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                <Badge
+                  variant="secondary"
+                  className="ml-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                >
                   {accounts.length}
                 </Badge>
               </TabsTrigger>
@@ -145,8 +148,13 @@ export default function AccountSelection({
                         "instagram"
                       )} text-lg ${getTextColor("instagram")}`}
                     />
-                    <span className="hidden sm:inline font-medium">Instagram</span>
-                    <Badge variant="secondary" className="bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300">
+                    <span className="hidden sm:inline font-medium">
+                      Instagram
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className="bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300"
+                    >
                       {platformCounts(accounts).instagram}
                     </Badge>
                   </div>
@@ -163,8 +171,13 @@ export default function AccountSelection({
                         "facebook"
                       )} text-lg ${getTextColor("facebook")}`}
                     />
-                    <span className="hidden sm:inline font-medium">Facebook</span>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                    <span className="hidden sm:inline font-medium">
+                      Facebook
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                    >
                       {platformCounts(accounts).facebook}
                     </Badge>
                   </div>
@@ -181,8 +194,13 @@ export default function AccountSelection({
                         "twitter"
                       )} text-lg ${getTextColor("twitter")}`}
                     />
-                    <span className="hidden sm:inline font-medium">Twitter</span>
-                    <Badge variant="secondary" className="bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300">
+                    <span className="hidden sm:inline font-medium">
+                      Twitter
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className="bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300"
+                    >
                       {platformCounts(accounts).twitter}
                     </Badge>
                   </div>
@@ -199,8 +217,13 @@ export default function AccountSelection({
                         "linkedin"
                       )} text-lg ${getTextColor("linkedin")}`}
                     />
-                    <span className="hidden sm:inline font-medium">LinkedIn</span>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                    <span className="hidden sm:inline font-medium">
+                      LinkedIn
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                    >
                       {platformCounts(accounts).linkedin}
                     </Badge>
                   </div>
@@ -217,8 +240,13 @@ export default function AccountSelection({
                         "threads"
                       )} text-lg ${getTextColor("threads")}`}
                     />
-                    <span className="hidden sm:inline font-medium">Threads</span>
-                    <Badge variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                    <span className="hidden sm:inline font-medium">
+                      Threads
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className="bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                    >
                       {platformCounts(accounts).threads}
                     </Badge>
                   </div>
@@ -236,7 +264,10 @@ export default function AccountSelection({
                       )} text-lg ${getTextColor("tiktok")}`}
                     />
                     <span className="hidden sm:inline font-medium">TikTok</span>
-                    <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
+                    <Badge
+                      variant="secondary"
+                      className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                    >
                       {platformCounts(accounts).tiktok}
                     </Badge>
                   </div>
@@ -253,8 +284,13 @@ export default function AccountSelection({
                         "youtube"
                       )} text-lg ${getTextColor("youtube")}`}
                     />
-                    <span className="hidden sm:inline font-medium">YouTube</span>
-                    <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
+                    <span className="hidden sm:inline font-medium">
+                      YouTube
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                    >
                       {platformCounts(accounts).youtube}
                     </Badge>
                   </div>
@@ -306,10 +342,14 @@ export default function AccountSelection({
                           {getPlatformIcon(account.platform)}
                         </div>
                         {/* Status indicator */}
-                        <div className={cn(
-                          "absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white",
-                          account.status === "active" ? "bg-green-500" : "bg-yellow-500"
-                        )} />
+                        <div
+                          className={cn(
+                            "absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white",
+                            account.status === "active"
+                              ? "bg-green-500"
+                              : "bg-yellow-500"
+                          )}
+                        />
                       </div>
 
                       {/* Account Info */}
@@ -320,24 +360,28 @@ export default function AccountSelection({
                         <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">
                           {account.platform}
                         </div>
-                        <div className={cn(
-                          "text-xs mt-1 font-medium capitalize",
-                          account.status === "active" 
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-yellow-600 dark:text-yellow-400"
-                        )}>
+                        <div
+                          className={cn(
+                            "text-xs mt-1 font-medium capitalize",
+                            account.status === "active"
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-yellow-600 dark:text-yellow-400"
+                          )}
+                        >
                           {account.status}
                         </div>
                       </div>
                     </div>
 
                     {/* Hover effect overlay */}
-                    <div className={cn(
-                      "absolute inset-0 rounded-xl transition-opacity duration-300 pointer-events-none",
-                      isSelected 
-                        ? "bg-gradient-to-br from-primary/5 to-transparent opacity-100"
-                        : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 opacity-0 group-hover:opacity-100"
-                    )} />
+                    {/* <div
+                      className={cn(
+                        "absolute inset-0 rounded-xl transition-opacity duration-300 pointer-events-none",
+                        isSelected
+                          ? "bg-gradient-to-br from-primary/5 to-transparent opacity-100"
+                          : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 opacity-0 group-hover:opacity-100"
+                      )}
+                    /> */}
                   </button>
                 );
               })}
@@ -360,7 +404,8 @@ export default function AccountSelection({
                   </div>
                   <div>
                     <p className="font-semibold text-green-900 dark:text-green-100">
-                      {selectedAccounts.length} Account{selectedAccounts.length !== 1 ? 's' : ''} Selected
+                      {selectedAccounts.length} Account
+                      {selectedAccounts.length !== 1 ? "s" : ""} Selected
                     </p>
                     <p className="text-xs text-green-700 dark:text-green-300">
                       Ready to post to multiple platforms
@@ -368,7 +413,7 @@ export default function AccountSelection({
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap gap-2">
                 {Object.entries(selectedCounts).map(([platform, count]) => (
                   <Badge

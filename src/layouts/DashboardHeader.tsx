@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-import { getInitials, cn } from "../lib/utils";
+import { getInitials } from "../lib/utils";
 import {
   Menu,
   Search,
@@ -30,6 +30,7 @@ import DashboardSidebar from "./DashboardSidebar";
 import { Input } from "../components/ui/input";
 import { useState, useMemo } from "react";
 import { Badge } from "../components/ui/badge";
+import NotificationBadge from "../components/ui/notification-badge";
 
 export default function DashboardHeader() {
   const { user, logout } = useAuth();
@@ -171,12 +172,7 @@ export default function DashboardHeader() {
             aria-label="Notifications"
           >
             <Bell className="h-4 w-4" />
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-            >
-              3
-            </Badge>
+            <NotificationBadge count={3} variant="text-only" />
           </Button>
 
           {/* Theme Toggle */}

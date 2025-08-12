@@ -8,8 +8,19 @@ import {
   CardHeader,
   CardTitle,
 } from "../../ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
-import { Loader2, Save, Clock, Send, Users, Type, Image, Calendar, Check, ChevronRight } from "lucide-react";
+import { Tabs, TabsContent } from "../../ui/tabs";
+import {
+  Loader2,
+  Save,
+  Clock,
+  Send,
+  Users,
+  Type,
+  Image,
+  Calendar,
+  Check,
+  ChevronRight,
+} from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../store/hooks";
@@ -73,54 +84,13 @@ export default function PostFlow() {
   const canProceedToMedia =
     canProceedToCaption && globalCaption.trim().length > 0;
 
-  const tabItems = [
-    {
-      value: "accounts",
-      label: "Accounts",
-      disabled: false,
-    },
-    {
-      value: "caption",
-      label: "Caption",
-      disabled: isSubmitting || !canProceedToCaption,
-    },
-    {
-      value: "media",
-      label: "Media",
-      disabled: isSubmitting || !canProceedToMedia,
-    },
-    {
-      value: "schedule",
-      label: "Schedule",
-      disabled: isSubmitting || !canProceedToMedia,
-    },
-  ];
-
-  // Mobile swipe navigation
-  const navigateToNextTab = () => {
-    const currentIndex = tabItems.findIndex(tab => tab.value === activeTab);
-    if (currentIndex < tabItems.length - 1) {
-      const nextTab = tabItems[currentIndex + 1];
-      if (!nextTab.disabled) {
-        setActiveTab(nextTab.value);
-      }
-    }
-  };
-
-  const navigateToPreviousTab = () => {
-    const currentIndex = tabItems.findIndex(tab => tab.value === activeTab);
-    if (currentIndex > 0) {
-      setActiveTab(tabItems[currentIndex - 1].value);
-    }
-  };
-
   // Set up swipe navigation for mobile
-  const swipeRef = useSwipeNavigation({
-    onSwipeLeft: navigateToNextTab,
-    onSwipeRight: navigateToPreviousTab,
-    minSwipeDistance: 50,
-    maxVerticalDistance: 100,
-  });
+  // const swipeRef = useSwipeNavigation({
+  //   onSwipeLeft: navigateToNextTab,
+  //   onSwipeRight: navigateToPreviousTab,
+  //   minSwipeDistance: 50,
+  //   maxVerticalDistance: 100,
+  // });
 
   const { handleSubmit } = usePostSubmission({
     selectedAccounts,
@@ -183,19 +153,21 @@ export default function PostFlow() {
   const steps = [
     {
       id: "accounts",
-      label: "Select Accounts", 
+      label: "Select Accounts",
       icon: Users,
       description: "Choose your social platforms",
       completed: selectedAccounts.length > 0,
-      active: activeTab === "accounts"
+      active: activeTab === "accounts",
+      disabled: false,
     },
     {
       id: "caption",
       label: "Write Caption",
-      icon: Type, 
+      icon: Type,
       description: "Create your content",
       completed: globalCaption.trim().length > 0,
-      active: activeTab === "caption"
+      active: activeTab === "caption",
+      disabled: isSubmitting || !canProceedToCaption,
     },
     {
       id: "media",
@@ -203,7 +175,8 @@ export default function PostFlow() {
       icon: Image,
       description: "Upload images or videos",
       completed: true, // Media is optional
-      active: activeTab === "media"
+      active: activeTab === "media",
+      disabled: isSubmitting || !canProceedToMedia,
     },
     {
       id: "schedule",
@@ -211,12 +184,38 @@ export default function PostFlow() {
       icon: Calendar,
       description: "Choose when to publish",
       completed: false,
-      active: activeTab === "schedule"
-    }
+      active: activeTab === "schedule",
+      disabled: isSubmitting || !canProceedToMedia,
+    },
   ];
 
+  // Navigation functions for step clicking and mobile swipe
+  const navigateToStep = (stepId: string) => {
+    const step = steps.find((s) => s.id === stepId);
+    if (step && !step.disabled) {
+      setActiveTab(stepId);
+    }
+  };
+
+  const navigateToNextTab = () => {
+    const currentIndex = steps.findIndex((step) => step.id === activeTab);
+    if (currentIndex < steps.length - 1) {
+      const nextStep = steps[currentIndex + 1];
+      if (!nextStep.disabled) {
+        setActiveTab(nextStep.id);
+      }
+    }
+  };
+
+  const navigateToPreviousTab = () => {
+    const currentIndex = steps.findIndex((step) => step.id === activeTab);
+    if (currentIndex > 0) {
+      setActiveTab(steps[currentIndex - 1].id);
+    }
+  };
+
   return (
-    <div ref={swipeRef as any} className="space-y-8 touch-pan-y">
+    <div className="space-y-8 touch-pan-y">
       {/* Enhanced Header with Step Progress */}
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -230,64 +229,106 @@ export default function PostFlow() {
           </div>
         </div>
 
-        {/* Step Progress Indicator */}
+        {/* Interactive Step Progress Navigation */}
         <Card className="border-0 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               {steps.map((step, index) => {
                 const StepIcon = step.icon;
                 const isLast = index === steps.length - 1;
-                
+
                 return (
                   <div key={step.id} className="flex items-center flex-1">
                     <div className="flex flex-col items-center relative">
-                      {/* Step Circle */}
-                      <div
+                      {/* Interactive Step Circle */}
+                      <button
+                        onClick={() => navigateToStep(step.id)}
+                        disabled={step.disabled}
                         className={cn(
-                          "w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-300",
-                          step.active
-                            ? "border-primary bg-primary text-white shadow-lg scale-110"
-                            : step.completed
-                            ? "border-green-500 bg-green-500 text-white"
-                            : "border-gray-300 bg-white dark:bg-gray-800 text-gray-400"
+                          "w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-300 group relative",
+                          // Base styles
+                          "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2",
+                          // Active state
+                          step.active && [
+                            "border-primary bg-primary text-white shadow-lg scale-110",
+                            "hover:shadow-xl hover:scale-105",
+                          ],
+                          // Completed state
+                          step.completed &&
+                            !step.active && [
+                              "border-green-500 bg-green-500 text-white",
+                              !step.disabled &&
+                                "hover:border-green-600 hover:bg-green-600 hover:scale-105 cursor-pointer",
+                            ],
+                          // Default/incomplete state
+                          !step.active &&
+                            !step.completed && [
+                              "border-gray-300 bg-white dark:bg-gray-800 text-gray-400",
+                              !step.disabled &&
+                                "hover:border-primary/50 hover:bg-primary/5 hover:scale-105 cursor-pointer",
+                              !step.disabled && "hover:text-primary",
+                            ],
+                          // Disabled state
+                          step.disabled && ["opacity-50 cursor-not-allowed"]
                         )}
+                        title={
+                          step.disabled
+                            ? "Complete previous steps first"
+                            : `Go to ${step.label}`
+                        }
                       >
                         {step.completed && !step.active ? (
                           <Check className="h-5 w-5" />
                         ) : (
                           <StepIcon className="h-5 w-5" />
                         )}
-                      </div>
-                      
+
+                        {/* Hover tooltip */}
+                        {!step.disabled && (
+                          <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-700 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                            {step.active ? step.label : `Go to ${step.label}`}
+                          </div>
+                        )}
+                      </button>
+
                       {/* Step Label */}
                       <div className="mt-3 text-center min-w-0">
-                        <div className={cn(
-                          "text-sm font-medium transition-colors",
-                          step.active 
-                            ? "text-primary" 
-                            : step.completed
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-gray-500"
-                        )}>
+                        <button
+                          onClick={() => navigateToStep(step.id)}
+                          disabled={step.disabled}
+                          className={cn(
+                            "text-sm font-medium transition-colors text-center",
+                            step.active
+                              ? "text-primary"
+                              : step.completed
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-gray-500",
+                            !step.disabled &&
+                              "hover:text-primary cursor-pointer",
+                            step.disabled && "cursor-not-allowed opacity-50"
+                          )}
+                        >
                           {step.label}
-                        </div>
+                        </button>
                         <div className="text-xs text-gray-400 mt-1 hidden sm:block">
                           {step.description}
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Connector Line */}
                     {!isLast && (
                       <div className="flex-1 mx-4">
-                        <div className={cn(
-                          "h-0.5 w-full transition-colors duration-300",
-                          step.completed && steps[index + 1].active
-                            ? "bg-primary"
-                            : step.completed
-                            ? "bg-green-500"
-                            : "bg-gray-300"
-                        )} />
+                        <div
+                          className={cn(
+                            "h-0.5 w-full transition-colors duration-300",
+                            step.completed && steps[index + 1].active
+                              ? "bg-primary"
+                              : step.completed
+                              ? "bg-green-500"
+                              : "bg-gray-300"
+                          )}
+                        />
                       </div>
                     )}
                   </div>
@@ -307,47 +348,20 @@ export default function PostFlow() {
         </div>
       ) : (
         <div className="space-y-8">
+          {/* Mobile Swipe Indicator */}
+          {/* <div className="sm:hidden flex items-center justify-center text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-0.5 bg-muted-foreground/30 rounded-full"></div>
+              <span>Tap steps above or swipe to navigate</span>
+              <div className="w-4 h-0.5 bg-muted-foreground/30 rounded-full"></div>
+            </div>
+          </div> */}
+
           <Tabs
             defaultValue={activeTab}
             value={activeTab}
             onValueChange={(value) => setActiveTab(value)}
           >
-            {/* Enhanced Tab Navigation */}
-            <div className="flex justify-center mb-8">
-              <TabsList className="grid w-full max-w-2xl grid-cols-4 bg-gray-50 dark:bg-gray-800/50 p-1 rounded-xl">
-                {tabItems.map((item, index) => {
-                  const step = steps.find(s => s.id === item.value);
-                  const StepIcon = step?.icon;
-                  
-                  return (
-                    <TabsTrigger
-                      key={item.value}
-                      value={item.value}
-                      disabled={item.disabled}
-                      className={cn(
-                        "flex items-center gap-2 py-3 px-4 rounded-lg transition-all duration-300",
-                        "data-[state=active]:bg-white data-[state=active]:shadow-lg dark:data-[state=active]:bg-gray-900",
-                        item.disabled && "opacity-50 cursor-not-allowed"
-                      )}
-                    >
-                      {StepIcon && <StepIcon className="h-4 w-4" />}
-                      <span className="hidden sm:inline font-medium">{item.label}</span>
-                      <span className="sm:hidden">{index + 1}</span>
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-            </div>
-            
-            {/* Mobile Swipe Indicator */}
-            <div className="sm:hidden flex items-center justify-center mb-4 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-0.5 bg-muted-foreground/30 rounded-full"></div>
-                <span>Swipe to navigate</span>
-                <div className="w-4 h-0.5 bg-muted-foreground/30 rounded-full"></div>
-              </div>
-            </div>
-
             <TabsContent value="accounts" className="space-y-6">
               <AccountSelection
                 accounts={socialAccounts}
@@ -427,7 +441,7 @@ export default function PostFlow() {
                 >
                   Back to Caption
                 </Button>
-                <Button 
+                <Button
                   onClick={() => setActiveTab("schedule")}
                   variant="gradient"
                   className="shadow-lg hover:shadow-xl transition-all duration-300 group"
@@ -572,7 +586,9 @@ export default function PostFlow() {
                     ) : (
                       <Send className="h-4 w-4 mr-2" />
                     )}
-                    {isSubmitting && !isScheduled ? "Publishing..." : "Post Now"}
+                    {isSubmitting && !isScheduled
+                      ? "Publishing..."
+                      : "Post Now"}
                   </Button>
 
                   <Button
@@ -586,7 +602,9 @@ export default function PostFlow() {
                     ) : (
                       <Save className="h-4 w-4 mr-2" />
                     )}
-                    {isSubmitting && isScheduled ? "Scheduling..." : "Schedule Post"}
+                    {isSubmitting && isScheduled
+                      ? "Scheduling..."
+                      : "Schedule Post"}
                   </Button>
                 </div>
               </div>
