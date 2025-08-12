@@ -3,7 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
 import { Button } from "../ui/button";
-import { ArrowLeft, Edit, Share2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Badge } from "../ui/badge";
+import { ArrowLeft, Edit, Share2, FolderOpen, FileText, Calendar, Clock, Sparkles, ExternalLink } from "lucide-react";
 import { formatDate } from "../../lib/utils";
 import { Skeleton } from "../ui/skeleton";
 
@@ -47,57 +49,119 @@ export default function Collection() {
 
   return (
     <div className="space-y-6">
+      {/* Enhanced Header Navigation */}
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate(-1)}
-          className="gap-2"
+          className="gap-2 hover:bg-muted/80 transition-colors duration-200"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back
+          Back to Collections
         </Button>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-200 dark:hover:border-blue-800">
             <Share2 className="h-4 w-4 mr-2" />
             Share
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="hover:bg-green-50 dark:hover:bg-green-950/20 hover:border-green-200 dark:hover:border-green-800">
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Button>
         </div>
       </div>
 
-      <div className="space-y-4">
+      {/* Enhanced Collection Header */}
+      <Card className="relative overflow-hidden border-border/50" variant="elevated">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/60 to-primary/30" />
+        <div className="absolute top-4 right-4 opacity-5">
+          <Sparkles className="h-16 w-16" />
+        </div>
+        
+        <CardHeader className="relative pb-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20">
+              <FolderOpen className="h-8 w-8 text-primary" />
+            </div>
+            
+            <div className="flex-1 space-y-3">
+              <div>
+                <CardTitle className="text-3xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent mb-2">
+                  {collection.name}
+                </CardTitle>
+                {collection.description && (
+                  <p className="text-muted-foreground text-lg leading-relaxed">
+                    {collection.description}
+                  </p>
+                )}
+              </div>
+              
+              {/* Enhanced Statistics */}
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">
+                    {collection.items?.length ?? 0} post{(collection.items?.length ?? 0) !== 1 ? "s" : ""}
+                  </span>
+                  {(collection.items?.length ?? 0) > 0 && (
+                    <Badge variant="success" className="text-xs">
+                      Active
+                    </Badge>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Created {formatDate(new Date(collection.createdAt), "MMM d, yyyy")}
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Last updated {formatDate(new Date(collection.updatedAt || collection.createdAt), "MMM d")}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Enhanced Posts Grid */}
+      {collectionPosts.length > 0 ? (
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {collection.name}
-          </h1>
-          {collection.description && (
-            <p className="text-muted-foreground mt-2">
-              {collection.description}
-            </p>
-          )}
-          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-            <span>
-              {collection.items?.length ?? 0} post
-              {(collection.items?.length ?? 0) !== 1 ? "s" : ""}
-            </span>
-            <span>•</span>
-            <span>
-              Created{" "}
-              {formatDate(new Date(collection.createdAt), "MMM d, yyyy")}
-            </span>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold">Collection Posts</h2>
+            <Badge variant="outline" className="text-sm">
+              {collectionPosts.length} item{collectionPosts.length !== 1 ? 's' : ''}
+            </Badge>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {collectionPosts.map((post: any, index: number) => (
+              <PostCard key={post._id} post={post} index={index} />
+            ))}
           </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {collectionPosts.map((post: any) => (
-            <PostCard key={post._id} post={post} />
-          ))}
-        </div>
-      </div>
+      ) : (
+        <Card className="border-dashed border-2" variant="gradient">
+          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="p-4 rounded-full bg-muted/50 mb-4">
+              <FileText className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
+            <p className="text-muted-foreground mb-4 max-w-sm">
+              This collection is empty. Start adding posts to organize your content.
+            </p>
+            <Button variant="outline" size="sm">
+              <FileText className="h-4 w-4 mr-2" />
+              Add Posts
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -105,23 +169,62 @@ export default function Collection() {
 function CollectionSkeleton() {
   return (
     <div className="space-y-6">
-      <Skeleton className="h-10 w-48" />
-      <div className="space-y-4">
-        <div>
-          <Skeleton className="h-9 w-64 mb-2" />
-          <Skeleton className="h-5 w-96 max-w-full" />
-          <div className="flex gap-4 mt-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-32" />
+      {/* Header Navigation Skeleton */}
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-10 w-40" />
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-20" />
+          <Skeleton className="h-10 w-16" />
+        </div>
+      </div>
+      
+      {/* Collection Header Card Skeleton */}
+      <Card className="relative overflow-hidden border-border/50" variant="elevated">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/30 to-primary/20 animate-pulse" />
+        
+        <CardHeader className="pb-6">
+          <div className="flex items-start gap-4">
+            <Skeleton className="h-14 w-14 rounded-xl" />
+            
+            <div className="flex-1 space-y-3">
+              <div>
+                <Skeleton className="h-9 w-72 mb-2" />
+                <Skeleton className="h-6 w-96 max-w-full" />
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-6">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-5 w-28" />
+              </div>
+            </div>
           </div>
+        </CardHeader>
+      </Card>
+
+      {/* Posts Section Skeleton */}
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <Skeleton className="h-7 w-40" />
+          <Skeleton className="h-6 w-20" />
         </div>
-        <div className="flex justify-between">
-          <Skeleton className="h-9 w-64" />
-          <Skeleton className="h-9 w-32" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-48 rounded-lg" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i} variant="elevated" className="overflow-hidden">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <div className="flex justify-between items-center pt-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-6 w-12 rounded-full" />
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -129,7 +232,7 @@ function CollectionSkeleton() {
   );
 }
 
-function PostCard({ post }: { readonly post: any }) {
+function PostCard({ post, index }: { readonly post: any; index: number }) {
   const platform = post.platform;
   const content = post.content;
   const profileImage =
@@ -141,18 +244,89 @@ function PostCard({ post }: { readonly post: any }) {
     post.metadata?.socialPost?.username ??
     "Unknown";
 
+  // Platform-specific styling
+  const getPlatformColor = (platform: string) => {
+    switch (platform?.toLowerCase()) {
+      case 'twitter':
+        return 'text-blue-500 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800';
+      case 'linkedin':
+        return 'text-blue-700 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800';
+      case 'facebook':
+        return 'text-blue-600 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800';
+      case 'instagram':
+        return 'text-pink-500 bg-pink-50 dark:bg-pink-950/20 border-pink-200 dark:border-pink-800';
+      default:
+        return 'text-muted-foreground bg-muted/50 border-border';
+    }
+  };
+
   return (
-    <div className="border p-4 rounded-lg space-y-2">
-      {profileImage && (
-        <img
-          src={profileImage}
-          alt="profile"
-          className="w-8 h-8 rounded-full"
-        />
-      )}
-      <p className="text-sm text-muted-foreground">{platform}</p>
-      <p className="font-medium">{content}</p>
-      <p className="text-xs text-muted-foreground">By {accountName}</p>
-    </div>
+    <Card 
+      className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] cursor-pointer border-border/50"
+      variant="elevated"
+      style={{ animationDelay: `${index * 100}ms` }}
+    >
+      <CardContent className="p-4 space-y-3">
+        {/* Platform Header */}
+        <div className="flex items-center justify-between">
+          <Badge 
+            variant="outline" 
+            className={`text-xs capitalize ${getPlatformColor(platform)}`}
+          >
+            {platform}
+          </Badge>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          >
+            <ExternalLink className="h-3 w-3" />
+          </Button>
+        </div>
+
+        {/* Profile Section */}
+        <div className="flex items-center gap-3">
+          {profileImage ? (
+            <img
+              src={profileImage}
+              alt="profile"
+              className="w-10 h-10 rounded-full border-2 border-border/50"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/20 flex items-center justify-center">
+              <span className="text-sm font-semibold text-primary">
+                {accountName.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
+          <div>
+            <p className="text-sm font-medium truncate">{accountName}</p>
+            <p className="text-xs text-muted-foreground">
+              {formatDate(new Date(post.createdAt || Date.now()), "MMM d")}
+            </p>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="space-y-2">
+          <p className="text-sm leading-relaxed line-clamp-3 group-hover:text-foreground transition-colors duration-200">
+            {content}
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-2 border-t border-border/50">
+          <div className="flex items-center gap-2">
+            <FileText className="h-3 w-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">
+              {content.length} chars
+            </span>
+          </div>
+          <Badge variant="outline" className="text-xs">
+            Published
+          </Badge>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

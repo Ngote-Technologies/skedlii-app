@@ -15,7 +15,6 @@ import {
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -24,6 +23,15 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 import { Checkbox } from "../ui/checkbox";
+import {
+  AlertCircle,
+  Sparkles,
+  User,
+  Mail,
+  Lock,
+  Building,
+} from "lucide-react";
+import { useToast } from "../../hooks/use-toast";
 
 const registerSchema = z
   .object({
@@ -65,9 +73,9 @@ interface RegisterFormProps {
 export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
   const navigate = useNavigate();
   const { register } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -93,209 +101,421 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
         ...(organizationName !== "" && { organizationName }),
       };
 
-      await register(registerData);
+      const response: any = await register(registerData);
+
+      if (!response.success) {
+        toast({
+          title: "Registration failed",
+          description: response.message ?? "Unknown error occurred",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Account created successfully!",
+        description: `Welcome to Skedlii, ${data.firstName}!`,
+        variant: "success",
+      });
+    } catch (error: any) {
+      console.error("[Unhandled Registration Exception]", error);
+      toast({
+        title: "Unexpected error",
+        description: error?.message ?? "Something went wrong.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="firstName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>First Name</FormLabel>
-              <FormControl>
-                <Input placeholder="John" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="lastName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Last Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Doe" autoComplete="last-name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input placeholder="john@example.com" type="email" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="userType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>User Type</FormLabel>
-              <FormControl>
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select user type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="individual">Individual</SelectItem>
-                    <SelectItem value="organization" disabled>
-                      Organization (coming soon)
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        {form.watch("userType") === "organization" && (
+    <div className="space-y-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          {/* Enhanced First Name field */}
           <FormField
             control={form.control}
-            name="organizationName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Organization Name</FormLabel>
+            name="firstName"
+            render={({ field, fieldState }) => (
+              <FormItem className="relative">
                 <FormControl>
-                  <Input placeholder="Your Organization Name" {...field} />
+                  <div className="relative group">
+                    <div
+                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
+                        focusedField === "firstName"
+                          ? "text-primary-500"
+                          : fieldState.error
+                          ? "text-destructive"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      <User className="w-4 h-4" />
+                    </div>
+                    <Input
+                      label="First Name"
+                      placeholder="Enter your first name"
+                      autoComplete="given-name"
+                      error={fieldState.error?.message}
+                      clearable
+                      onClear={() => field.onChange("")}
+                      onFocus={() => setFocusedField("firstName")}
+                      className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                      {...field}
+                    />
+                  </div>
                 </FormControl>
-                <FormMessage />
+                {fieldState.error && (
+                  <FormMessage className="flex items-center gap-2 mt-2">
+                    <AlertCircle className="w-4 h-4" />
+                    {fieldState.error.message}
+                  </FormMessage>
+                )}
               </FormItem>
             )}
           />
-        )}
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                    {...field}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
+          {/* Enhanced Last Name field */}
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field, fieldState }) => (
+              <FormItem className="relative">
+                <FormControl>
+                  <div className="relative group">
+                    <div
+                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
+                        focusedField === "lastName"
+                          ? "text-primary-500"
+                          : fieldState.error
+                          ? "text-destructive"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      <User className="w-4 h-4" />
+                    </div>
+                    <Input
+                      label="Last Name"
+                      placeholder="Enter your last name"
+                      autoComplete="family-name"
+                      error={fieldState.error?.message}
+                      clearable
+                      onClear={() => field.onChange("")}
+                      onFocus={() => setFocusedField("lastName")}
+                      className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                {fieldState.error && (
+                  <FormMessage className="flex items-center gap-2 mt-2">
+                    <AlertCircle className="w-4 h-4" />
+                    {fieldState.error.message}
+                  </FormMessage>
+                )}
+              </FormItem>
+            )}
+          />
+          {/* Enhanced Email field */}
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field, fieldState }) => (
+              <FormItem className="relative">
+                <FormControl>
+                  <div className="relative group">
+                    <div
+                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
+                        focusedField === "email"
+                          ? "text-primary-500"
+                          : fieldState.error
+                          ? "text-destructive"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <Input
+                      label="Email Address"
+                      type="email"
+                      placeholder="Enter your email address"
+                      autoComplete="email"
+                      error={fieldState.error?.message}
+                      clearable
+                      onClear={() => field.onChange("")}
+                      onFocus={() => setFocusedField("email")}
+                      className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                {fieldState.error && (
+                  <FormMessage className="flex items-center gap-2 mt-2">
+                    <AlertCircle className="w-4 h-4" />
+                    {fieldState.error.message}
+                  </FormMessage>
+                )}
+              </FormItem>
+            )}
+          />
+          {/* Enhanced User Type field */}
+          <FormField
+            control={form.control}
+            name="userType"
+            render={({ field, fieldState }) => (
+              <FormItem className="relative">
+                <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  User Type
+                </FormLabel>
+                <FormControl>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    onOpenChange={(open) =>
+                      setFocusedField(open ? "userType" : null)
+                    }
                   >
-                    {showPassword ? (
-                      <EyeOffIcon className="h-4 w-4" />
-                    ) : (
-                      <EyeIcon className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">
-                      {showPassword ? "Hide password" : "Show password"}
-                    </span>
-                  </Button>
-                </div>
-              </FormControl>
-              <FormDescription className="text-xs">
-                At least 8 characters
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
+                    <SelectTrigger
+                      variant={
+                        focusedField === "userType" ? "outline" : "default"
+                      }
+                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    >
+                      <SelectValue placeholder="Select user type" />
+                    </SelectTrigger>
+                    <SelectContent variant="elevated">
+                      <SelectItem value="individual" className="cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4" />
+                          <span>Individual</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem
+                        value="organization"
+                        disabled
+                        className="opacity-50"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Building className="w-4 h-4" />
+                          <span>Organization (coming soon)</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                {fieldState.error && (
+                  <FormMessage className="flex items-center gap-2 mt-2">
+                    <AlertCircle className="w-4 h-4" />
+                    {fieldState.error.message}
+                  </FormMessage>
+                )}
+              </FormItem>
+            )}
+          />
+          {/* Enhanced Organization Name field */}
+          {form.watch("userType") === "organization" && (
+            <FormField
+              control={form.control}
+              name="organizationName"
+              render={({ field, fieldState }) => (
+                <FormItem className="relative">
+                  <FormControl>
+                    <div className="relative group">
+                      <div
+                        className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
+                          focusedField === "organizationName"
+                            ? "text-primary-500"
+                            : fieldState.error
+                            ? "text-destructive"
+                            : "text-gray-400"
+                        }`}
+                      >
+                        <Building className="w-4 h-4" />
+                      </div>
+                      <Input
+                        label="Organization Name"
+                        placeholder="Enter your organization name"
+                        error={fieldState.error?.message}
+                        clearable
+                        onClear={() => field.onChange("")}
+                        onFocus={() => setFocusedField("organizationName")}
+                        className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  {fieldState.error && (
+                    <FormMessage className="flex items-center gap-2 mt-2">
+                      <AlertCircle className="w-4 h-4" />
+                      {fieldState.error.message}
+                    </FormMessage>
+                  )}
+                </FormItem>
+              )}
+            />
           )}
-        />
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                    {...field}
+          {/* Enhanced Password field */}
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field, fieldState }) => (
+              <FormItem className="relative">
+                <FormControl>
+                  <div className="relative group">
+                    <div
+                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
+                        focusedField === "password"
+                          ? "text-primary-500"
+                          : fieldState.error
+                          ? "text-destructive"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      <Lock className="w-4 h-4" />
+                    </div>
+                    <Input
+                      label="Password"
+                      type="password"
+                      placeholder="Create a secure password"
+                      autoComplete="new-password"
+                      error={fieldState.error?.message}
+                      helperText="At least 8 characters"
+                      onFocus={() => setFocusedField("password")}
+                      className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                {fieldState.error && (
+                  <FormMessage className="flex items-center gap-2 mt-2">
+                    <AlertCircle className="w-4 h-4" />
+                    {fieldState.error.message}
+                  </FormMessage>
+                )}
+              </FormItem>
+            )}
+          />
+          {/* Enhanced Confirm Password field */}
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field, fieldState }) => (
+              <FormItem className="relative">
+                <FormControl>
+                  <div className="relative group">
+                    <div
+                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
+                        focusedField === "confirmPassword"
+                          ? "text-primary-500"
+                          : fieldState.error
+                          ? "text-destructive"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      <Lock className="w-4 h-4" />
+                    </div>
+                    <Input
+                      label="Confirm Password"
+                      type="password"
+                      placeholder="Confirm your password"
+                      autoComplete="new-password"
+                      error={fieldState.error?.message}
+                      onFocus={() => setFocusedField("confirmPassword")}
+                      className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                {fieldState.error && (
+                  <FormMessage className="flex items-center gap-2 mt-2">
+                    <AlertCircle className="w-4 h-4" />
+                    {fieldState.error.message}
+                  </FormMessage>
+                )}
+              </FormItem>
+            )}
+          />
+          {/* Enhanced Terms checkbox */}
+          <FormField
+            control={form.control}
+            name="terms"
+            render={({ field, fieldState }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="data-[state=checked]:bg-primary-500 data-[state=checked]:border-primary-500 mt-1"
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOffIcon className="h-4 w-4" />
-                    ) : (
-                      <EyeIcon className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">
-                      {showConfirmPassword ? "Hide password" : "Show password"}
-                    </span>
-                  </Button>
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="text-sm font-normal cursor-pointer text-gray-700 dark:text-gray-300">
+                    I agree to the{" "}
+                    <Link
+                      to="/terms"
+                      className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 underline underline-offset-4 transition-colors duration-200"
+                    >
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      to="/privacy"
+                      className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 underline underline-offset-4 transition-colors duration-200"
+                    >
+                      Privacy Policy
+                    </Link>
+                  </FormLabel>
+                  {fieldState.error && (
+                    <FormMessage className="flex items-center gap-2">
+                      <AlertCircle className="w-3 h-3" />
+                      {fieldState.error.message}
+                    </FormMessage>
+                  )}
                 </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="terms"
-          render={({ field }) => (
-            <FormItem className="flex items-center space-x-2">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <FormLabel style={{ marginTop: 0 }}>
-                I agree to the{" "}
-                <span className="text-primary-600 dark:text-primary-400">
-                  <Link to="/terms"> Terms of Service </Link>
-                </span>
-                and{" "}
-                <span className="text-primary-600 dark:text-primary-400">
-                  <Link to="/privacy"> Privacy Policy</Link>
-                </span>
-              </FormLabel>
-            </FormItem>
-          )}
-        />
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Creating account..." : "Create Account"}
-        </Button>
-      </form>
+              </FormItem>
+            )}
+          />
 
-      <div className="mt-6 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Already have an account?{" "}
+          {/* Enhanced submit button */}
+          <Button
+            type="submit"
+            size="lg"
+            variant="gradient"
+            className="w-full font-semibold h-12 relative overflow-hidden group shadow-lg hover:shadow-xl transition-all duration-300 mt-6"
+            loading={isLoading}
+            loadingText="Creating account..."
+            disabled={isLoading}
+          >
+            <span className="flex items-center justify-center gap-2">
+              <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
+              {isLoading ? "Creating account..." : "Create Account"}
+            </span>
+          </Button>
+        </form>
+      </Form>
+
+      {/* Enhanced footer with better styling */}
+      <div className="text-center">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="px-2 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900">
+              Already have an account?
+            </span>
+          </div>
+        </div>
+        <div className="mt-4">
           <Button
             type="button"
-            variant="link"
-            className="p-0 h-auto"
+            variant="outline"
+            className="font-medium hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 dark:hover:bg-primary-900/20 dark:hover:border-primary-700 dark:hover:text-primary-300 transition-all duration-200"
             onClick={() => onLogin?.() ?? navigate("/login")}
           >
-            Log in
+            Sign in instead
           </Button>
-        </p>
+        </div>
       </div>
-    </Form>
+    </div>
   );
 }

@@ -14,93 +14,128 @@ import {
   HelpCircle,
   CreditCard,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useAuth } from "../store/hooks";
 import { useMemo } from "react";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { hasValidSubscription } from "../lib/access";
+import { Badge } from "../components/ui/badge";
 
 export default function DashboardSidebar({
   closeMenu,
   isMobile = false,
+  collapsed = false,
+  onToggleCollapse,
 }: {
   readonly closeMenu?: () => void;
   readonly isMobile?: boolean;
+  readonly collapsed?: boolean;
+  readonly onToggleCollapse?: () => void;
 }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdmin, user } = useAuth();
   const { billing } = user;
 
-  const menuItems = useMemo(
-    () => [
+  const bottomNavItems = [
+    {
+      label: "Settings",
+      href: "/dashboard/settings",
+      icon: <Settings size={18} />,
+    },
+    {
+      label: "Billing",
+      href: "/dashboard/billing",
+      icon: <CreditCard size={18} />,
+    },
+    {
+      label: "Help & Support",
+      href: "/dashboard/help",
+      icon: <HelpCircle size={18} />,
+    },
+  ];
+
+  const menuItems = useMemo(() => {
+    const mainItems = [
       {
         icon: <Home size={18} />,
         label: "Dashboard",
         href: "/dashboard",
+        badge: null,
       },
       {
         icon: <Link2 size={18} />,
         label: "Social Accounts",
         href: "/dashboard/accounts",
+        badge: null,
       },
       {
         icon: <CalendarCheck size={18} />,
-        label: "Scheduled",
+        label: "Scheduled Posts",
         href: "/dashboard/scheduled",
+        badge: null,
       },
       {
         icon: <CalendarSync size={18} />,
-        label: "Posts",
+        label: "Published Posts",
         href: "/dashboard/posts",
+        badge: null,
       },
       {
-        icon: <CalendarSync size={18} />,
-        label: "Post Flow",
+        icon: <Plus size={18} />,
+        label: "Create Post",
         href: "/dashboard/post-flow",
         disabled: !hasValidSubscription(billing?.paymentStatus),
+        badge: !hasValidSubscription(billing?.paymentStatus) ? "Pro" : null,
+        premium: true,
       },
       {
         icon: <Folder size={18} />,
         label: "Collections",
         href: "/dashboard/collections",
         disabled: !hasValidSubscription(billing?.paymentStatus),
+        badge: !hasValidSubscription(billing?.paymentStatus) ? "Pro" : null,
       },
       {
         icon: <Users size={18} />,
-        label: "Teams",
+        label: "Team Management",
         href: "/dashboard/teams",
         disabled: user?.userType === "individual",
+        badge: user?.userType === "individual" ? "Org" : null,
       },
       {
         icon: <BarChart3 size={18} />,
         label: "Analytics",
         href: "/dashboard/analytics",
         disabled: !hasValidSubscription(billing?.paymentStatus),
+        badge: !hasValidSubscription(billing?.paymentStatus) ? "Pro" : null,
       },
-    ],
-    [isAdmin, billing]
-  );
+    ];
 
-  const bottomNavItems = [
-    {
-      label: "Settings",
-      href: "/dashboard/settings",
-      icon: <Settings className="h-5 w-5" />,
-    },
-    {
-      label: "Billing",
-      href: "/dashboard/billing",
-      icon: <CreditCard className="h-5 w-5" />,
-    },
-    {
-      label: "Help & Support",
-      href: "/dashboard/help",
-      icon: <HelpCircle className="h-5 w-5" />,
-    },
-  ];
+    // For mobile, add bottom nav items to main navigation
+    if (isMobile) {
+      return [
+        ...mainItems,
+        ...bottomNavItems.map(
+          (item) =>
+            ({
+              ...item,
+              badge: null,
+              disabled: false,
+              premium: false,
+              isBottomNavItem: true,
+            } as any)
+        ),
+      ];
+    }
+
+    return mainItems;
+  }, [isAdmin, billing, user?.userType, isMobile, bottomNavItems]);
 
   const handleNavigation = () => {
+    console.log("handleNavigationClicked");
     if (closeMenu && isMobile) {
       closeMenu();
     }
@@ -109,78 +144,278 @@ export default function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-full w-64 border-r bg-background px-3 py-4 z-40 overflow-y-auto",
-        isMobile && "relative w-full"
+        "fixed left-0 top-16 h-[calc(100vh-4rem)] border-r bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 z-40 transition-all duration-300 ease-in-out shadow-xl dark:shadow-gray-900/50",
+        isMobile ? "relative w-full h-full top-0" : collapsed ? "w-20" : "w-64",
+        "flex flex-col"
       )}
-      style={{ top: "auto" }}
     >
-      <ScrollArea className="flex-1">
-        {isMobile && (
-          <div className="flex justify-end">
+      {/* Mobile Header with Swipe Indicator */}
+      {isMobile && (
+        <div className="flex flex-col">
+          {/* Swipe Indicator */}
+          <div className="flex justify-center py-2 border-b border-gray-200/50 dark:border-gray-700/50">
+            <div className="w-8 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
+          </div>
+
+          {/* Header */}
+          <div className="flex justify-center items-center py-2 border-b">
             <Button
               variant="ghost"
+              size="sm"
               onClick={() => closeMenu?.()}
-              className="relative"
+              className="relative hover:bg-gray-100 dark:hover:bg-gray-800 h-10 w-10 touch-manipulation"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
               <span className="sr-only">Close</span>
             </Button>
           </div>
-        )}
-        <div className="flex flex-col gap-2 p-4">
+        </div>
+      )}
+
+      {/* Desktop Collapse Toggle */}
+      {!isMobile && (
+        <div className="flex items-center justify-end px-4 py-2 border-b">
           <Button
-            onClick={() => navigate("/dashboard/post-flow")}
-            className="w-full sm:w-auto mb-8"
-            disabled={!hasValidSubscription(billing?.paymentStatus)}
+            variant="ghost"
+            size="sm"
+            onClick={onToggleCollapse}
+            className={cn(
+              "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200",
+              collapsed && "mx-auto"
+            )}
           >
-            <Plus size={16} className="mr-2" />
-            Create Post
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
+            <span className="sr-only">Toggle sidebar</span>
           </Button>
-          <nav className="space-y-1">
-            {menuItems.map((item) => (
-              <Button
-                key={item.href}
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start font-normal",
-                  location.pathname === item.href &&
-                    "bg-accent text-accent-foreground",
-                  item.disabled && "hidden"
-                )}
-                asChild
-                onClick={() => handleNavigation()}
-              >
-                <Link to={item.href}>
-                  {item.icon}
-                  <span className="ml-3">{item.label}</span>
-                </Link>
-              </Button>
-            ))}
+        </div>
+      )}
+
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-3">
+          {/* Main CTA Button */}
+          {(!collapsed || isMobile) && (
+            <Button
+              variant="gradient"
+              onClick={() => {
+                navigate("/dashboard/post-flow");
+                handleNavigation();
+              }}
+              className={cn(
+                "w-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group",
+                isMobile ? "h-12 text-base touch-manipulation" : ""
+              )}
+              disabled={!hasValidSubscription(billing?.paymentStatus)}
+            >
+              <Plus className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform duration-200" />
+              Create Post
+              {!hasValidSubscription(billing?.paymentStatus) && (
+                <Badge variant="secondary" className="ml-2 text-xs">
+                  Pro
+                </Badge>
+              )}
+            </Button>
+          )}
+
+          {/* Collapsed CTA */}
+          {collapsed && !isMobile && (
+            <Button
+              variant="gradient"
+              size="icon"
+              onClick={() => {
+                navigate("/dashboard/post-flow");
+                handleNavigation();
+              }}
+              className="w-full h-12 shadow-lg hover:shadow-xl transition-all duration-300 group"
+              disabled={!hasValidSubscription(billing?.paymentStatus)}
+            >
+              <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
+              <span className="sr-only">Create Post</span>
+            </Button>
+          )}
+
+          {/* Main Navigation */}
+          <nav className={cn("space-y-1", isMobile && "space-y-2")}>
+            {isMobile && (
+              <div className="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3">
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide px-2">
+                  Main
+                </div>
+              </div>
+            )}
+            <div
+              className={cn("space-y-1", collapsed && !isMobile && "space-y-2")}
+            >
+              {menuItems
+                .filter((item) => !item.disabled || !collapsed)
+                .map((item, index) => {
+                  // Add section divider for bottom nav items on mobile
+                  const isFirstBottomNavItem =
+                    isMobile &&
+                    (item as any).isBottomNavItem &&
+                    index > 0 &&
+                    !(menuItems[index - 1] as any).isBottomNavItem;
+
+                  return (
+                    <div key={item.href}>
+                      {isFirstBottomNavItem && (
+                        <div className="border-b border-gray-200 dark:border-gray-700 pb-3 mb-3 mt-6">
+                          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide px-2">
+                            Account
+                          </div>
+                        </div>
+                      )}
+                      <div className="relative group">
+                        <Button
+                          variant="ghost"
+                          className={cn(
+                            "w-full transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95",
+                            collapsed && !isMobile
+                              ? "h-12 px-0 justify-center"
+                              : isMobile
+                              ? "justify-start px-4 h-12 text-base touch-manipulation"
+                              : "justify-start px-4",
+                            location.pathname === item.href &&
+                              "bg-primary-50 text-primary-700 border border-primary-200 dark:bg-primary-900/20 dark:text-primary-300 dark:border-primary-800",
+                            item.disabled && "opacity-60 cursor-not-allowed",
+                            item.premium && "relative overflow-hidden"
+                          )}
+                          asChild={!item.disabled}
+                          onClick={() => !item.disabled && handleNavigation()}
+                        >
+                          {item.disabled ? (
+                            <div className="flex items-center">
+                              <div
+                                className={cn(
+                                  "flex items-center",
+                                  collapsed && !isMobile ? "justify-center" : ""
+                                )}
+                              >
+                                {item.icon}
+                                {(!collapsed || isMobile) && (
+                                  <>
+                                    <span className="ml-3 flex-1 text-left">
+                                      {item.label}
+                                    </span>
+                                    {item.badge && (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
+                                        {item.badge}
+                                      </Badge>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <Link
+                              to={item.href}
+                              onClick={() => handleNavigation()}
+                              className="flex items-center w-full"
+                            >
+                              <div
+                                className={cn(
+                                  "flex items-center w-full",
+                                  collapsed && !isMobile ? "justify-center" : ""
+                                )}
+                              >
+                                {item.icon}
+                                {(!collapsed || isMobile) && (
+                                  <>
+                                    <span className="ml-3 flex-1 text-left">
+                                      {item.label}
+                                    </span>
+                                    {item.badge && (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
+                                        {item.badge}
+                                      </Badge>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </Link>
+                          )}
+                        </Button>
+
+                        {/* Tooltip for collapsed state */}
+                        {collapsed && !isMobile && (
+                          <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                            {item.label}
+                            {item.badge && (
+                              <span className="ml-1 px-1 py-0.5 bg-gray-700 rounded text-xs">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
           </nav>
         </div>
       </ScrollArea>
-      <div className="flex flex-col gap-2 border-t p-4">
-        <nav className="space-y-1">
-          {bottomNavItems.map((item) => (
-            <Button
-              key={item.href}
-              variant="ghost"
-              className={cn(
-                "w-full justify-start font-normal",
-                location.pathname === item.href &&
-                  "bg-accent text-accent-foreground"
-              )}
-              asChild
-              onClick={() => handleNavigation()}
-            >
-              <Link to={item.href}>
-                {item.icon}
-                <span className="ml-3">{item.label}</span>
-              </Link>
-            </Button>
-          ))}
-        </nav>
-      </div>
+
+      {/* Bottom Navigation - Desktop Only */}
+      {!isMobile && (
+        <div className="border-t bg-gray-50/50 dark:bg-gray-800/50">
+          <div className="p-4">
+            <nav className="space-y-1">
+              {bottomNavItems.map((item) => (
+                <div key={item.href} className="relative group">
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95",
+                      collapsed
+                        ? "h-10 px-0 justify-center"
+                        : "justify-start px-3 h-10",
+                      location.pathname === item.href &&
+                        "bg-primary-50 text-primary-700 border border-primary-200 dark:bg-primary-900/20 dark:text-primary-300 dark:border-primary-800"
+                    )}
+                    asChild
+                    onClick={() => handleNavigation()}
+                  >
+                    <Link
+                      to={item.href}
+                      onClick={() => handleNavigation()}
+                      className="flex items-center w-full"
+                    >
+                      <div
+                        className={cn(
+                          "flex items-center",
+                          collapsed ? "justify-center" : ""
+                        )}
+                      >
+                        {item.icon}
+                        {!collapsed && (
+                          <span className="ml-3">{item.label}</span>
+                        )}
+                      </div>
+                    </Link>
+                  </Button>
+
+                  {/* Tooltip for collapsed state */}
+                  {collapsed && (
+                    <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                      {item.label}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
