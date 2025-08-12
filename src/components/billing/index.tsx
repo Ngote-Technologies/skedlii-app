@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Button } from "../ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { Switch } from "../ui/switch";
+import { CreditCard, FileText, Zap } from "lucide-react";
 import { InvoiceGrid } from "./InvoiceGrid";
 import { InvoiceTableFallback } from "./InvoiceTableFallback";
 import Subscriptions from "./Subscriptions";
@@ -23,9 +24,9 @@ import { useUrlParams } from "../../hooks/useUrlParams";
 const PLAN_TIERS = ["test", "creator", "pro", "enterprise"] as const;
 type PlanTier = (typeof PLAN_TIERS)[number];
 const TAB_ITEMS = [
-  { value: "subscription" as const, label: "Subscription" },
-  { value: "plans" as const, label: "Plans" },
-  { value: "invoices" as const, label: "Invoices" },
+  { value: "subscription" as const, label: "Subscription", icon: CreditCard },
+  { value: "plans" as const, label: "Plans", icon: Zap },
+  { value: "invoices" as const, label: "Invoices", icon: FileText },
 ];
 type TabValue = "subscription" | "plans" | "invoices";
 
@@ -264,11 +265,32 @@ const Billing = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Billing & Subscription</h2>
-        <p className="text-muted-foreground">
-          Manage your subscription and payment details
-        </p>
+      {/* Enhanced Header */}
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-background to-muted/30 border border-border/50 p-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
+        <div className="relative flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+              Billing & Subscription
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              Manage your subscription and payment details
+            </p>
+          </div>
+          
+          {/* Quick Stats */}
+          <div className="hidden md:flex items-center gap-4">
+            <div className="text-center">
+              <div className="text-sm font-bold text-foreground">{billing?.paymentStatus === 'active' ? 'Active' : 'Inactive'}</div>
+              <div className="text-xs text-muted-foreground">Status</div>
+            </div>
+            <div className="w-px h-8 bg-border" />
+            <div className="text-center">
+              <div className="text-sm font-bold text-foreground">${billing?.amountPaid || '0'}</div>
+              <div className="text-xs text-muted-foreground">Last Payment</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <Tabs
@@ -277,21 +299,37 @@ const Billing = () => {
         value={activeTab}
         onValueChange={(value) => setActiveTab(value as TabValue)}
       >
-        <TabsList>
-          {TAB_ITEMS.map((item) => (
-            <TabsTrigger key={item.value} value={item.value}>
-              {item.label}
-            </TabsTrigger>
-          ))}
+        <TabsList className="grid w-full grid-cols-3 bg-muted/30 p-1">
+          {TAB_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <TabsTrigger 
+                key={item.value} 
+                value={item.value}
+                className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                <Icon className="h-4 w-4" />
+                <span className="hidden sm:inline">{item.label}</span>
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         <TabsContent value="subscription">
-          <Card>
-            <CardHeader>
-              <CardTitle>Subscription Details</CardTitle>
-              <CardDescription>
-                View and manage your current subscription
-              </CardDescription>
+          <Card className="border-border/50 bg-gradient-to-br from-background to-muted/20">
+            <CardHeader className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
+              <div className="relative flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">Subscription Details</CardTitle>
+                  <CardDescription>
+                    View and manage your current subscription
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <Subscriptions
@@ -306,28 +344,54 @@ const Billing = () => {
         </TabsContent>
 
         <TabsContent value="plans">
-          <Card>
-            <CardHeader>
-              <CardTitle>Available Plans</CardTitle>
-              <CardDescription>
-                Choose the plan that works best for you
-              </CardDescription>
-              <div className="flex items-center gap-2 mt-4">
-                <span
-                  className={billingInterval === "monthly" ? "font-bold" : ""}
-                >
-                  Monthly
-                </span>
-                <Switch
-                  checked={billingInterval === "yearly"}
-                  onCheckedChange={toggleBillingInterval}
-                  aria-label="Toggle yearly billing"
-                />
-                <span
-                  className={billingInterval === "yearly" ? "font-bold" : ""}
-                >
-                  Yearly
-                </span>
+          <Card className="border-border/50 bg-gradient-to-br from-background to-muted/20">
+            <CardHeader className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10">
+                    <Zap className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Available Plans</CardTitle>
+                    <CardDescription>
+                      Choose the plan that works best for you
+                    </CardDescription>
+                  </div>
+                </div>
+                
+                {/* Billing Toggle */}
+                <div className="flex items-center justify-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <span
+                    className={`text-sm transition-all duration-200 ${
+                      billingInterval === "monthly" 
+                        ? "font-bold text-primary" 
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    Monthly
+                  </span>
+                  <Switch
+                    checked={billingInterval === "yearly"}
+                    onCheckedChange={toggleBillingInterval}
+                    aria-label="Toggle yearly billing"
+                    className="data-[state=checked]:bg-primary"
+                  />
+                  <span
+                    className={`text-sm transition-all duration-200 ${
+                      billingInterval === "yearly" 
+                        ? "font-bold text-primary" 
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    Yearly
+                  </span>
+                  {billingInterval === "yearly" && (
+                    <span className="ml-2 px-2 py-1 text-xs font-medium bg-green-500/10 text-green-600 rounded-full border border-green-500/20">
+                      Save 20%
+                    </span>
+                  )}
+                </div>
               </div>
             </CardHeader>
 
@@ -343,20 +407,49 @@ const Billing = () => {
         </TabsContent>
 
         <TabsContent value="invoices">
-          <Card>
-            <CardHeader className="relative">
-              <CardTitle>Invoice History</CardTitle>
-              <CardDescription>
-                View and download your past invoices
-              </CardDescription>
-              <Button
-                onClick={toggleViewMode}
-                variant="default"
-                size="sm"
-                className="hidden lg:block rounded-lg absolute top-3 right-7"
-              >
-                Switch to {viewMode === "card" ? "Table" : "Card"} View
-              </Button>
+          <Card className="border-border/50 bg-gradient-to-br from-background to-muted/20">
+            <CardHeader className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Invoice History</CardTitle>
+                    <CardDescription>
+                      View and download your past invoices
+                    </CardDescription>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  {/* Invoice Stats */}
+                  <div className="hidden md:flex items-center gap-4 mr-4">
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-foreground">{invoices.length}</div>
+                      <div className="text-xs text-muted-foreground">Total</div>
+                    </div>
+                    <div className="w-px h-8 bg-border" />
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-green-600">
+                        {invoices.filter(i => i.status === 'paid').length}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Paid</div>
+                    </div>
+                  </div>
+                  
+                  <Button
+                    onClick={toggleViewMode}
+                    variant="outline"
+                    size="sm"
+                    className="hidden lg:flex items-center gap-2 bg-background/50 hover:bg-background/80"
+                  >
+                    {viewMode === "card" ? <FileText className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
+                    {viewMode === "card" ? "Table" : "Card"} View
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {viewMode === "card" ? (

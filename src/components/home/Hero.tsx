@@ -55,21 +55,61 @@ export default function Hero() {
 
       {/* Floating Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(8)].map((_, i) => (
+        {[...Array(12)].map((_, i) => (
           <div
             key={i}
-            className="absolute animate-bounce"
+            className="absolute"
             style={{
-              left: `${20 + i * 10}%`,
-              top: `${30 + (i % 3) * 20}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${3 + (i % 2)}s`,
+              left: `${10 + i * 8}%`,
+              top: `${20 + (i % 4) * 20}%`,
+              animation: `floatParticle${(i % 3) + 1} ${6 + (i % 3) * 2}s ease-in-out infinite`,
+              animationDelay: `${i * 0.8}s`,
             }}
           >
-            <div className="w-2 h-2 rounded-full bg-primary-300/40 dark:bg-primary-500/40"></div>
+            <div 
+              className={`rounded-full ${
+                i % 4 === 0 ? 'w-3 h-3 bg-primary-400/60' :
+                i % 4 === 1 ? 'w-2 h-2 bg-secondary-400/50' :
+                i % 4 === 2 ? 'w-1.5 h-1.5 bg-primary-300/40' :
+                'w-2.5 h-2.5 bg-purple-400/45'
+              } shadow-lg`}
+              style={{
+                animation: `particlePulse ${3 + (i % 2)}s ease-in-out infinite`,
+                animationDelay: `${i * 0.3}s`,
+              }}
+            ></div>
           </div>
         ))}
       </div>
+
+      {/* Add CSS animations for particles */}
+      <style jsx>{`
+        @keyframes floatParticle1 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(20px, -30px) rotate(90deg); }
+          50% { transform: translate(-15px, -60px) rotate(180deg); }
+          75% { transform: translate(-25px, -20px) rotate(270deg); }
+        }
+        
+        @keyframes floatParticle2 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          33% { transform: translate(-25px, -40px) rotate(120deg); }
+          66% { transform: translate(30px, -25px) rotate(240deg); }
+        }
+        
+        @keyframes floatParticle3 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          20% { transform: translate(15px, -50px) rotate(72deg); }
+          40% { transform: translate(-20px, -35px) rotate(144deg); }
+          60% { transform: translate(25px, -15px) rotate(216deg); }
+          80% { transform: translate(-10px, -45px) rotate(288deg); }
+        }
+        
+        @keyframes particlePulse {
+          0%, 100% { opacity: 0.4; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.2); }
+        }
+      `}</style>
 
       <div className="container mx-auto px-4 relative">
         <div className="flex flex-col lg:flex-row items-center gap-12 md:gap-16">
@@ -190,7 +230,7 @@ export default function Hero() {
                   </div>
                   <div className="flex-1 flex justify-center">
                     <div className="text-xs text-gray-400 font-mono bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full border">
-                      skedlii.com/dashboard
+                      skedlii.xyz/dashboard
                     </div>
                   </div>
                 </div>
@@ -256,7 +296,7 @@ export default function Hero() {
 
               {/* Enhanced Decorative element */}
               <div
-                className="absolute -bottom-6 -right-6 bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-3 px-5 rounded-lg shadow-lg transform rotate-3 hover:rotate-2 hover:scale-110 transition-all duration-300 cursor-pointer group/badge animate-bounce"
+                className="absolute -bottom-6 -right-6 bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-3 px-5 rounded-lg shadow-lg transform rotate-3 hover:rotate-2 hover:scale-110 transition-all duration-300 cursor-pointer group/badge"
                 style={{ animationDelay: "2s" }}
               >
                 <div className="flex items-center gap-2">

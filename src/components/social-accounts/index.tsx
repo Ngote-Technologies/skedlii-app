@@ -28,7 +28,6 @@ import { Form, FormField } from "../ui/form";
 import { Badge, StatusBadge } from "../ui/badge";
 import {
   AlertCircle,
-  CheckCircle2,
   Clock,
   Filter,
   Loader2,
@@ -36,6 +35,15 @@ import {
   RefreshCw,
   Trash2,
   X,
+  Activity,
+  Users,
+  BarChart3,
+  ExternalLink,
+  Settings,
+  TrendingUp,
+  Eye,
+  Calendar,
+  Zap,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -385,43 +393,73 @@ export default function SocialAccounts() {
             </Button>
           </div>
 
-          {/* Platform Filter Pills */}
+          {/* Enhanced Platform Filter Pills */}
           {platformStats.uniquePlatforms.length > 1 && (
-            <div className="flex flex-wrap gap-2 p-4 bg-muted/30 rounded-lg">
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mr-2">
-                <Filter className="h-4 w-4" />
-                Filter by platform:
-              </div>
-              {platformStats.uniquePlatforms.map((platform) => (
-                <Button
-                  key={platform}
-                  variant={
-                    selectedPlatforms.includes(platform) ? "default" : "outline"
-                  }
-                  size="sm"
-                  onClick={() => togglePlatformFilter(platform)}
-                  className="flex items-center gap-2 text-xs"
-                >
-                  <i
-                    className={`${getSocialIcon(platform)} text-sm ${
-                      selectedPlatforms.includes(platform)
-                        ? "text-primary-foreground"
-                        : getTextColor(platform)
-                    }`}
-                  />
-                  <span className="capitalize">{platform}</span>
-                  <Badge
-                    variant="secondary"
-                    className={`ml-1 text-xs ${
-                      selectedPlatforms.includes(platform)
-                        ? "bg-primary-foreground/20 text-primary-foreground"
-                        : ""
-                    }`}
+            <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30 p-4 border border-border/50 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
+              <div className="relative flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <div className="p-1.5 rounded-md bg-primary/10">
+                    <Filter className="h-4 w-4 text-primary" />
+                  </div>
+                  <span>Filter by platform:</span>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  {platformStats.uniquePlatforms.map((platform) => {
+                    const isSelected = selectedPlatforms.includes(platform);
+                    return (
+                      <Button
+                        key={platform}
+                        variant={isSelected ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => togglePlatformFilter(platform)}
+                        className={`group relative overflow-hidden transition-all duration-200 ${
+                          isSelected
+                            ? "bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-md"
+                            : "hover:border-primary/30 hover:bg-primary/5"
+                        }`}
+                      >
+                        {isSelected && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent" />
+                        )}
+                        <div className="relative flex items-center gap-2">
+                          <i
+                            className={`${getSocialIcon(platform)} text-sm transition-colors ${
+                              isSelected
+                                ? "text-white"
+                                : getTextColor(platform)
+                            }`}
+                          />
+                          <span className="capitalize font-medium">{platform}</span>
+                          <Badge
+                            variant="secondary"
+                            className={`ml-1 text-xs transition-colors ${
+                              isSelected
+                                ? "bg-white/20 text-white border-white/30"
+                                : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            {platformStats.counts[platform]}
+                          </Badge>
+                        </div>
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                {selectedPlatforms.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAllFilters}
+                    className="text-xs hover:bg-red-50 hover:text-red-600 transition-colors"
                   >
-                    {platformStats.counts[platform]}
-                  </Badge>
-                </Button>
-              ))}
+                    <X className="h-3 w-3 mr-1" />
+                    Clear all
+                  </Button>
+                )}
+              </div>
             </div>
           )}
 
@@ -431,144 +469,264 @@ export default function SocialAccounts() {
               return (
                 <Card
                   key={account._id}
-                  className="hover:shadow-md transition-shadow"
+                  className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 border-border/50 bg-gradient-to-br from-background to-muted/30"
                 >
-                  <CardHeader className="pb-2">
+                  {/* Animated Background Gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  <CardHeader className="relative pb-2">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-3">
-                        {imageSrc ? (
-                          <img
-                            src={imageSrc}
-                            alt={`${account.accountName} profile`}
-                            className="h-10 w-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div
-                            className={`p-2 rounded-lg ${getClassName(
-                              account.platform
-                            )}`}
-                          >
-                            <i
-                              className={`${getSocialIcon(
-                                account.platform
-                              )} text-xl ${getTextColor(account.platform)}`}
-                            />
+                        <div className="relative">
+                          {imageSrc ? (
+                            <div className="relative">
+                              <img
+                                src={imageSrc}
+                                alt={`${account.accountName} profile`}
+                                className="h-12 w-12 rounded-full object-cover ring-2 ring-offset-2 ring-offset-background transition-all duration-200 group-hover:ring-primary/50"
+                              />
+                              {/* Platform icon overlay */}
+                              <div className={`absolute -bottom-1 -right-1 p-1 rounded-full ${getClassName(account.platform)} ring-2 ring-background`}>
+                                <i className={`${getSocialIcon(account.platform)} text-xs ${getTextColor(account.platform)}`} />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className={`relative p-3 rounded-xl ${getClassName(account.platform)} ring-2 ring-offset-2 ring-offset-background transition-all duration-200 group-hover:ring-primary/50 group-hover:scale-105`}>
+                              <i className={`${getSocialIcon(account.platform)} text-xl ${getTextColor(account.platform)}`} />
+                              
+                              {/* Pulse effect for active accounts */}
+                              {account.status === 'active' && (
+                                <div className="absolute -inset-1 rounded-xl bg-green-500/20 animate-pulse" />
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Health indicator dot */}
+                          <div className={`absolute top-0 right-0 h-3 w-3 rounded-full border-2 border-background ${
+                            account.status === 'active' ? 'bg-green-500' :
+                            account.status === 'expired' ? 'bg-orange-500' : 'bg-red-500'
+                          }`} />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <CardTitle className="text-base font-semibold truncate group-hover:text-primary transition-colors">
+                              {account.accountName ?? "Unknown Account"}
+                            </CardTitle>
+                            {account.status === 'active' && (
+                              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
+                                <Zap className="h-2.5 w-2.5 text-green-500" />
+                              </div>
+                            )}
                           </div>
-                        )}
-                        <div>
-                          <CardTitle className="text-base font-medium">
-                            {account.accountName ?? "Unknown Account"}
-                          </CardTitle>
-                          <CardDescription className="capitalize">
-                            {account.platform}
-                          </CardDescription>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <CardDescription className="capitalize font-medium">
+                              {account.platform}
+                            </CardDescription>
+                            {account.metadata?.followers_count && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Users className="h-3 w-3" />
+                                <span>{account.metadata.followers_count.toLocaleString()}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      {/* <Badge
-                        variant={
-                          account.status === "active"
-                            ? "default"
-                            : "destructive"
-                        }
-                        className="flex items-center gap-1"
-                      >
-                        {account.status === "active" ? (
-                          <CheckCircle2 className="h-3 w-3" />
-                        ) : (
-                          <AlertCircle className="h-3 w-3" />
-                        )}
-                        <span className="capitalize">
-                          {account.status.replace("_", " ")}
-                        </span>
-                      </Badge> */}
-                      <StatusBadge
-                        status={
-                          account.status === "active"
-                            ? "active"
-                            : account.status === "expired"
-                            ? "expired"
-                            : "inactive"
-                        }
-                        size="sm"
-                      />
+                      
+                      <div className="flex flex-col items-end gap-2">
+                        <StatusBadge
+                          status={
+                            account.status === "active"
+                              ? "active"
+                              : account.status === "expired"
+                              ? "expired"
+                              : "inactive"
+                          }
+                          size="sm"
+                        />
+                        
+                        {/* Quick action menu */}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                            <Settings className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-1">
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded">
-                        ID: {account.accountId?.substring(0, 8)}...
-                      </span>
+                  <CardContent className="relative space-y-3">
+                    {/* Account Statistics */}
+                    {(account.metadata?.followers_count || account.metadata?.following_count || account.metadata?.posts_count) && (
+                      <div className="grid grid-cols-3 gap-2 p-3 rounded-lg bg-muted/30 border border-border/50">
+                        {account.metadata?.posts_count !== undefined && (
+                          <div className="text-center">
+                            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
+                              <BarChart3 className="h-3 w-3" />
+                              <span>Posts</span>
+                            </div>
+                            <div className="font-semibold text-sm">{account.metadata.posts_count.toLocaleString()}</div>
+                          </div>
+                        )}
+                        {account.metadata?.followers_count !== undefined && (
+                          <div className="text-center">
+                            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
+                              <Users className="h-3 w-3" />
+                              <span>Followers</span>
+                            </div>
+                            <div className="font-semibold text-sm">{account.metadata.followers_count.toLocaleString()}</div>
+                          </div>
+                        )}
+                        {account.metadata?.following_count !== undefined && (
+                          <div className="text-center">
+                            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
+                              <Eye className="h-3 w-3" />
+                              <span>Following</span>
+                            </div>
+                            <div className="font-semibold text-sm">{account.metadata.following_count.toLocaleString()}</div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Account Details */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Account ID</span>
+                        <span className="font-mono text-xs bg-muted/50 px-2 py-1 rounded border">
+                          {account.accountId?.substring(0, 12)}...
+                        </span>
+                      </div>
+                      
+                      {account.tokenExpiry && (
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span>Expires</span>
+                          </div>
+                          <span className={`text-xs font-medium ${
+                            new Date(account.tokenExpiry) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                              ? 'text-orange-600'
+                              : 'text-green-600'
+                          }`}>
+                            {formatDate(account.tokenExpiry, "MMM dd, yyyy")}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {(account.connectedAt || account.createdAt) && (
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Calendar className="h-3 w-3" />
+                            <span>Connected</span>
+                          </div>
+                          <span className="text-xs font-medium text-green-600">
+                            {formatDate(account.connectedAt ?? account.createdAt ?? "", "MMM dd, yyyy")}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    {account.tokenExpiry && (
-                      <div className="flex items-center text-xs text-muted-foreground mt-2">
-                        <Clock className="h-3 w-3 mr-1" />
-                        <span>
-                          Expires: {formatDate(account.tokenExpiry, "PPP pp")}
+                    
+                    {/* Performance Indicators */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <TrendingUp className="h-3 w-3 text-green-500" />
+                        <span>Health: </span>
+                        <span className={`font-medium ${
+                          account.status === 'active' ? 'text-green-600' :
+                          account.status === 'expired' ? 'text-orange-600' : 'text-red-600'
+                        }`}>
+                          {account.status === 'active' ? 'Excellent' :
+                           account.status === 'expired' ? 'Needs Attention' : 'Disconnected'}
                         </span>
                       </div>
-                    )}
-                    {(account.connectedAt || account.createdAt) && (
-                      <div className="flex items-center text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3 mr-1" />
-                        <span>
-                          Connected:{" "}
-                          {formatDate(
-                            account.connectedAt ?? account.createdAt ?? ""
-                          )}
-                        </span>
-                      </div>
-                    )}
+                    </div>
                   </CardContent>
-                  <CardFooter className="flex justify-end gap-2 pt-2">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          {account.status === "expired" && (
+                  <CardFooter className="relative flex justify-between items-center pt-3 border-t border-border/50">
+                    {/* Quick Actions */}
+                    <div className="flex items-center gap-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10">
+                              <BarChart3 className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>View Analytics</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10">
+                              <ExternalLink className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Open Platform</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2">
+                      {account.status === "expired" && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={isLoading}
+                                onClick={() => handleReauthorize(account)}
+                                className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/20 hover:border-orange-500/30 text-orange-600 hover:text-orange-700"
+                              >
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Reauthorize
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>This account needs reauthorization</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
                             <Button
                               variant="outline"
                               size="sm"
-                              disabled={isLoading}
-                              onClick={() => handleReauthorize(account)}
+                              onClick={() =>
+                                setDeleteConfig({
+                                  id: account._id,
+                                  isOpen: true,
+                                  platform: account.platform,
+                                })
+                              }
+                              disabled={isDeletingPending}
+                              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
                             >
-                              <RefreshCw className="h-4 w-4 mr-2" />
-                              Reauthorize
+                              {isDeletingPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
                             </Button>
-                          )}
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {account.status !== "active" &&
-                            "This account needs reauthorization"}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() =>
-                              setDeleteConfig({
-                                id: account._id,
-                                isOpen: true,
-                                platform: account.platform,
-                              })
-                            }
-                            disabled={isDeletingPending}
-                          >
-                            {isDeletingPending ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 size={16} />
-                            )}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Disconnect account</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Disconnect account</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </CardFooter>
                 </Card>
               );
@@ -583,10 +741,15 @@ export default function SocialAccounts() {
     <div className="space-y-6">
       {accounts.length === 0 && !isLoading ? (
         <div className="flex flex-col items-center justify-center space-y-4 h-[60vh]">
-          <div className="rounded-full bg-primary/10 p-4">
-            <Plus className="h-8 w-8 text-primary" />
+          <div className="relative">
+            <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-full blur-lg animate-pulse" />
+            <div className="relative rounded-full bg-gradient-to-r from-primary to-purple-500 p-4">
+              <Plus className="h-8 w-8 text-white" />
+            </div>
           </div>
-          <h3 className="text-xl font-semibold">No accounts connected</h3>
+          <h3 className="text-xl font-semibold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+            No accounts connected
+          </h3>
           <p className="text-muted-foreground text-center max-w-md">
             You haven't created any accounts yet. Connect your first account to
             get started.
@@ -594,29 +757,61 @@ export default function SocialAccounts() {
           <Button
             onClick={() => setIsAddingAccount(true)}
             disabled={!hasValidSubscription(billing?.paymentStatus)}
+            className="bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
           >
             <Plus size={16} className="mr-2" />
             Connect Account
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">
-              Social Accounts
-            </h2>
-            <p className="text-muted-foreground">
-              Manage your connected social media accounts and their permissions
-            </p>
+        <div className="space-y-6">
+          {/* Enhanced Header with Statistics */}
+          <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 p-6 backdrop-blur-sm border border-border/50">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
+            <div className="relative flex flex-col sm:flex-row justify-between gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                    Social Accounts
+                  </h2>
+                  <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 border border-green-500/20">
+                    <Activity className="h-3 w-3 text-green-500 animate-pulse" />
+                    <span className="text-xs font-medium text-green-600">{accounts.length} Active</span>
+                  </div>
+                </div>
+                <p className="text-muted-foreground">
+                  Manage your connected social media accounts and their permissions
+                </p>
+                
+                {/* Quick Stats */}
+                <div className="flex items-center gap-4 pt-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Users className="h-4 w-4 text-primary" />
+                    <span className="font-medium">{accounts.length}</span>
+                    <span className="text-muted-foreground">Connected</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <BarChart3 className="h-4 w-4 text-green-500" />
+                    <span className="font-medium">{accounts.filter((acc: any) => acc.status === 'active').length}</span>
+                    <span className="text-muted-foreground">Active</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <AlertCircle className="h-4 w-4 text-orange-500" />
+                    <span className="font-medium">{accounts.filter((acc: any) => acc.status === 'expired').length}</span>
+                    <span className="text-muted-foreground">Need Attention</span>
+                  </div>
+                </div>
+              </div>
+              <Button
+                onClick={() => setIsAddingAccount(true)}
+                className="w-full sm:w-auto bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+                disabled={!hasValidSubscription(billing?.paymentStatus)}
+              >
+                <Plus size={16} className="mr-2" />
+                Connect Account
+              </Button>
+            </div>
           </div>
-          <Button
-            onClick={() => setIsAddingAccount(true)}
-            className="w-full sm:w-auto"
-            disabled={!hasValidSubscription(billing?.paymentStatus)}
-          >
-            <Plus size={16} className="mr-2" />
-            Connect Account
-          </Button>
         </div>
       )}
 
