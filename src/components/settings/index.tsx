@@ -4,20 +4,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
+import { usersApi } from "../../api/users";
 import { useToast } from "../../hooks/use-toast";
 import { useAuth } from "../../store/hooks";
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Badge } from "../ui/badge";
-import { 
-  CreditCard, 
-  Loader2, 
-  Settings, 
-  User, 
-  Lock, 
-  Bell, 
+import {
+  CreditCard,
+  Loader2,
+  Settings,
+  User,
+  Lock,
+  Bell,
   Shield,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ProfileInformation from "./ProfileInformation";
@@ -89,8 +90,8 @@ export default function UserSettings() {
   });
 
   const { mutate: updateProfile, isPending: isUpdatingProfile } = useMutation({
-    mutationFn: async (data: ProfileFormData) => {
-      return await apiRequest("PATCH", `/users/me`, data);
+    mutationFn: async (data: FormData | ProfileFormData) => {
+      return await usersApi.updateUser(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/users/me"] });
@@ -152,9 +153,18 @@ export default function UserSettings() {
     },
   });
 
-  function onProfileSubmit(data: ProfileFormData) {
-    if (data.email) delete data.email;
-    updateProfile(data);
+  function onProfileSubmit(data: FormData | ProfileFormData) {
+    if (data instanceof FormData) {
+      // Remove email from FormData if present
+      if (data.has("email")) {
+        data.delete("email");
+      }
+      updateProfile(data);
+    } else {
+      // Handle regular form data (fallback)
+      if (data.email) delete data.email;
+      updateProfile(data);
+    }
   }
 
   function onPasswordSubmit(data: PasswordFormData) {
@@ -174,11 +184,14 @@ export default function UserSettings() {
               </h2>
               <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 border border-green-500/20">
                 <Settings className="h-3 w-3 text-green-500 animate-pulse" />
-                <span className="text-xs font-medium text-green-600">Active</span>
+                <span className="text-xs font-medium text-green-600">
+                  Active
+                </span>
               </div>
             </div>
             <p className="text-muted-foreground">
-              Manage your account preferences, security, and notification settings
+              Manage your account preferences, security, and notification
+              settings
             </p>
           </div>
           <Link to="/dashboard/billing">
@@ -198,28 +211,28 @@ export default function UserSettings() {
         <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30 p-1 border border-border/50">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
           <TabsList className="relative grid w-full grid-cols-4 bg-transparent">
-            <TabsTrigger 
-              value="profile" 
+            <TabsTrigger
+              value="profile"
               className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
             >
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Profile</span>
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="password"
               className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
             >
               <Lock className="h-4 w-4" />
               <span className="hidden sm:inline">Password</span>
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="notifications"
               className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
             >
               <Bell className="h-4 w-4" />
               <span className="hidden sm:inline">Notifications</span>
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="security"
               className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
             >
@@ -234,6 +247,7 @@ export default function UserSettings() {
             profileForm={profileForm}
             onProfileSubmit={onProfileSubmit}
             isUpdatingProfile={isUpdatingProfile}
+            user={user}
           />
         </TabsContent>
 
@@ -259,7 +273,7 @@ export default function UserSettings() {
           <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-background to-muted/30 border border-border/50">
             {/* Background gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-pink-500/5" />
-            
+
             <div className="relative p-6 space-y-6">
               {/* Header */}
               <div className="flex items-center gap-3">
@@ -269,7 +283,10 @@ export default function UserSettings() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-bold">Danger Zone</h3>
-                    <Badge variant="destructive" className="flex items-center gap-1">
+                    <Badge
+                      variant="destructive"
+                      className="flex items-center gap-1"
+                    >
                       <AlertTriangle className="h-3 w-3" />
                       <span className="text-xs">Irreversible</span>
                     </Badge>
@@ -335,7 +352,7 @@ export default function UserSettings() {
               </span>
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="p-4 rounded-lg bg-red-500/5 border border-red-500/20">
               <p className="text-sm text-red-700 dark:text-red-300 font-medium mb-2">
@@ -345,7 +362,7 @@ export default function UserSettings() {
                 DELETE MY ACCOUNT
               </code>
             </div>
-            
+
             <Input
               value={deleteConfirmation}
               onChange={(e) => setDeleteConfirmation(e.target.value)}
@@ -353,7 +370,7 @@ export default function UserSettings() {
               className="border-red-200 focus:border-red-500 focus:ring-red-500/20"
             />
           </div>
-          
+
           <DialogFooter className="gap-2">
             <Button
               variant="outline"
