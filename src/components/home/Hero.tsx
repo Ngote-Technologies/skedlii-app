@@ -62,16 +62,21 @@ export default function Hero() {
             style={{
               left: `${10 + i * 8}%`,
               top: `${20 + (i % 4) * 20}%`,
-              animation: `floatParticle${(i % 3) + 1} ${6 + (i % 3) * 2}s ease-in-out infinite`,
+              animation: `floatParticle${(i % 3) + 1} ${
+                6 + (i % 3) * 2
+              }s ease-in-out infinite`,
               animationDelay: `${i * 0.8}s`,
             }}
           >
-            <div 
+            <div
               className={`rounded-full ${
-                i % 4 === 0 ? 'w-3 h-3 bg-primary-400/60 dark:bg-primary/70' :
-                i % 4 === 1 ? 'w-2 h-2 bg-secondary-400/50 dark:bg-secondary/60' :
-                i % 4 === 2 ? 'w-1.5 h-1.5 bg-primary-300/40 dark:bg-primary/50' :
-                'w-2.5 h-2.5 bg-purple-400/45 dark:bg-accent/55'
+                i % 4 === 0
+                  ? "w-3 h-3 bg-primary-400/60 dark:bg-primary/70"
+                  : i % 4 === 1
+                  ? "w-2 h-2 bg-secondary-400/50 dark:bg-secondary/60"
+                  : i % 4 === 2
+                  ? "w-1.5 h-1.5 bg-primary-300/40 dark:bg-primary/50"
+                  : "w-2.5 h-2.5 bg-purple-400/45 dark:bg-accent/55"
               } shadow-lg`}
               style={{
                 animation: `particlePulse ${3 + (i % 2)}s ease-in-out infinite`,
@@ -85,29 +90,63 @@ export default function Hero() {
       {/* Add CSS animations for particles */}
       <style jsx>{`
         @keyframes floatParticle1 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          25% { transform: translate(20px, -30px) rotate(90deg); }
-          50% { transform: translate(-15px, -60px) rotate(180deg); }
-          75% { transform: translate(-25px, -20px) rotate(270deg); }
+          0%,
+          100% {
+            transform: translate(0, 0) rotate(0deg);
+          }
+          25% {
+            transform: translate(20px, -30px) rotate(90deg);
+          }
+          50% {
+            transform: translate(-15px, -60px) rotate(180deg);
+          }
+          75% {
+            transform: translate(-25px, -20px) rotate(270deg);
+          }
         }
-        
+
         @keyframes floatParticle2 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          33% { transform: translate(-25px, -40px) rotate(120deg); }
-          66% { transform: translate(30px, -25px) rotate(240deg); }
+          0%,
+          100% {
+            transform: translate(0, 0) rotate(0deg);
+          }
+          33% {
+            transform: translate(-25px, -40px) rotate(120deg);
+          }
+          66% {
+            transform: translate(30px, -25px) rotate(240deg);
+          }
         }
-        
+
         @keyframes floatParticle3 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          20% { transform: translate(15px, -50px) rotate(72deg); }
-          40% { transform: translate(-20px, -35px) rotate(144deg); }
-          60% { transform: translate(25px, -15px) rotate(216deg); }
-          80% { transform: translate(-10px, -45px) rotate(288deg); }
+          0%,
+          100% {
+            transform: translate(0, 0) rotate(0deg);
+          }
+          20% {
+            transform: translate(15px, -50px) rotate(72deg);
+          }
+          40% {
+            transform: translate(-20px, -35px) rotate(144deg);
+          }
+          60% {
+            transform: translate(25px, -15px) rotate(216deg);
+          }
+          80% {
+            transform: translate(-10px, -45px) rotate(288deg);
+          }
         }
-        
+
         @keyframes particlePulse {
-          0%, 100% { opacity: 0.4; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.2); }
+          0%,
+          100% {
+            opacity: 0.4;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.8;
+            transform: scale(1.2);
+          }
         }
       `}</style>
 
@@ -139,7 +178,7 @@ export default function Hero() {
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4 mb-8 animate-in slide-in-from-bottom-6 duration-700 delay-500">
               <Link to="/register" className="group">
                 <Button
-                  variant="gradient"
+                  variant="default"
                   size="xl"
                   icon={
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />

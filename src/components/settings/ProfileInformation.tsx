@@ -19,17 +19,17 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { 
-  Loader2, 
-  User, 
-  Mail, 
-  Camera, 
-  Upload, 
-  Shield, 
+import {
+  Loader2,
+  User,
+  Mail,
+  Camera,
+  Upload,
+  Shield,
   Sparkles,
   Edit3,
   Save,
-  UserCheck
+  UserCheck,
 } from "lucide-react";
 
 const ProfileInformation = ({
@@ -45,7 +45,7 @@ const ProfileInformation = ({
     <Card className="relative overflow-hidden bg-gradient-to-br from-background to-muted/30 border-border/50">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
-      
+
       <CardHeader className="relative">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20">
@@ -53,19 +53,22 @@ const ProfileInformation = ({
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-xl font-bold">Profile Information</CardTitle>
+              <CardTitle className="text-xl font-bold">
+                Profile Information
+              </CardTitle>
               <Badge variant="secondary" className="flex items-center gap-1">
                 <Shield className="h-3 w-3" />
                 <span className="text-xs">Verified</span>
               </Badge>
             </div>
             <CardDescription className="mt-1">
-              Update your personal information and how others see you on the platform
+              Update your personal information and how others see you on the
+              platform
             </CardDescription>
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="relative">
         <Form {...profileForm}>
           <form
@@ -94,7 +97,12 @@ const ProfileInformation = ({
                   <p className="text-xs text-muted-foreground">
                     Upload a photo to personalize your account
                   </p>
-                  <Button variant="outline" size="sm" className="mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    type="button"
+                  >
                     <Upload className="h-3 w-3 mr-1" />
                     Upload Image
                   </Button>
@@ -114,10 +122,10 @@ const ProfileInformation = ({
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Input 
-                            placeholder="Your first name" 
+                          <Input
+                            placeholder="Your first name"
                             className="pl-4 pr-10 border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-all duration-200"
-                            {...field} 
+                            {...field}
                           />
                           <div className="absolute right-3 top-1/2 -translate-y-1/2">
                             <Edit3 className="h-4 w-4 text-muted-foreground" />
@@ -143,10 +151,10 @@ const ProfileInformation = ({
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Input 
-                            placeholder="Your last name" 
+                          <Input
+                            placeholder="Your last name"
                             className="pl-4 pr-10 border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-all duration-200"
-                            {...field} 
+                            {...field}
                           />
                           <div className="absolute right-3 top-1/2 -translate-y-1/2">
                             <Edit3 className="h-4 w-4 text-muted-foreground" />
@@ -190,7 +198,8 @@ const ProfileInformation = ({
                       </FormControl>
                       <FormDescription className="text-xs text-muted-foreground flex items-center gap-1">
                         <Shield className="h-3 w-3" />
-                        Email cannot be changed for security reasons. Contact support if needed.
+                        Email cannot be changed for security reasons. Contact
+                        support if needed.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -205,17 +214,17 @@ const ProfileInformation = ({
                 <Sparkles className="h-4 w-4 text-primary" />
                 <span>Changes are saved automatically</span>
               </div>
-              
+
               <div className="flex items-center gap-3">
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   variant="outline"
                   className="border-border/50"
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isUpdatingProfile}
                   className="bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
                 >

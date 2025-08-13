@@ -15,15 +15,13 @@ import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
-import { 
-  Lock, 
-  ArrowLeft, 
-  CheckCircle, 
-  AlertCircle, 
-  Shield, 
-  Eye, 
-  EyeOff,
-  Sparkles 
+import {
+  Lock,
+  ArrowLeft,
+  CheckCircle,
+  AlertCircle,
+  Shield,
+  Sparkles,
 } from "lucide-react";
 
 // Validation schema
@@ -51,9 +49,6 @@ export default function ResetPasswordForm({
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Password strength checker
   const checkPasswordStrength = (password: string) => {
@@ -64,13 +59,10 @@ export default function ResetPasswordForm({
       hasNumber: /\d/.test(password),
       hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
     };
-    
+
     const score = Object.values(checks).filter(Boolean).length;
     return { checks, score };
   };
-
-  const currentPassword = form.watch("password") || "";
-  const passwordStrength = checkPasswordStrength(currentPassword);
 
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
@@ -80,43 +72,70 @@ export default function ResetPasswordForm({
     },
   });
 
-  const { mutate: resetPassword } = useMutation({
+  const currentPassword = form.watch("password") || "";
+  const passwordStrength = checkPasswordStrength(currentPassword);
+
+  const { mutate: resetPassword, isPending: isMutating } = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/auth/reset-password", data);
+      console.log("Making API request with data:", data);
+      const result = await apiRequest("POST", "/auth/reset-password", data);
+      console.log("API request successful:", result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Password reset successful:", data);
       setIsSuccess(true);
-    },
-    onError: () => {
-      toast({
-        title: "Something went wrong",
-        description: "Failed to reset password. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const onSubmit = async (data: ResetPasswordFormData) => {
-    setIsLoading(true);
-    const { confirmPassword, ...rest } = data;
-    try {
-      resetPassword({ ...rest, token });
-
-      setIsSuccess(true);
+      setIsLoading(false);
       toast({
         title: "Password reset successful",
         description: "Your password has been successfully updated.",
       });
-    } catch (error) {
-      console.error(error);
+    },
+    onError: (err: any) => {
+      console.log("Mutation error:", {
+        err,
+        type: typeof err,
+        keys: Object.keys(err || {}),
+      });
+
+      // Parse error message from API response
+      let errorMessage = "Failed to reset password. Please try again.";
+
+      // The apiRequest function now throws the response data directly
+      if (err?.message) {
+        errorMessage = err.message;
+      } else if (typeof err === "string") {
+        errorMessage = err;
+      }
+
+      console.log("Final error message:", errorMessage);
+
       toast({
-        title: "Something went wrong",
-        description: "Failed to reset password. Please try again.",
+        title: "Password Reset Failed",
+        description: errorMessage,
         variant: "destructive",
       });
-    } finally {
+
       setIsLoading(false);
+    },
+  });
+
+  const onSubmit = async (data: ResetPasswordFormData) => {
+    if (isLoading || isMutating) {
+      console.log("Already loading, ignoring submit");
+      return;
     }
+
+    setIsLoading(true);
+    const { confirmPassword, ...rest } = data;
+
+    console.log("Submitting form with data:", {
+      ...rest,
+      token: token ? "present" : "missing",
+    });
+
+    // Use React Query mutation which handles success/error automatically
+    resetPassword({ ...rest, token });
   };
 
   if (isSuccess) {
@@ -136,14 +155,15 @@ export default function ResetPasswordForm({
             Password Updated Successfully
           </h3>
           <p className="text-gray-600 dark:text-gray-400 max-w-sm mx-auto leading-relaxed">
-            Your password has been securely updated. You can now sign in with your new password.
+            Your password has been securely updated. You can now sign in with
+            your new password.
           </p>
         </div>
 
         {/* Enhanced action button */}
         <div className="space-y-3">
-          <Button 
-            onClick={onBack} 
+          <Button
+            onClick={onBack}
             variant="gradient"
             className="w-full h-11 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
           >
@@ -152,7 +172,7 @@ export default function ResetPasswordForm({
               Continue to Login
             </span>
           </Button>
-          
+
           <p className="text-xs text-gray-500 dark:text-gray-500">
             Keep your password secure and don't share it with others.
           </p>
@@ -185,74 +205,70 @@ export default function ResetPasswordForm({
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                  <div className="relative group">
-                    <div
-                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-                        focusedField === "password"
-                          ? "text-primary-500"
-                          : fieldState.error
-                          ? "text-destructive"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      <Lock className="w-4 h-4" />
-                    </div>
-                    <Input
-                      label="New Password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your new password"
-                      autoComplete="new-password"
-                      error={fieldState.error?.message}
-                      onFocus={() => setFocusedField("password")}
-                      className="pl-10 pr-12 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+                  <Input
+                    label="New Password"
+                    type="password"
+                    placeholder="Enter your new password"
+                    autoComplete="new-password"
+                    error={fieldState.error?.message}
+                    prefixIcon={<Lock className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
-                
+
                 {/* Password strength indicator */}
                 {currentPassword && (
                   <div className="mt-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Password strength</span>
-                      <span className={`text-sm font-medium ${
-                        passwordStrength.score < 3 
-                          ? 'text-red-500' 
-                          : passwordStrength.score < 5 
-                          ? 'text-yellow-500' 
-                          : 'text-green-500'
-                      }`}>
-                        {passwordStrength.score < 3 ? 'Weak' : passwordStrength.score < 5 ? 'Good' : 'Strong'}
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Password strength
+                      </span>
+                      <span
+                        className={`text-sm font-medium ${
+                          passwordStrength.score < 3
+                            ? "text-red-500"
+                            : passwordStrength.score < 5
+                            ? "text-yellow-500"
+                            : "text-green-500"
+                        }`}
+                      >
+                        {passwordStrength.score < 3
+                          ? "Weak"
+                          : passwordStrength.score < 5
+                          ? "Good"
+                          : "Strong"}
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full transition-all duration-300 ${
-                          passwordStrength.score < 3 
-                            ? 'bg-red-500' 
-                            : passwordStrength.score < 5 
-                            ? 'bg-yellow-500' 
-                            : 'bg-green-500'
+                          passwordStrength.score < 3
+                            ? "bg-red-500"
+                            : passwordStrength.score < 5
+                            ? "bg-yellow-500"
+                            : "bg-green-500"
                         }`}
-                        style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                        style={{
+                          width: `${(passwordStrength.score / 5) * 100}%`,
+                        }}
                       />
                     </div>
                     <div className="grid grid-cols-1 gap-1 text-xs">
-                      <div className={`flex items-center gap-2 ${passwordStrength.checks.length ? 'text-green-600' : 'text-gray-400'}`}>
+                      <div
+                        className={`flex items-center gap-2 ${
+                          passwordStrength.checks.length
+                            ? "text-green-600"
+                            : "text-gray-400"
+                        }`}
+                      >
                         <CheckCircle className="w-3 h-3" />
                         <span>At least 8 characters</span>
                       </div>
                     </div>
                   </div>
                 )}
-                
+
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
                     <AlertCircle className="w-4 h-4" />
@@ -270,36 +286,16 @@ export default function ResetPasswordForm({
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                  <div className="relative group">
-                    <div
-                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-                        focusedField === "confirmPassword"
-                          ? "text-primary-500"
-                          : fieldState.error
-                          ? "text-destructive"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      <Lock className="w-4 h-4" />
-                    </div>
-                    <Input
-                      label="Confirm Password"
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm your new password"
-                      autoComplete="new-password"
-                      error={fieldState.error?.message}
-                      onFocus={() => setFocusedField("confirmPassword")}
-                      className="pl-10 pr-12 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+                  <Input
+                    label="Confirm Password"
+                    type="password"
+                    placeholder="Confirm your new password"
+                    autoComplete="new-password"
+                    error={fieldState.error?.message}
+                    prefixIcon={<Lock className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -313,11 +309,11 @@ export default function ResetPasswordForm({
 
           {/* Enhanced action buttons */}
           <div className="space-y-4 pt-2">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               variant="gradient"
               size="lg"
-              className="w-full font-semibold h-12 relative overflow-hidden group shadow-lg hover:shadow-xl transition-all duration-300" 
+              className="w-full font-semibold h-12 relative overflow-hidden group shadow-lg hover:shadow-xl transition-all duration-300"
               loading={isLoading}
               loadingText="Updating password..."
               disabled={isLoading || passwordStrength.score < 3}
@@ -327,11 +323,11 @@ export default function ResetPasswordForm({
                 {isLoading ? "Updating..." : "Update Password"}
               </span>
             </Button>
-            
-            <Button 
-              type="button" 
-              variant="ghost" 
-              className="w-full font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200" 
+
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
               onClick={onBack}
             >
               <span className="flex items-center justify-center gap-2">

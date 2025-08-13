@@ -179,7 +179,7 @@ export default function ScheduledPosts() {
           <Button
             disabled={!hasValidSubscription(billing?.paymentStatus)}
             onClick={() => navigate("/dashboard/post-flow")}
-            variant="gradient"
+            variant="default"
             className="shadow-lg hover:shadow-xl transition-all duration-300 group"
           >
             <Plus size={16} className="mr-2 group-hover:rotate-90 transition-transform duration-200" />
