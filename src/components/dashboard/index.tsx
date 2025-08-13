@@ -194,20 +194,21 @@ export default function DashboardPage() {
           {/* Enhanced Welcome Section */}
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 to-purple-500/10 rounded-3xl blur-3xl"></div>
-            <Card className="relative border-0 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-900/80 dark:to-gray-800/80 backdrop-blur-sm shadow-xl">
+            <Card className="relative border-0 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-900/80 dark:to-gray-800/80 backdrop-blur-sm shadow-sm">
               <CardContent className="p-8">
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-3">
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-r from-primary-500 to-purple-500 flex items-center justify-center">
+                  <div className="space-y-4">
+                    {/* Mobile: Centered layout, Desktop: Horizontal layout */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0">
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-r from-primary-500 to-purple-500 flex items-center justify-center mx-auto sm:mx-0 flex-shrink-0">
                         <Sparkles className="h-6 w-6 text-white" />
                       </div>
-                      <div>
-                        <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                      <div className="text-center sm:text-left">
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent leading-tight">
                           Welcome back
                           {user?.firstName ? `, ${user.firstName}` : ""}!
                         </h1>
-                        <p className="text-gray-600 dark:text-gray-400 text-lg">
+                        <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg mt-1">
                           Ready to create amazing content today? ✨
                         </p>
                       </div>
@@ -216,12 +217,12 @@ export default function DashboardPage() {
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
                     <Button
                       onClick={() => navigate("/dashboard/post-flow")}
-                      variant="gradient"
+                      variant="default"
                       size="lg"
                       className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300 group"
                       disabled={!hasValidSubscription(billing?.paymentStatus)}
                     >
-                      <Plus className="mr-2 h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
+                      <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
                       Create Post
                     </Button>
                     <Button
@@ -316,7 +317,7 @@ export default function DashboardPage() {
               }) => {
                 return (
                   <Link to={to} key={label} className="group">
-                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 group-hover:scale-[1.02] group-hover:-translate-y-1 group-active:scale-[0.98]">
+                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 shadow-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 group-hover:scale-[1.02] group-hover:-translate-y-1 group-active:scale-[0.98]">
                       {/* Background gradient */}
                       <div
                         className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}
@@ -325,9 +326,11 @@ export default function DashboardPage() {
                       <CardContent className="relative p-4 sm:p-6">
                         <div className="flex items-center justify-between mb-4">
                           <div
-                            className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}
+                            className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-sm group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}
                           >
-                            <div className="text-white group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">{icon}</div>
+                            <div className="text-white group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                              {icon}
+                            </div>
                           </div>
                           <div className="flex items-center space-x-1 text-sm">
                             {trendUp ? (
@@ -372,7 +375,7 @@ export default function DashboardPage() {
 
           {/* Quick Actions Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            <Card className="lg:col-span-2 border-0 shadow-lg">
+            <Card className="lg:col-span-2 border-0 shadow-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -391,7 +394,9 @@ export default function DashboardPage() {
                   {[
                     {
                       label: "Create Post",
-                      icon: <Plus className="h-6 w-6 sm:h-8 sm:w-8 mb-2 sm:mb-3 text-blue-500" />,
+                      icon: (
+                        <Plus className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
+                      ),
                       description: "New content",
                       color: "hover:bg-blue-50 dark:hover:bg-blue-900/20",
                       onClick: () => {
@@ -408,7 +413,7 @@ export default function DashboardPage() {
                     {
                       label: "Schedule",
                       icon: (
-                        <CalendarClock className="h-6 w-6 sm:h-8 sm:w-8 mb-2 sm:mb-3 text-purple-500" />
+                        <CalendarClock className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500" />
                       ),
                       description: "Plan ahead",
                       color: "hover:bg-purple-50 dark:hover:bg-purple-900/20",
@@ -417,7 +422,7 @@ export default function DashboardPage() {
                     {
                       label: "Analytics",
                       icon: (
-                        <BarChart2 className="h-6 w-6 sm:h-8 sm:w-8 mb-2 sm:mb-3 text-green-500" />
+                        <BarChart2 className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
                       ),
                       description: "View stats",
                       color: "hover:bg-green-50 dark:hover:bg-green-900/20",
@@ -425,7 +430,9 @@ export default function DashboardPage() {
                     },
                     {
                       label: "Accounts",
-                      icon: <Users className="h-6 w-6 sm:h-8 sm:w-8 mb-2 sm:mb-3 text-orange-500" />,
+                      icon: (
+                        <Users className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500" />
+                      ),
                       description: "Manage links",
                       color: "hover:bg-orange-50 dark:hover:bg-orange-900/20",
                       onClick: () => navigate("/dashboard/accounts"),
@@ -434,11 +441,11 @@ export default function DashboardPage() {
                     <button
                       key={label}
                       onClick={onClick}
-                      className={`group p-4 sm:p-6 rounded-xl sm:rounded-2xl transition-all duration-200 text-center border border-gray-100 dark:border-gray-800 ${color} hover:shadow-md hover:scale-105 active:scale-95 min-h-[100px] sm:min-h-[120px] flex flex-col justify-center`}
+                      className={`group p-4 sm:p-6 rounded-xl sm:rounded-2xl transition-all duration-200 text-center border border-gray-100 dark:border-gray-800 ${color} hover:shadow-md hover:scale-105 active:scale-95 min-h-[100px] sm:min-h-[120px] flex flex-col items-center justify-center gap-2 sm:gap-3`}
                     >
-                      <div className="flex flex-col items-center justify-center">
-                        {icon}
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm sm:text-base">
+                      {icon}
+                      <div className="flex flex-col items-center gap-1">
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
                           {label}
                         </h3>
                         <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-tight">
@@ -452,7 +459,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Activity Status */}
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Activity className="h-5 w-5 text-primary" />
@@ -664,13 +671,13 @@ export default function DashboardPage() {
           {/* Enhanced Connected Accounts Section */}
           <Card className="border-0 shadow-lg">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center space-x-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex-1">
+                  <CardTitle className="flex items-center space-x-2 mb-2">
                     <Users className="h-5 w-5 text-primary" />
                     <span>Connected Accounts</span>
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-sm">
                     Your linked social media platforms
                   </CardDescription>
                 </div>
@@ -678,7 +685,7 @@ export default function DashboardPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate("/dashboard/accounts")}
-                  className="hover:bg-primary-50 dark:hover:bg-primary-900/20"
+                  className="hover:bg-primary-50 dark:hover:bg-primary-900/20 self-start sm:self-auto"
                 >
                   Manage All
                 </Button>
@@ -688,28 +695,33 @@ export default function DashboardPage() {
               {socialAccounts.length > 0 ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                    {socialAccounts
-                      .slice(0, 6)
-                      .map((account: any) => (
-                        <div
-                          key={account._id}
-                          className="group p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-primary-200 dark:hover:border-primary-800 hover:shadow-md transition-all duration-200"
-                        >
-                          <div className="flex items-center space-x-3">
+                    {socialAccounts.slice(0, 6).map((account: any) => (
+                      <div
+                        key={account._id}
+                        className="group p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-primary-200 dark:hover:border-primary-800 hover:shadow-md transition-all duration-200"
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className="relative flex-shrink-0">
                             {account.metadata?.profileImageUrl ||
                             account.metadata?.picture ||
-                            account.metadata?.profile?.threads_profile_picture_url ? (
+                            account.metadata?.profile
+                              ?.threads_profile_picture_url ? (
                               <img
                                 src={
                                   account.metadata.profileImageUrl ??
                                   account.metadata.picture ??
-                                  account.metadata.profile.threads_profile_picture_url
+                                  account.metadata.profile
+                                    .threads_profile_picture_url
                                 }
                                 alt={`${account.accountName} profile`}
                                 className="h-12 w-12 rounded-full object-cover"
                               />
                             ) : (
-                              <div className={`p-3 rounded-xl ${getClassName(account.platform)}`}>
+                              <div
+                                className={`w-12 h-12 flex items-center justify-center rounded-full ${getClassName(
+                                  account.platform
+                                )}`}
+                              >
                                 <i
                                   className={`${getSocialIcon(
                                     account.platform
@@ -717,18 +729,22 @@ export default function DashboardPage() {
                                 />
                               </div>
                             )}
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-sm text-gray-900 dark:text-white truncate">
+                            {/* Status indicator positioned better */}
+                            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-400 border-2 border-white dark:border-gray-800"></div>
+                          </div>
+                          <div className="flex-1 min-w-0 py-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <h3 className="font-semibold text-sm text-gray-900 dark:text-white truncate max-w-[120px] sm:max-w-none">
                                 {account.accountName ?? "Unknown Account"}
                               </h3>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                                {account.platform}
-                              </p>
                             </div>
-                            <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize mt-0.5">
+                              {account.platform}
+                            </p>
                           </div>
                         </div>
-                      ))}
+                      </div>
+                    ))}
                   </div>
 
                   {socialAccounts.length > 6 && (
@@ -738,7 +754,8 @@ export default function DashboardPage() {
                         onClick={() => navigate("/dashboard/accounts")}
                         className="text-sm text-gray-600 dark:text-gray-400"
                       >
-                        View {socialAccounts.length - 6} more account{socialAccounts.length - 6 > 1 ? 's' : ''}
+                        View {socialAccounts.length - 6} more account
+                        {socialAccounts.length - 6 > 1 ? "s" : ""}
                       </Button>
                     </div>
                   )}

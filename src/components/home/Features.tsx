@@ -376,7 +376,7 @@ export default function Features() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Button
                     asChild
-                    variant="gradient"
+                    variant="premium"
                     size="lg"
                     className="group/cta shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                   >

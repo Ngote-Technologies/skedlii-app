@@ -444,7 +444,7 @@ export default function Testimonials() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Link to="/register" className="group">
                     <Button
-                      variant="gradient"
+                      variant="premium"
                       size="lg"
                       className="group/cta shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-2"
                     >

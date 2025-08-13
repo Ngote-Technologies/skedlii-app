@@ -15,13 +15,13 @@ import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { apiRequest } from "../../lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
-import { 
-  Mail, 
-  ArrowLeft, 
-  Send, 
-  CheckCircle, 
-  AlertCircle, 
-  Sparkles 
+import {
+  Mail,
+  ArrowLeft,
+  Send,
+  CheckCircle,
+  AlertCircle,
+  Sparkles,
 } from "lucide-react";
 
 const forgotPasswordSchema = z.object({
@@ -112,9 +112,9 @@ export default function ForgotPasswordForm({
 
         {/* Enhanced action buttons */}
         <div className="space-y-3">
-          <Button 
-            variant="gradient" 
-            onClick={onBack} 
+          <Button
+            variant="gradient"
+            onClick={onBack}
             className="w-full h-11 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <span className="flex items-center justify-center gap-2">
@@ -122,9 +122,10 @@ export default function ForgotPasswordForm({
               Back to login
             </span>
           </Button>
-          
+
           <p className="text-xs text-gray-500 dark:text-gray-500">
-            Didn't receive the email? Check your spam folder or try again in a few minutes.
+            Didn't receive the email? Check your spam folder or try again in a
+            few minutes.
           </p>
         </div>
       </div>
@@ -142,7 +143,8 @@ export default function ForgotPasswordForm({
           Reset Password
         </h2>
         <p className="text-gray-600 dark:text-gray-400 max-w-sm mx-auto leading-relaxed">
-          Enter your email address and we'll send you a secure link to reset your password.
+          Enter your email address and we'll send you a secure link to reset
+          your password.
         </p>
       </div>
 
@@ -155,31 +157,16 @@ export default function ForgotPasswordForm({
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                  <div className="relative group">
-                    <div
-                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-                        focusedField === "email"
-                          ? "text-primary-500"
-                          : fieldState.error
-                          ? "text-destructive"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      <Mail className="w-4 h-4" />
-                    </div>
-                    <Input
-                      label="Email Address"
-                      type="email"
-                      placeholder="Enter your email address"
-                      autoComplete="email"
-                      error={fieldState.error?.message}
-                      clearable
-                      onClear={() => field.onChange("")}
-                      onFocus={() => setFocusedField("email")}
-                      className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
-                  </div>
+                  <Input
+                    label="Email Address"
+                    type="email"
+                    placeholder="Enter your email address"
+                    autoComplete="email"
+                    error={fieldState.error?.message}
+                    prefixIcon={<Mail className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -190,14 +177,14 @@ export default function ForgotPasswordForm({
               </FormItem>
             )}
           />
-          
+
           {/* Enhanced action buttons */}
           <div className="space-y-4 pt-2">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               variant="gradient"
               size="lg"
-              className="w-full font-semibold h-12 relative overflow-hidden group shadow-lg hover:shadow-xl transition-all duration-300" 
+              className="w-full font-semibold h-12 relative overflow-hidden group shadow-lg hover:shadow-xl transition-all duration-300"
               loading={isLoading}
               loadingText="Sending reset link..."
               disabled={isLoading}
@@ -207,11 +194,11 @@ export default function ForgotPasswordForm({
                 {isLoading ? "Sending..." : "Send Reset Link"}
               </span>
             </Button>
-            
-            <Button 
-              type="button" 
-              variant="ghost" 
-              className="w-full font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200" 
+
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
               onClick={onBack}
             >
               <span className="flex items-center justify-center gap-2">

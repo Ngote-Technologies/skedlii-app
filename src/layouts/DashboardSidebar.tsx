@@ -199,7 +199,7 @@ export default function DashboardSidebar({
           {/* Main CTA Button */}
           {(!collapsed || isMobile) && (
             <Button
-              variant="gradient"
+              variant="default"
               onClick={() => {
                 navigate("/dashboard/post-flow");
                 handleNavigation();
@@ -210,7 +210,7 @@ export default function DashboardSidebar({
               )}
               disabled={!hasValidSubscription(billing?.paymentStatus)}
             >
-              <Plus className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform duration-200" />
+              <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform duration-200" />
               Create Post
               {!hasValidSubscription(billing?.paymentStatus) && (
                 <Badge variant="secondary" className="ml-2 text-xs">
@@ -223,7 +223,7 @@ export default function DashboardSidebar({
           {/* Collapsed CTA */}
           {collapsed && !isMobile && (
             <Button
-              variant="gradient"
+              variant="default"
               size="icon"
               onClick={() => {
                 navigate("/dashboard/post-flow");

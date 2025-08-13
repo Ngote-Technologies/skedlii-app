@@ -17,20 +17,19 @@ import {
   Search,
   Bell,
   ChevronRight,
-  Home,
   Sparkles,
   Calendar,
   Settings,
   HelpCircle,
-  Plus,
 } from "lucide-react";
 import { useMobileMenuStore } from "../store/layout";
 import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import DashboardSidebar from "./DashboardSidebar";
 import { Input } from "../components/ui/input";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Badge } from "../components/ui/badge";
 import NotificationBadge from "../components/ui/notification-badge";
+import { useDynamicBreadcrumbs } from "../hooks/useDynamicBreadcrumbs";
 
 export default function DashboardHeader() {
   const { user, logout } = useAuth();
@@ -44,62 +43,8 @@ export default function DashboardHeader() {
     (state: any) => state.setMobileMenuOpen
   );
 
-  // Generate breadcrumbs from current path
-  const breadcrumbs = useMemo(() => {
-    const pathSegments = location.pathname.split("/").filter(Boolean);
-    const crumbs = [
-      {
-        label: "Dashboard",
-        href: "/dashboard",
-        icon: <Home className="w-4 h-4" />,
-      },
-    ];
-
-    if (pathSegments.length > 1) {
-      const current = pathSegments[pathSegments.length - 1];
-      const breadcrumbMap: Record<
-        string,
-        { label: string; icon?: JSX.Element }
-      > = {
-        accounts: {
-          label: "Social Accounts",
-          icon: <Settings className="w-4 h-4" />,
-        },
-        scheduled: {
-          label: "Scheduled Posts",
-          icon: <Calendar className="w-4 h-4" />,
-        },
-        posts: {
-          label: "Published Posts",
-          icon: <Calendar className="w-4 h-4" />,
-        },
-        "post-flow": {
-          label: "Create Post",
-          icon: <Plus className="w-4 h-4" />,
-        },
-        collections: { label: "Collections" },
-        teams: { label: "Team Management" },
-        analytics: { label: "Analytics" },
-        settings: { label: "Settings", icon: <Settings className="w-4 h-4" /> },
-        billing: { label: "Billing" },
-        help: {
-          label: "Help & Support",
-          icon: <HelpCircle className="w-4 h-4" />,
-        },
-      };
-
-      const currentInfo = breadcrumbMap[current];
-      if (currentInfo) {
-        crumbs.push({
-          label: currentInfo.label,
-          href: location.pathname,
-          icon: currentInfo.icon!,
-        });
-      }
-    }
-
-    return crumbs;
-  }, [location.pathname]);
+  // Generate breadcrumbs using dynamic system
+  const breadcrumbs = useDynamicBreadcrumbs(location.pathname);
 
   return (
     <header className="h-16 border-b bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 sticky top-0 z-50 shadow-sm">
@@ -117,21 +62,40 @@ export default function DashboardHeader() {
           {/* Breadcrumbs - Hidden on mobile */}
           <nav className="hidden md:flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
             {breadcrumbs.map((crumb, index) => (
-              <div key={crumb.href} className="flex items-center">
+              <div
+                key={crumb.href || `breadcrumb-${index}`}
+                className="flex items-center"
+              >
                 {index > 0 && <ChevronRight className="w-4 h-4 mx-2" />}
                 {index === breadcrumbs.length - 1 ? (
                   <div className="flex items-center space-x-2 font-medium text-gray-900 dark:text-gray-100">
                     {crumb.icon}
-                    <span>{crumb.label}</span>
+                    <span
+                      className={
+                        crumb.isLoading ? "animate-pulse text-gray-500" : "max-w-[200px] truncate"
+                      }
+                      title={crumb.fullLabel || crumb.label}
+                    >
+                      {crumb.label}
+                    </span>
                   </div>
-                ) : (
+                ) : crumb.href ? (
                   <Link
                     to={crumb.href}
                     className="flex items-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    title={crumb.fullLabel || crumb.label}
                   >
                     {crumb.icon}
-                    <span>{crumb.label}</span>
+                    <span className="max-w-[150px] truncate">{crumb.label}</span>
                   </Link>
+                ) : (
+                  <div 
+                    className="flex items-center space-x-1 text-gray-500"
+                    title={crumb.fullLabel || crumb.label}
+                  >
+                    {crumb.icon}
+                    <span className="max-w-[150px] truncate">{crumb.label}</span>
+                  </div>
                 )}
               </div>
             ))}
@@ -139,7 +103,7 @@ export default function DashboardHeader() {
         </div>
 
         {/* Center Section - Search */}
-        <div className="hidden lg:flex flex-1 max-w-md mx-6">
+        {/* <div className="hidden lg:flex flex-1 max-w-md mx-6">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
@@ -150,19 +114,19 @@ export default function DashboardHeader() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-        </div>
+        </div> */}
 
         {/* Right Section - Actions & Profile */}
         <div className="flex items-center space-x-3">
           {/* Mobile Search Button */}
-          <Button
+          {/* <Button
             variant="ghost"
             size="icon"
             className="lg:hidden h-9 w-9"
             aria-label="Search"
           >
             <Search className="h-4 w-4" />
-          </Button>
+          </Button> */}
 
           {/* Notifications */}
           <Button
@@ -172,7 +136,7 @@ export default function DashboardHeader() {
             aria-label="Notifications"
           >
             <Bell className="h-4 w-4" />
-            <NotificationBadge count={3} variant="text-only" />
+            <NotificationBadge count={3} variant="count" size="md" />
           </Button>
 
           {/* Theme Toggle */}

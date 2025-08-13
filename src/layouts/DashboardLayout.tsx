@@ -68,7 +68,7 @@ export default function DashboardLayout() {
             )}
           >
             {/* Page Content Container */}
-            <div 
+            <div
               ref={mainContentRef}
               data-dashboard-content
               className="flex-1 overflow-y-auto"

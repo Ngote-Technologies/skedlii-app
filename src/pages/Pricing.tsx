@@ -356,7 +356,7 @@ export default function Pricing() {
                   >
                     {/* Plan Badge */}
                     {(plan.popular || plan.badge) && (
-                      <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 z-10">
+                      <div className="absolute left-1/2 transform -translate-x-1/2 z-10 w-max top-1">
                         <div
                           className={`flex items-center gap-1 px-4 py-1 text-xs font-medium rounded-full text-white shadow-lg ${
                             plan.popular
@@ -442,7 +442,7 @@ export default function Pricing() {
                       <div className="mb-8">
                         <Link to="/register" className="block w-full">
                           <Button
-                            variant={plan.popular ? "gradient" : "outline"}
+                            variant={plan.popular ? "premium" : "outline"}
                             size="lg"
                             className={`w-full group/btn ${
                               plan.popular ? "shadow-lg hover:shadow-xl" : ""
@@ -461,11 +461,6 @@ export default function Pricing() {
                             ) : plan.id === "creator" ? (
                               <>
                                 Start Free Trial
-                                <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-200" />
-                              </>
-                            ) : plan.id === "pro" ? (
-                              <>
-                                Upgrade Now
                                 <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-200" />
                               </>
                             ) : (
