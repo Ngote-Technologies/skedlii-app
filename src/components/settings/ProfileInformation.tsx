@@ -61,7 +61,7 @@ const ProfileInformation = ({
 
   const handleFormSubmit = (formData: any) => {
     console.log("Form data received:", formData);
-    
+
     const submitData = new FormData();
 
     // Only add the specific fields we want
@@ -133,9 +133,14 @@ const ProfileInformation = ({
                     <div className="h-full w-full rounded-full bg-background flex items-center justify-center overflow-hidden">
                       {previewUrl || user?.avatar ? (
                         <img
-                          src={previewUrl || user?.avatar}
+                          src={previewUrl || user?.avatar || ""}
                           alt="Profile"
                           className="w-full h-full object-cover rounded-full"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = "";
+                          }}
                         />
                       ) : (
                         <User className="h-10 w-10 text-muted-foreground" />
