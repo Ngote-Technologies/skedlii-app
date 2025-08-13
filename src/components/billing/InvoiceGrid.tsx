@@ -1,6 +1,6 @@
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { ArrowDownToLine, Calendar, DollarSign, FileText } from "lucide-react";
+import { ArrowDownToLine, Calendar, DollarSign, FileText, Download, Receipt, CreditCard } from "lucide-react";
 import { format } from "date-fns";
 
 interface Invoice {
@@ -19,16 +19,25 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
   if (!invoices || invoices.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-          <FileText className="w-8 h-8 text-muted-foreground" />
+        <div className="relative">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/10 to-purple-500/10 flex items-center justify-center border border-primary/20">
+            <Receipt className="w-8 h-8 text-primary" />
+          </div>
+          <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-primary to-purple-500 rounded-full flex items-center justify-center">
+            <Download className="w-3 h-3 text-white" />
+          </div>
         </div>
-        <h3 className="text-lg font-semibold text-foreground mb-2">
+        <h3 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-3">
           No invoices found
         </h3>
         <p className="text-sm text-muted-foreground max-w-sm">
           Your invoice history will appear here once you make your first
           payment.
         </p>
+        <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/10">
+          <p className="text-xs text-primary font-medium">💡 Pro Tip</p>
+          <p className="text-xs text-muted-foreground mt-1">All invoices are automatically generated and can be downloaded as PDF files.</p>
+        </div>
       </div>
     );
   }
@@ -129,12 +138,27 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
               </div>
             </div>
 
-            {/* Download Section */}
+            {/* Payment Method & Download Section */}
             <div className="mt-6 lg:mt-0 lg:ml-8 flex-shrink-0">
-              <div className="lg:border-l lg:border-border/50 lg:pl-8">
+              <div className="lg:border-l lg:border-border/50 lg:pl-8 space-y-4">
+                {/* Payment Method Info */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <CreditCard className="w-3 h-3" />
+                    <span>Payment Method</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/50">
+                    <div className="w-6 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-sm flex items-center justify-center">
+                      <span className="text-[8px] font-bold text-white">••••</span>
+                    </div>
+                    <span className="text-xs font-medium">•••• 4242</span>
+                  </div>
+                </div>
+
+                {/* Download Button */}
                 <Button
                   asChild
-                  className="w-full lg:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all duration-200 group/btn"
+                  className="w-full lg:w-auto bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 group/btn"
                   size="sm"
                 >
                   <a
@@ -143,8 +167,8 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2"
                   >
-                    <ArrowDownToLine className="w-4 h-4 group-hover/btn:translate-y-0.5 transition-transform duration-200" />
-                    <span className="font-medium">Download</span>
+                    <Download className="w-4 h-4 group-hover/btn:translate-y-0.5 transition-transform duration-200" />
+                    <span className="font-medium">Download PDF</span>
                   </a>
                 </Button>
               </div>
@@ -155,95 +179,3 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
     </div>
   );
 }
-
-// import { Badge } from "../ui/badge";
-// import { Button } from "../ui/button";
-// import { ArrowDownToLine } from "lucide-react"; // Modern download icon
-// import { format } from "date-fns";
-
-// interface Invoice {
-//   _id: string;
-//   createdAt: string;
-//   amountPaid: number;
-//   status: string;
-//   invoicePdf: string;
-// }
-
-// interface InvoiceTableProps {
-//   invoices: Invoice[];
-// }
-
-// export function InvoiceGrid({ invoices }: InvoiceTableProps) {
-//   if (!invoices || invoices.length === 0) {
-//     return (
-//       <div className="p-6 text-center text-muted-foreground">
-//         No invoices found.
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="space-y-4">
-//       {invoices.map((invoice) => (
-//         <div
-//           key={invoice._id}
-//           className="flex flex-col md:flex-row md:items-center md:justify-between rounded-xl border border-border bg-background shadow-sm hover:shadow-md transition-shadow"
-//         >
-//           <div className="p-4 space-y-2">
-//             <div className="text-sm font-medium text-muted-foreground">
-//               Invoice ID
-//             </div>
-//             <div className="font-semibold text-primary break-all">
-//               {invoice._id}
-//             </div>
-
-//             <div className="flex flex-wrap items-center gap-4 mt-3">
-//               <div>
-//                 <div className="text-xs text-muted-foreground uppercase tracking-wide">
-//                   Date
-//                 </div>
-//                 <div className="font-medium">
-//                   {format(new Date(invoice.createdAt), "PPP")}
-//                 </div>
-//               </div>
-//               <div>
-//                 <div className="text-xs text-muted-foreground uppercase tracking-wide">
-//                   Amount
-//                 </div>
-//                 <div className="font-medium">${invoice.amountPaid}</div>
-//               </div>
-//               <div>
-//                 <div className="text-xs text-muted-foreground uppercase tracking-wide">
-//                   Status
-//                 </div>
-//                 <Badge
-//                   variant="outline"
-//                   className={`${
-//                     invoice.status === "paid"
-//                       ? "border-green-500 text-green-600"
-//                       : "border-yellow-500 text-yellow-600"
-//                   }`}
-//                 >
-//                   {invoice.status}
-//                 </Badge>
-//               </div>
-//             </div>
-//           </div>
-
-//           <div className="p-4 md:border-l border-border md:min-w-[150px] md:flex md:justify-center">
-//             <Button asChild variant="outline" size="sm" className="rounded-md">
-//               <a
-//                 href={invoice.invoicePdf}
-//                 target="_blank"
-//                 rel="noopener noreferrer"
-//               >
-//                 <ArrowDownToLine className="mr-2 h-4 w-4" />
-//                 Download
-//               </a>
-//             </Button>
-//           </div>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }

@@ -19,7 +19,10 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const status = error.response?.status;
 
-    if (status === 401 && !hasShownTokenExpiredToast) {
+    // Check if this is a password reset request
+    const isPasswordResetRequest = error.config?.url?.includes('/auth/reset-password');
+    
+    if (status === 401 && !isPasswordResetRequest && !hasShownTokenExpiredToast) {
       hasShownTokenExpiredToast = true; // block subsequent toasts
 
       console.warn("[DEBUG] Token expired or unauthorized for critical route");
@@ -31,8 +34,11 @@ axiosInstance.interceptors.response.use(
         description: "Your session has expired. Please log in again.",
         variant: "destructive",
       });
-
-      return;
+    }
+    
+    // For password reset requests or if we've already shown the toast, just reject with the error
+    if (isPasswordResetRequest || hasShownTokenExpiredToast) {
+      console.warn(`[DEBUG] ${isPasswordResetRequest ? 'Password reset' : 'Subsequent'} 401 error - passing through`);
     }
 
     if (status === 403) {

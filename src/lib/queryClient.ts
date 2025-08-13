@@ -9,12 +9,21 @@ export async function apiRequest<T = any>(
   url: string,
   data?: unknown
 ): Promise<T> {
-  const response = await axiosInstance.request<T>({
-    method,
-    url,
-    data,
-  });
-  return response.data;
+  try {
+    const response = await axiosInstance.request<T>({
+      method,
+      url,
+      data,
+    });
+    return response.data;
+  } catch (error: any) {
+    // If it's an axios error with a response, throw the response data
+    if (error?.response?.data) {
+      throw error.response.data;
+    }
+    // Otherwise, throw the original error
+    throw error;
+  }
 }
 
 export const getQueryFn =
