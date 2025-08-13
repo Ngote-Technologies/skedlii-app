@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,7 +14,7 @@ import {
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
-import { AlertCircle, Sparkles } from "lucide-react";
+import { AlertCircle, Sparkles, Mail, Lock } from "lucide-react";
 import { useAuth } from "../../store/hooks";
 import { useToast } from "../../hooks/use-toast";
 
@@ -38,7 +38,6 @@ export default function LoginForm({
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
   const { toast } = useToast();
 
   const form = useForm<LoginFormData>({
@@ -49,6 +48,8 @@ export default function LoginForm({
       rememberMe: false,
     },
   });
+
+  console.log({ form });
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
@@ -95,29 +96,18 @@ export default function LoginForm({
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                  <div className="relative group">
-                    <div
-                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-                        focusedField === "email"
-                          ? "text-primary-500"
-                          : fieldState.error
-                          ? "text-destructive"
-                          : "text-gray-400"
-                      }`}
-                    ></div>
-                    <Input
-                      label="Email Address"
-                      type="email"
-                      placeholder="Enter your email"
-                      autoComplete="email"
-                      error={fieldState.error?.message}
-                      clearable
-                      onClear={() => field.onChange("")}
-                      onFocus={() => setFocusedField("email")}
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
-                  </div>
+                  <Input
+                    label="Email Address"
+                    type="email"
+                    placeholder="Enter your email"
+                    autoComplete="email"
+                    error={fieldState.error?.message}
+                    clearable
+                    onClear={() => field.onChange("")}
+                    prefixIcon={<Mail className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -136,27 +126,16 @@ export default function LoginForm({
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                  <div className="relative group">
-                    <div
-                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-                        focusedField === "password"
-                          ? "text-primary-500"
-                          : fieldState.error
-                          ? "text-destructive"
-                          : "text-gray-400"
-                      }`}
-                    ></div>
-                    <Input
-                      label="Password"
-                      type="password"
-                      placeholder="Enter your password"
-                      autoComplete="current-password"
-                      error={fieldState.error?.message}
-                      onFocus={() => setFocusedField("password")}
-                      className="pr-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
-                  </div>
+                  <Input
+                    label="Password"
+                    type="password"
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    error={fieldState.error?.message}
+                    prefixIcon={<Lock className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">

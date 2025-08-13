@@ -74,7 +74,6 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
   const { toast } = useToast();
 
   const form = useForm<RegisterFormData>({
@@ -140,18 +139,6 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                  <div className="relative group">
-                    <div
-                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-                        focusedField === "firstName"
-                          ? "text-primary-500"
-                          : fieldState.error
-                          ? "text-destructive"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      <User className="w-4 h-4" />
-                    </div>
                     <Input
                       label="First Name"
                       placeholder="Enter your first name"
@@ -159,11 +146,10 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
                       error={fieldState.error?.message}
                       clearable
                       onClear={() => field.onChange("")}
-                      onFocus={() => setFocusedField("firstName")}
-                      className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                      prefixIcon={<User className="w-4 h-4" />}
+                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
                       {...field}
                     />
-                  </div>
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -181,18 +167,6 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                  <div className="relative group">
-                    <div
-                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-                        focusedField === "lastName"
-                          ? "text-primary-500"
-                          : fieldState.error
-                          ? "text-destructive"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      <User className="w-4 h-4" />
-                    </div>
                     <Input
                       label="Last Name"
                       placeholder="Enter your last name"
@@ -200,11 +174,10 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
                       error={fieldState.error?.message}
                       clearable
                       onClear={() => field.onChange("")}
-                      onFocus={() => setFocusedField("lastName")}
-                      className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                      prefixIcon={<User className="w-4 h-4" />}
+                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
                       {...field}
                     />
-                  </div>
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -222,31 +195,18 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                  <div className="relative group">
-                    <div
-                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-                        focusedField === "email"
-                          ? "text-primary-500"
-                          : fieldState.error
-                          ? "text-destructive"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      <Mail className="w-4 h-4" />
-                    </div>
                     <Input
                       label="Email Address"
                       type="email"
-                      placeholder="Enter your email address"
+                      placeholder="Enter your email"
                       autoComplete="email"
                       error={fieldState.error?.message}
                       clearable
                       onClear={() => field.onChange("")}
-                      onFocus={() => setFocusedField("email")}
-                      className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                      prefixIcon={<Mail className="w-4 h-4" />}
+                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
                       {...field}
                     />
-                  </div>
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -270,14 +230,8 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
                   <Select
                     value={field.value}
                     onValueChange={field.onChange}
-                    onOpenChange={(open) =>
-                      setFocusedField(open ? "userType" : null)
-                    }
                   >
                     <SelectTrigger
-                      variant={
-                        focusedField === "userType" ? "outline" : "default"
-                      }
                       className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
                     >
                       <SelectValue placeholder="Select user type" />
@@ -319,29 +273,16 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
               render={({ field, fieldState }) => (
                 <FormItem className="relative">
                   <FormControl>
-                    <div className="relative group">
-                      <div
-                        className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-                          focusedField === "organizationName"
-                            ? "text-primary-500"
-                            : fieldState.error
-                            ? "text-destructive"
-                            : "text-gray-400"
-                        }`}
-                      >
-                        <Building className="w-4 h-4" />
-                      </div>
                       <Input
                         label="Organization Name"
                         placeholder="Enter your organization name"
                         error={fieldState.error?.message}
                         clearable
                         onClear={() => field.onChange("")}
-                        onFocus={() => setFocusedField("organizationName")}
-                        className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                        prefixIcon={<Building className="w-4 h-4" />}
+                        className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
                         {...field}
                       />
-                    </div>
                   </FormControl>
                   {fieldState.error && (
                     <FormMessage className="flex items-center gap-2 mt-2">
@@ -360,18 +301,6 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                  <div className="relative group">
-                    <div
-                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-                        focusedField === "password"
-                          ? "text-primary-500"
-                          : fieldState.error
-                          ? "text-destructive"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      <Lock className="w-4 h-4" />
-                    </div>
                     <Input
                       label="Password"
                       type="password"
@@ -379,11 +308,10 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
                       autoComplete="new-password"
                       error={fieldState.error?.message}
                       helperText="At least 8 characters"
-                      onFocus={() => setFocusedField("password")}
-                      className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                      prefixIcon={<Lock className="w-4 h-4" />}
+                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
                       {...field}
                     />
-                  </div>
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -401,29 +329,16 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                  <div className="relative group">
-                    <div
-                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-                        focusedField === "confirmPassword"
-                          ? "text-primary-500"
-                          : fieldState.error
-                          ? "text-destructive"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      <Lock className="w-4 h-4" />
-                    </div>
                     <Input
                       label="Confirm Password"
                       type="password"
                       placeholder="Confirm your password"
                       autoComplete="new-password"
                       error={fieldState.error?.message}
-                      onFocus={() => setFocusedField("confirmPassword")}
-                      className="pl-10 transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                      prefixIcon={<Lock className="w-4 h-4" />}
+                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
                       {...field}
                     />
-                  </div>
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">

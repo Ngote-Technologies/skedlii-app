@@ -17,7 +17,14 @@ import {
   CardTitle,
 } from "../ui/card";
 import { Separator } from "../ui/separator";
-import { ArrowRight, CreditCard, Crown, Shield, Zap, Clock } from "lucide-react";
+import {
+  ArrowRight,
+  CreditCard,
+  Crown,
+  Shield,
+  Zap,
+  Clock,
+} from "lucide-react";
 
 interface PreviewData {
   amountDue: number;
@@ -123,7 +130,7 @@ export function UpgradeConfirmationDialog({
       <AlertDialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto border-border/50 bg-gradient-to-br from-background to-muted/20">
         {/* Background gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-lg" />
-        
+
         <AlertDialogHeader className="relative">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10">
@@ -134,11 +141,17 @@ export function UpgradeConfirmationDialog({
                 Confirm Subscription Upgrade
               </AlertDialogTitle>
               <div className="flex items-center gap-2 mt-1">
-                <Badge className="bg-gradient-to-r from-primary to-purple-500 text-white">
+                <Badge
+                  className="from-primary to-purple-500 text-white"
+                  variant="premium"
+                >
                   {previewData.billingInfo?.newPlan || planName}
                 </Badge>
-                <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-600">
-                  <Shield className="h-3 w-3 mr-1" />
+                <Badge
+                  variant="outline"
+                  className="bg-green-500/10 border-green-500/20 text-green-600"
+                  icon={<Shield className="h-3 w-3 mr-1" />}
+                >
                   Secure
                 </Badge>
               </div>
@@ -173,12 +186,14 @@ export function UpgradeConfirmationDialog({
                       ${previewData.billingInfo.currentPrice}/month
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-col items-center">
                     <ArrowRight className="h-6 w-6 text-primary animate-pulse" />
-                    <span className="text-xs text-muted-foreground mt-1">Upgrade</span>
+                    <span className="text-xs text-muted-foreground mt-1">
+                      Upgrade
+                    </span>
                   </div>
-                  
+
                   <div className="text-center">
                     <div className="text-sm text-muted-foreground mb-1">
                       New Plan
@@ -191,12 +206,13 @@ export function UpgradeConfirmationDialog({
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="mt-4 p-3 rounded-lg bg-muted/30 border border-border/50">
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">
-                      {previewData.billingInfo.remainingDays} days remaining in current billing period
+                      {previewData.billingInfo.remainingDays} days remaining in
+                      current billing period
                     </span>
                   </div>
                 </div>
@@ -223,7 +239,10 @@ export function UpgradeConfirmationDialog({
                 <div className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
                   {formatCurrency(previewData.amountDue, previewData.currency)}
                 </div>
-                <Badge variant="outline" className="bg-primary/10 border-primary/20 text-primary">
+                <Badge
+                  variant="outline"
+                  className="bg-primary/10 border-primary/20 text-primary"
+                >
                   Prorated
                 </Badge>
               </div>
@@ -343,7 +362,7 @@ export function UpgradeConfirmationDialog({
         </div>
 
         <AlertDialogFooter className="relative">
-          <AlertDialogCancel 
+          <AlertDialogCancel
             onClick={onClose}
             className="border-border/50 hover:bg-muted/80"
           >

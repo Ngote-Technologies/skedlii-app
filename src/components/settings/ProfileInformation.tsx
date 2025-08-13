@@ -19,33 +19,80 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { 
-  Loader2, 
-  User, 
-  Mail, 
-  Camera, 
-  Upload, 
-  Shield, 
-  Sparkles,
+import {
+  Loader2,
+  User,
+  Mail,
+  Camera,
+  Shield,
   Edit3,
   Save,
-  UserCheck
+  UserCheck,
 } from "lucide-react";
+import { useRef, useState } from "react";
 
 const ProfileInformation = ({
   profileForm,
   onProfileSubmit,
   isUpdatingProfile,
+  user,
 }: {
   profileForm: any;
   onProfileSubmit: any;
   isUpdatingProfile: boolean;
+  user: any;
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const handleCameraClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFormSubmit = (formData: any) => {
+    console.log("Form data received:", formData);
+
+    const submitData = new FormData();
+
+    // Only add the specific fields we want
+    if (formData.firstName) {
+      submitData.append("firstName", formData.firstName);
+    }
+    if (formData.lastName) {
+      submitData.append("lastName", formData.lastName);
+    }
+    if (formData.bio) {
+      submitData.append("bio", formData.bio);
+    }
+
+    // Add avatar file if selected
+    if (selectedFile) {
+      console.log("Adding avatar file:", selectedFile.name);
+      submitData.append("avatar", selectedFile);
+    }
+
+    // Debug: Log what we're sending
+    for (let [key, value] of submitData.entries()) {
+      console.log("FormData entry:", key, value);
+    }
+
+    onProfileSubmit(submitData);
+  };
   return (
     <Card className="relative overflow-hidden bg-gradient-to-br from-background to-muted/30 border-border/50">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
-      
+
       <CardHeader className="relative">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20">
@@ -53,23 +100,29 @@ const ProfileInformation = ({
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-xl font-bold">Profile Information</CardTitle>
-              <Badge variant="secondary" className="flex items-center gap-1">
-                <Shield className="h-3 w-3" />
+              <CardTitle className="text-xl font-bold">
+                Profile Information
+              </CardTitle>
+              <Badge
+                variant="secondary"
+                className="flex items-center gap-1"
+                icon={<Shield className="h-3 w-3" />}
+              >
                 <span className="text-xs">Verified</span>
               </Badge>
             </div>
             <CardDescription className="mt-1">
-              Update your personal information and how others see you on the platform
+              Update your personal information and how others see you on the
+              platform
             </CardDescription>
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="relative">
         <Form {...profileForm}>
           <form
-            onSubmit={profileForm.handleSubmit(onProfileSubmit)}
+            onSubmit={profileForm.handleSubmit(handleFormSubmit)}
             className="space-y-6"
           >
             <div className="flex flex-col lg:flex-row gap-6">
@@ -77,27 +130,46 @@ const ProfileInformation = ({
               <div className="flex flex-col items-center space-y-4 lg:w-1/3">
                 <div className="relative group">
                   <div className="h-24 w-24 rounded-full bg-gradient-to-r from-primary to-purple-500 p-1">
-                    <div className="h-full w-full rounded-full bg-background flex items-center justify-center">
-                      <User className="h-10 w-10 text-muted-foreground" />
+                    <div className="h-full w-full rounded-full bg-background flex items-center justify-center overflow-hidden">
+                      {previewUrl || user?.avatar ? (
+                        <img
+                          src={previewUrl || user?.avatar || ""}
+                          alt="Profile"
+                          className="w-full h-full object-cover rounded-full"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = "";
+                          }}
+                        />
+                      ) : (
+                        <User className="h-10 w-10 text-muted-foreground" />
+                      )}
                     </div>
                   </div>
                   <Button
                     type="button"
                     size="sm"
+                    onClick={handleCameraClick}
                     className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 shadow-lg"
                   >
                     <Camera className="h-4 w-4 text-white" />
                   </Button>
                 </div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  accept="image/*"
+                  className="hidden"
+                />
                 <div className="text-center space-y-1">
                   <p className="text-sm font-medium">Profile Picture</p>
                   <p className="text-xs text-muted-foreground">
-                    Upload a photo to personalize your account
+                    {selectedFile
+                      ? `Selected: ${selectedFile.name}`
+                      : "Upload a photo to personalize your account"}
                   </p>
-                  <Button variant="outline" size="sm" className="mt-2">
-                    <Upload className="h-3 w-3 mr-1" />
-                    Upload Image
-                  </Button>
                 </div>
               </div>
 
@@ -114,10 +186,10 @@ const ProfileInformation = ({
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Input 
-                            placeholder="Your first name" 
+                          <Input
+                            placeholder="Your first name"
                             className="pl-4 pr-10 border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-all duration-200"
-                            {...field} 
+                            {...field}
                           />
                           <div className="absolute right-3 top-1/2 -translate-y-1/2">
                             <Edit3 className="h-4 w-4 text-muted-foreground" />
@@ -143,10 +215,10 @@ const ProfileInformation = ({
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Input 
-                            placeholder="Your last name" 
+                          <Input
+                            placeholder="Your last name"
                             className="pl-4 pr-10 border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-all duration-200"
-                            {...field} 
+                            {...field}
                           />
                           <div className="absolute right-3 top-1/2 -translate-y-1/2">
                             <Edit3 className="h-4 w-4 text-muted-foreground" />
@@ -169,8 +241,11 @@ const ProfileInformation = ({
                       <FormLabel className="flex items-center gap-2 text-sm font-medium">
                         <Mail className="h-4 w-4 text-primary" />
                         Email Address
-                        <Badge variant="outline" className="ml-auto text-xs">
-                          <Shield className="h-2 w-2 mr-1" />
+                        <Badge
+                          variant="outline"
+                          className="ml-auto text-xs"
+                          icon={<Shield className="h-2 w-2 mr-1" />}
+                        >
                           Protected
                         </Badge>
                       </FormLabel>
@@ -190,7 +265,8 @@ const ProfileInformation = ({
                       </FormControl>
                       <FormDescription className="text-xs text-muted-foreground flex items-center gap-1">
                         <Shield className="h-3 w-3" />
-                        Email cannot be changed for security reasons. Contact support if needed.
+                        Email cannot be changed for security reasons. Contact
+                        support if needed.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -200,24 +276,12 @@ const ProfileInformation = ({
             </div>
 
             {/* Enhanced Footer */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border/50">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span>Changes are saved automatically</span>
-              </div>
-              
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-6 border-t border-border/50">
               <div className="flex items-center gap-3">
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  className="border-border/50"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
+                  variant="default"
                   disabled={isUpdatingProfile}
-                  className="bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   {isUpdatingProfile ? (
                     <>
