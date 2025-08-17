@@ -136,6 +136,18 @@
   *:focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
   }
+
+  /* Remove all input outlines */
+  input:focus,
+  input:focus-visible {
+    @apply outline-none ring-0;
+  }
+  
+  /* Specifically remove Command Input styling */
+  [cmdk-input]:focus,
+  [cmdk-input]:focus-visible {
+    @apply outline-none ring-0 border-none;
+  }
 }
 
 @layer components {

@@ -7,7 +7,6 @@ import { useAuth } from "../../store/hooks";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -139,17 +138,17 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                    <Input
-                      label="First Name"
-                      placeholder="Enter your first name"
-                      autoComplete="given-name"
-                      error={fieldState.error?.message}
-                      clearable
-                      onClear={() => field.onChange("")}
-                      prefixIcon={<User className="w-4 h-4" />}
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
+                  <Input
+                    label="First Name"
+                    placeholder="Enter your first name"
+                    autoComplete="given-name"
+                    error={fieldState.error?.message}
+                    clearable
+                    onClear={() => field.onChange("")}
+                    prefixIcon={<User className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -167,17 +166,17 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                    <Input
-                      label="Last Name"
-                      placeholder="Enter your last name"
-                      autoComplete="family-name"
-                      error={fieldState.error?.message}
-                      clearable
-                      onClear={() => field.onChange("")}
-                      prefixIcon={<User className="w-4 h-4" />}
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
+                  <Input
+                    label="Last Name"
+                    placeholder="Enter your last name"
+                    autoComplete="family-name"
+                    error={fieldState.error?.message}
+                    clearable
+                    onClear={() => field.onChange("")}
+                    prefixIcon={<User className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -195,18 +194,18 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                    <Input
-                      label="Email Address"
-                      type="email"
-                      placeholder="Enter your email"
-                      autoComplete="email"
-                      error={fieldState.error?.message}
-                      clearable
-                      onClear={() => field.onChange("")}
-                      prefixIcon={<Mail className="w-4 h-4" />}
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
+                  <Input
+                    label="Email Address"
+                    type="email"
+                    placeholder="Enter your email"
+                    autoComplete="email"
+                    error={fieldState.error?.message}
+                    clearable
+                    onClear={() => field.onChange("")}
+                    prefixIcon={<Mail className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -227,13 +226,8 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
                   User Type
                 </FormLabel>
                 <FormControl>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                    >
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20">
                       <SelectValue placeholder="Select user type" />
                     </SelectTrigger>
                     <SelectContent variant="elevated">
@@ -273,16 +267,16 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
               render={({ field, fieldState }) => (
                 <FormItem className="relative">
                   <FormControl>
-                      <Input
-                        label="Organization Name"
-                        placeholder="Enter your organization name"
-                        error={fieldState.error?.message}
-                        clearable
-                        onClear={() => field.onChange("")}
-                        prefixIcon={<Building className="w-4 h-4" />}
-                        className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                        {...field}
-                      />
+                    <Input
+                      label="Organization Name"
+                      placeholder="Enter your organization name"
+                      error={fieldState.error?.message}
+                      clearable
+                      onClear={() => field.onChange("")}
+                      prefixIcon={<Building className="w-4 h-4" />}
+                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                      {...field}
+                    />
                   </FormControl>
                   {fieldState.error && (
                     <FormMessage className="flex items-center gap-2 mt-2">
@@ -301,17 +295,17 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                    <Input
-                      label="Password"
-                      type="password"
-                      placeholder="Create a secure password"
-                      autoComplete="new-password"
-                      error={fieldState.error?.message}
-                      helperText="At least 8 characters"
-                      prefixIcon={<Lock className="w-4 h-4" />}
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
+                  <Input
+                    label="Password"
+                    type="password"
+                    placeholder="Create a secure password"
+                    autoComplete="new-password"
+                    error={fieldState.error?.message}
+                    helperText="At least 8 characters"
+                    prefixIcon={<Lock className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -329,16 +323,16 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                    <Input
-                      label="Confirm Password"
-                      type="password"
-                      placeholder="Confirm your password"
-                      autoComplete="new-password"
-                      error={fieldState.error?.message}
-                      prefixIcon={<Lock className="w-4 h-4" />}
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
+                  <Input
+                    label="Confirm Password"
+                    type="password"
+                    placeholder="Confirm your password"
+                    autoComplete="new-password"
+                    error={fieldState.error?.message}
+                    prefixIcon={<Lock className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">

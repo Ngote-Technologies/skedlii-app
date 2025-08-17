@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { authApi } from "../api/auth";
 import { Organization, Team } from "../types";
+import { useTeamStore } from "./teamStore";
 
 interface AuthState {
   // State
@@ -34,9 +35,14 @@ export const logoutUser = async () => {
       organization: null,
       teams: [],
     });
-    // Team store will be cleared by components that use both stores
+    
+    // Clear team store explicitly
+    useTeamStore.getState().clearTeams();
+    
+    // Clear all app storage
     localStorage.removeItem("skedlii-storage");
     localStorage.removeItem("skedlii-team-storage");
+    localStorage.removeItem("skedlii-organization-storage");
     localStorage.removeItem("skedlii-theme");
   }
 };

@@ -5,6 +5,7 @@ import { logoutUser } from "../store/authStore";
 const API_BASE_URL = (import.meta as any).env.VITE_API_URL;
 
 const axiosInstance = axios.create({
+  // baseURL: "/api",
   baseURL: API_BASE_URL,
   withCredentials: false,
   headers: {
@@ -20,9 +21,15 @@ axiosInstance.interceptors.response.use(
     const status = error.response?.status;
 
     // Check if this is a password reset request
-    const isPasswordResetRequest = error.config?.url?.includes('/auth/reset-password');
-    
-    if (status === 401 && !isPasswordResetRequest && !hasShownTokenExpiredToast) {
+    const isPasswordResetRequest = error.config?.url?.includes(
+      "/auth/reset-password"
+    );
+
+    if (
+      status === 401 &&
+      !isPasswordResetRequest &&
+      !hasShownTokenExpiredToast
+    ) {
       hasShownTokenExpiredToast = true; // block subsequent toasts
 
       console.warn("[DEBUG] Token expired or unauthorized for critical route");
@@ -35,10 +42,14 @@ axiosInstance.interceptors.response.use(
         variant: "destructive",
       });
     }
-    
+
     // For password reset requests or if we've already shown the toast, just reject with the error
     if (isPasswordResetRequest || hasShownTokenExpiredToast) {
-      console.warn(`[DEBUG] ${isPasswordResetRequest ? 'Password reset' : 'Subsequent'} 401 error - passing through`);
+      console.warn(
+        `[DEBUG] ${
+          isPasswordResetRequest ? "Password reset" : "Subsequent"
+        } 401 error - passing through`
+      );
     }
 
     if (status === 403) {
@@ -64,6 +75,10 @@ axiosInstance.interceptors.request.use(
     } else {
       // No auth token available - request will proceed without authorization
     }
+
+    // Organization context removed - we now use simple ownership model
+    // Individual endpoints can add organization context if needed
+
     return config;
   },
   (error: Error) => {

@@ -17,13 +17,8 @@ import {
   TrendingUp,
   TrendingDown,
   Eye,
-  Heart,
-  MessageCircle,
-  Share,
   Clock,
   CheckCircle2,
-  XCircle,
-  AlertCircle,
   Sparkles,
   Calendar,
   Zap,
@@ -40,13 +35,6 @@ import { useEffect } from "react";
 import { useAuth } from "../../store/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { Badge, StatusBadge, BadgeGroup } from "../ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
-import { getStatusBadge } from "../posts/scheduled-posts/listView";
 import { hasValidSubscription } from "../../lib/access";
 import { toast } from "../../hooks/use-toast";
 
@@ -112,42 +100,6 @@ export default function DashboardPage() {
       )}`;
     }
   }
-
-  const renderSocialAccountIconArea = (account: any) => {
-    return (
-      <div className="flex items-center gap-3" key={account._id}>
-        {account.metadata?.profileImageUrl ||
-        account.metadata?.picture ||
-        account.metadata?.profile?.threads_profile_picture_url ? (
-          <img
-            src={
-              account.metadata.profileImageUrl ??
-              account.metadata.picture ??
-              account.metadata.profile.threads_profile_picture_url
-            }
-            alt={`${account.accountName} profile`}
-            className="h-10 w-10 rounded-full object-cover"
-          />
-        ) : (
-          <div className={`p-2 rounded-lg ${getClassName(account.platform)}`}>
-            <i
-              className={`${getSocialIcon(
-                account.platform
-              )} text-xl ${getTextColor(account.platform)}`}
-            />
-          </div>
-        )}
-        <div className="flex flex-col">
-          <CardTitle className="text-base font-medium">
-            {account.accountName ?? "Unknown Account"}
-          </CardTitle>
-          <CardDescription className="capitalize">
-            {account.platform}
-          </CardDescription>
-        </div>
-      </div>
-    );
-  };
 
   const getFooter = (loading: boolean, count: number, status: string) => {
     if (loading) return "Loading...";
@@ -308,7 +260,6 @@ export default function DashboardPage() {
                 label,
                 value,
                 icon,
-                color,
                 gradient,
                 footer,
                 to,

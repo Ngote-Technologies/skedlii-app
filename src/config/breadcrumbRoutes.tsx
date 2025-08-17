@@ -177,4 +177,8 @@ export const staticBreadcrumbMap: Record<
     label: "Help & Support",
     icon: <HelpCircle className="w-4 h-4" />,
   },
+  organizations: {
+    label: "Organizations",
+    icon: <Users className="w-4 h-4" />,
+  },
 };

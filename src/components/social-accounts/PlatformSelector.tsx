@@ -44,12 +44,11 @@ export default function PlatformSelector({
                   disabled={disabled || platform.comingSoon}
                   onClick={() => onChange(platform.label)}
                   className={cn(
-                    "group relative flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-300 hover:scale-105",
+                    "group relative flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-300",
                     isSelected
                       ? `${platform.theme.bg} ${platform.theme.border} ring-2 ring-offset-2 ring-offset-background shadow-lg transform scale-105`
                       : "bg-background border-border hover:border-primary/30 hover:shadow-md hover:bg-primary/5",
-                    platform.comingSoon && "opacity-50 cursor-not-allowed hover:scale-100",
-                    !platform.comingSoon && !isSelected && "hover:-translate-y-1"
+                    platform.comingSoon && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   {/* Background gradient for selected */}

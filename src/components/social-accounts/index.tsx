@@ -404,7 +404,7 @@ export default function SocialAccounts() {
                   </div>
                   <span>Filter by platform:</span>
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2">
                   {platformStats.uniquePlatforms.map((platform) => {
                     const isSelected = selectedPlatforms.includes(platform);
@@ -425,13 +425,15 @@ export default function SocialAccounts() {
                         )}
                         <div className="relative flex items-center gap-2">
                           <i
-                            className={`${getSocialIcon(platform)} text-sm transition-colors ${
-                              isSelected
-                                ? "text-white"
-                                : getTextColor(platform)
+                            className={`${getSocialIcon(
+                              platform
+                            )} text-sm transition-colors ${
+                              isSelected ? "text-white" : getTextColor(platform)
                             }`}
                           />
-                          <span className="capitalize font-medium">{platform}</span>
+                          <span className="capitalize font-medium">
+                            {platform}
+                          </span>
                           <Badge
                             variant="secondary"
                             className={`ml-1 text-xs transition-colors ${
@@ -447,7 +449,7 @@ export default function SocialAccounts() {
                     );
                   })}
                 </div>
-                
+
                 {selectedPlatforms.length > 0 && (
                   <Button
                     variant="ghost"
@@ -473,7 +475,7 @@ export default function SocialAccounts() {
                 >
                   {/* Animated Background Gradient */}
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
+
                   <CardHeader className="relative pb-2">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-3">
@@ -491,29 +493,42 @@ export default function SocialAccounts() {
                               </div> */}
                             </div>
                           ) : (
-                            <div className={`relative h-12 w-12 rounded-full ${getClassName(account.platform)} ring-2 ring-offset-2 ring-offset-background transition-all duration-200 group-hover:ring-primary/50 group-hover:scale-105 flex items-center justify-center`}>
-                              <i className={`${getSocialIcon(account.platform)} text-xl ${getTextColor(account.platform)}`} />
-                              
+                            <div
+                              className={`relative h-12 w-12 rounded-full ${getClassName(
+                                account.platform
+                              )} ring-2 ring-offset-2 ring-offset-background transition-all duration-200 group-hover:ring-primary/50 group-hover:scale-105 flex items-center justify-center`}
+                            >
+                              <i
+                                className={`${getSocialIcon(
+                                  account.platform
+                                )} text-xl ${getTextColor(account.platform)}`}
+                              />
+
                               {/* Pulse effect for active accounts */}
                               {/* {account.status === 'active' && (
                                 <div className="absolute -inset-1 rounded-xl bg-green-500/20 animate-pulse" />
                               )} */}
                             </div>
                           )}
-                          
+
                           {/* Health indicator dot */}
-                          <div className={`absolute top-0 right-0 h-3 w-3 rounded-full border-2 border-background ${
-                            account.status === 'active' ? 'bg-green-500' :
-                            account.status === 'expired' ? 'bg-orange-500' : 'bg-red-500'
-                          }`} />
+                          <div
+                            className={`absolute top-0 right-0 h-3 w-3 rounded-full border-2 border-background ${
+                              account.status === "active"
+                                ? "bg-green-500"
+                                : account.status === "expired"
+                                ? "bg-orange-500"
+                                : "bg-red-500"
+                            }`}
+                          />
                         </div>
-                        
+
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <CardTitle className="text-base font-semibold truncate group-hover:text-primary transition-colors">
                               {account.accountName ?? "Unknown Account"}
                             </CardTitle>
-                            {account.status === 'active' && (
+                            {account.status === "active" && (
                               <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
                                 <Zap className="h-2.5 w-2.5 text-green-500" />
                               </div>
@@ -526,13 +541,15 @@ export default function SocialAccounts() {
                             {account.metadata?.followers_count && (
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Users className="h-3 w-3" />
-                                <span>{account.metadata.followers_count.toLocaleString()}</span>
+                                <span>
+                                  {account.metadata.followers_count.toLocaleString()}
+                                </span>
                               </div>
                             )}
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col items-end gap-2">
                         <StatusBadge
                           status={
@@ -544,13 +561,21 @@ export default function SocialAccounts() {
                           }
                           size="sm"
                         />
-                        
+
                         {/* Quick action menu */}
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                          >
                             <Settings className="h-3 w-3" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                          >
                             <ExternalLink className="h-3 w-3" />
                           </Button>
                         </div>
@@ -559,7 +584,9 @@ export default function SocialAccounts() {
                   </CardHeader>
                   <CardContent className="relative space-y-3">
                     {/* Account Statistics */}
-                    {(account.metadata?.followers_count || account.metadata?.following_count || account.metadata?.posts_count) && (
+                    {(account.metadata?.followers_count ||
+                      account.metadata?.following_count ||
+                      account.metadata?.posts_count) && (
                       <div className="grid grid-cols-3 gap-2 p-3 rounded-lg bg-muted/30 border border-border/50">
                         {account.metadata?.posts_count !== undefined && (
                           <div className="text-center">
@@ -567,7 +594,9 @@ export default function SocialAccounts() {
                               <BarChart3 className="h-3 w-3" />
                               <span>Posts</span>
                             </div>
-                            <div className="font-semibold text-sm">{account.metadata.posts_count.toLocaleString()}</div>
+                            <div className="font-semibold text-sm">
+                              {account.metadata.posts_count.toLocaleString()}
+                            </div>
                           </div>
                         )}
                         {account.metadata?.followers_count !== undefined && (
@@ -576,7 +605,9 @@ export default function SocialAccounts() {
                               <Users className="h-3 w-3" />
                               <span>Followers</span>
                             </div>
-                            <div className="font-semibold text-sm">{account.metadata.followers_count.toLocaleString()}</div>
+                            <div className="font-semibold text-sm">
+                              {account.metadata.followers_count.toLocaleString()}
+                            </div>
                           </div>
                         )}
                         {account.metadata?.following_count !== undefined && (
@@ -585,37 +616,44 @@ export default function SocialAccounts() {
                               <Eye className="h-3 w-3" />
                               <span>Following</span>
                             </div>
-                            <div className="font-semibold text-sm">{account.metadata.following_count.toLocaleString()}</div>
+                            <div className="font-semibold text-sm">
+                              {account.metadata.following_count.toLocaleString()}
+                            </div>
                           </div>
                         )}
                       </div>
                     )}
-                    
+
                     {/* Account Details */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Account ID</span>
+                        <span className="text-muted-foreground">
+                          Account ID
+                        </span>
                         <span className="font-mono text-xs bg-muted/50 px-2 py-1 rounded border">
                           {account.accountId?.substring(0, 12)}...
                         </span>
                       </div>
-                      
+
                       {account.tokenExpiry && (
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <Clock className="h-3 w-3" />
                             <span>Expires</span>
                           </div>
-                          <span className={`text-xs font-medium ${
-                            new Date(account.tokenExpiry) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-                              ? 'text-orange-600'
-                              : 'text-green-600'
-                          }`}>
+                          <span
+                            className={`text-xs font-medium ${
+                              new Date(account.tokenExpiry) <
+                              new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                                ? "text-orange-600"
+                                : "text-green-600"
+                            }`}
+                          >
                             {formatDate(account.tokenExpiry, "MMM dd, yyyy")}
                           </span>
                         </div>
                       )}
-                      
+
                       {(account.connectedAt || account.createdAt) && (
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-1 text-muted-foreground">
@@ -623,23 +661,34 @@ export default function SocialAccounts() {
                             <span>Connected</span>
                           </div>
                           <span className="text-xs font-medium text-green-600">
-                            {formatDate(account.connectedAt ?? account.createdAt ?? "", "MMM dd, yyyy")}
+                            {formatDate(
+                              account.connectedAt ?? account.createdAt ?? "",
+                              "MMM dd, yyyy"
+                            )}
                           </span>
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Performance Indicators */}
                     <div className="flex items-center gap-2 pt-2 border-t border-border/50">
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <TrendingUp className="h-3 w-3 text-green-500" />
                         <span>Health: </span>
-                        <span className={`font-medium ${
-                          account.status === 'active' ? 'text-green-600' :
-                          account.status === 'expired' ? 'text-orange-600' : 'text-red-600'
-                        }`}>
-                          {account.status === 'active' ? 'Excellent' :
-                           account.status === 'expired' ? 'Needs Attention' : 'Disconnected'}
+                        <span
+                          className={`font-medium ${
+                            account.status === "active"
+                              ? "text-green-600"
+                              : account.status === "expired"
+                              ? "text-orange-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {account.status === "active"
+                            ? "Excellent"
+                            : account.status === "expired"
+                            ? "Needs Attention"
+                            : "Disconnected"}
                         </span>
                       </div>
                     </div>
@@ -650,7 +699,11 @@ export default function SocialAccounts() {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-primary/10"
+                            >
                               <BarChart3 className="h-4 w-4" />
                             </Button>
                           </TooltipTrigger>
@@ -659,11 +712,15 @@ export default function SocialAccounts() {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                      
+
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-primary/10"
+                            >
                               <ExternalLink className="h-4 w-4" />
                             </Button>
                           </TooltipTrigger>
@@ -673,7 +730,7 @@ export default function SocialAccounts() {
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    
+
                     {/* Action Buttons */}
                     <div className="flex items-center gap-2">
                       {account.status === "expired" && (
@@ -776,13 +833,16 @@ export default function SocialAccounts() {
                   </h2>
                   <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 border border-green-500/20">
                     <Activity className="h-3 w-3 text-green-500 animate-pulse" />
-                    <span className="text-xs font-medium text-green-600">{accounts.length} Active</span>
+                    <span className="text-xs font-medium text-green-600">
+                      {accounts.length} Active
+                    </span>
                   </div>
                 </div>
                 <p className="text-muted-foreground">
-                  Manage your connected social media accounts and their permissions
+                  Manage your connected social media accounts and their
+                  permissions
                 </p>
-                
+
                 {/* Quick Stats */}
                 <div className="flex items-center gap-4 pt-2">
                   <div className="flex items-center gap-2 text-sm">
@@ -792,13 +852,25 @@ export default function SocialAccounts() {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <BarChart3 className="h-4 w-4 text-green-500" />
-                    <span className="font-medium">{accounts.filter((acc: any) => acc.status === 'active').length}</span>
+                    <span className="font-medium">
+                      {
+                        accounts.filter((acc: any) => acc.status === "active")
+                          .length
+                      }
+                    </span>
                     <span className="text-muted-foreground">Active</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <AlertCircle className="h-4 w-4 text-orange-500" />
-                    <span className="font-medium">{accounts.filter((acc: any) => acc.status === 'expired').length}</span>
-                    <span className="text-muted-foreground">Need Attention</span>
+                    <span className="font-medium">
+                      {
+                        accounts.filter((acc: any) => acc.status === "expired")
+                          .length
+                      }
+                    </span>
+                    <span className="text-muted-foreground">
+                      Need Attention
+                    </span>
                   </div>
                 </div>
               </div>
@@ -818,7 +890,11 @@ export default function SocialAccounts() {
       {handleAccountsView()}
 
       <Dialog open={isAddingAccount} onOpenChange={setIsAddingAccount}>
-        <DialogContent onClose={() => form.reset()} isLoading={isLoading}>
+        <DialogContent
+          onClose={() => form.reset()}
+          isLoading={isLoading}
+          className="max-h-[90vh]"
+        >
           <DialogHeader>
             <DialogTitle>Connect Social Account</DialogTitle>
             <DialogDescription>
@@ -828,18 +904,20 @@ export default function SocialAccounts() {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="platform"
-                render={({ field }) => (
-                  <PlatformSelector
-                    value={field.value}
-                    onChange={field.onChange}
-                    error={form.formState.errors.platform?.message}
-                    disabled={isLoading}
-                  />
-                )}
-              />
+              <div className="max-h-[60vh] overflow-y-auto pr-2">
+                <FormField
+                  control={form.control}
+                  name="platform"
+                  render={({ field }) => (
+                    <PlatformSelector
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={form.formState.errors.platform?.message}
+                      disabled={isLoading}
+                    />
+                  )}
+                />
+              </div>
 
               <DialogFooter>
                 <div className="flex gap-2">
@@ -854,7 +932,7 @@ export default function SocialAccounts() {
                   >
                     Cancel
                   </Button>
-                  {/* {form.watch("platform") === "instagram" && (
+                  {form.watch("platform") === "instagram" && (
                     <Select
                       disabled={isLoading}
                       value={form.watch("instagramAccountType")}
@@ -862,8 +940,8 @@ export default function SocialAccounts() {
                         form.setValue("instagramAccountType", value);
                       }}
                     >
-                      <SelectTrigger className="bg-primary text-primary-foreground">
-                        <SelectValue placeholder="Connect Account" />
+                      <SelectTrigger>
+                        <SelectValue placeholder="Login Method" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="instagram">
@@ -873,64 +951,20 @@ export default function SocialAccounts() {
                       </SelectContent>
                     </Select>
                   )}
-                  {form.watch("platform") !== "instagram" && (
-                    <Button
-                      type="submit"
-                      disabled={isLoading || !form.watch("platform")}
-                    >
-                      {isLoading && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
-                      Connect Account
-                    </Button>
-                  )} */}
-
-                  {form.watch("platform") === "instagram" ? (
-                    <div className="flex gap-2 items-center">
-                      <Select
-                        disabled={isLoading}
-                        value={form.watch("instagramAccountType")}
-                        onValueChange={(value) => {
-                          form.setValue("instagramAccountType", value);
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Login Method" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="instagram">
-                            Instagram Login
-                          </SelectItem>
-                          <SelectItem value="facebook">
-                            Facebook Login
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        type="submit"
-                        disabled={
-                          isLoading ||
-                          !form.watch("platform") ||
-                          !form.watch("instagramAccountType")
-                        }
-                      >
-                        {isLoading && (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        )}
-                        Connect Account
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      type="submit"
-                      disabled={isLoading || !form.watch("platform")}
-                    >
-                      {isLoading && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
-                      Connect Account
-                    </Button>
-                  )}
+                  <Button
+                    type="submit"
+                    disabled={
+                      isLoading ||
+                      !form.watch("platform") ||
+                      (form.watch("platform") === "instagram" &&
+                        !form.watch("instagramAccountType"))
+                    }
+                  >
+                    {isLoading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Connect Account
+                  </Button>
                 </div>
               </DialogFooter>
             </form>

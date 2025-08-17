@@ -16,6 +16,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Building,
 } from "lucide-react";
 import { useAuth } from "../store/hooks";
 import { useMemo } from "react";
@@ -97,6 +98,13 @@ export default function DashboardSidebar({
         href: "/dashboard/collections",
         disabled: !hasValidSubscription(billing?.paymentStatus),
         badge: !hasValidSubscription(billing?.paymentStatus) ? "Pro" : null,
+      },
+      {
+        icon: <Building size={18} />,
+        label: "Organization",
+        href: "/dashboard/organizations",
+        disabled: user?.userType === "individual",
+        badge: user?.userType === "individual" ? "Org" : null,
       },
       {
         icon: <Users size={18} />,

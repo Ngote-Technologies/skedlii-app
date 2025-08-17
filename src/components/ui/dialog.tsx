@@ -86,7 +86,7 @@ const DialogContent = React.forwardRef<
       className={cn(dialogContentVariants({ variant, size }), className)}
       {...props}
     >
-      <div className="relative max-h-[90vh] overflow-y-auto">
+      <div className="relative max-h-[90vh]">
         {children}
         {!hideCloseButton && (
           <DialogPrimitive.Close

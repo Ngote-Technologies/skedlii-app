@@ -211,7 +211,7 @@ export default function Collections() {
           <div className="flex items-start">
             <Button 
               onClick={() => setIsCreating(true)}
-              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <Plus size={16} className="mr-2" />
               New Collection

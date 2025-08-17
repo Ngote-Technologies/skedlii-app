@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../../ui/button";
-import { useSwipeNavigation } from "../../../hooks/useSwipeNavigation";
 import {
   Card,
   CardContent,
@@ -197,23 +196,6 @@ export default function PostFlow() {
     }
   };
 
-  const navigateToNextTab = () => {
-    const currentIndex = steps.findIndex((step) => step.id === activeTab);
-    if (currentIndex < steps.length - 1) {
-      const nextStep = steps[currentIndex + 1];
-      if (!nextStep.disabled) {
-        setActiveTab(nextStep.id);
-      }
-    }
-  };
-
-  const navigateToPreviousTab = () => {
-    const currentIndex = steps.findIndex((step) => step.id === activeTab);
-    if (currentIndex > 0) {
-      setActiveTab(steps[currentIndex - 1].id);
-    }
-  };
-
   return (
     <div className="space-y-8 touch-pan-y">
       {/* Enhanced Header with Step Progress */}
@@ -348,15 +330,6 @@ export default function PostFlow() {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Mobile Swipe Indicator */}
-          {/* <div className="sm:hidden flex items-center justify-center text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-0.5 bg-muted-foreground/30 rounded-full"></div>
-              <span>Tap steps above or swipe to navigate</span>
-              <div className="w-4 h-0.5 bg-muted-foreground/30 rounded-full"></div>
-            </div>
-          </div> */}
-
           <Tabs
             defaultValue={activeTab}
             value={activeTab}

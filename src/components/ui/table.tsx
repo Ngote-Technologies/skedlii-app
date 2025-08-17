@@ -1,12 +1,6 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import {
-  ChevronUp,
-  ChevronDown,
-  ArrowUpDown,
-  MoreHorizontal,
-  Search,
-} from "lucide-react";
+import { ChevronUp, ChevronDown, ArrowUpDown, Search } from "lucide-react";
 
 import { cn } from "../../lib/utils";
 
