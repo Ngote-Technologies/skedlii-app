@@ -1,6 +1,8 @@
 import { Button } from "../components/ui/button";
 import { ThemeToggle } from "../components/ui/theme-toggle";
 import { useAuth } from "../store/hooks";
+import { useAccessControl } from "../hooks/useAccessControl";
+import { Permission } from "../lib/access-control";
 import { Link, useLocation } from "react-router-dom";
 import {
   DropdownMenu,
@@ -34,7 +36,8 @@ import {
 } from "../components/organization";
 
 export default function DashboardHeader() {
-  const { user, logout } = useAuth();
+  const { user, logout, canManageBilling } = useAuth();
+  const { hasPermission } = useAccessControl();
   const location = useLocation();
   const [isCreateOrgDialogOpen, setIsCreateOrgDialogOpen] = useState(false);
 
@@ -174,18 +177,22 @@ export default function DashboardHeader() {
                   Profile Settings
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard/accounts" className="cursor-pointer">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Social Accounts
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard/billing" className="cursor-pointer">
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Upgrade Plan
-                </Link>
-              </DropdownMenuItem>
+              {hasPermission(Permission.SOCIAL_ACCOUNTS_VIEW) && (
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard/accounts" className="cursor-pointer">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Social Accounts
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {canManageBilling && (
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard/billing" className="cursor-pointer">
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Upgrade Plan
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link to="/dashboard/help" className="cursor-pointer">

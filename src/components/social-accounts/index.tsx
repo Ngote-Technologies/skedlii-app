@@ -49,6 +49,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "../../store/hooks";
+import { useAccessControl } from "../../hooks/useAccessControl";
 import { Skeleton } from "../ui/skeleton";
 import {
   Tooltip,
@@ -101,6 +102,7 @@ type SocialAccountFormData = z.infer<typeof socialAccountSchema>;
 export default function SocialAccounts() {
   const { user } = useAuth();
   const { billing } = user;
+  const { canConnectSocialAccounts } = useAccessControl();
   const [isAddingAccount, setIsAddingAccount] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [deleteConfig, setDeleteConfig] = useState({
@@ -805,20 +807,42 @@ export default function SocialAccounts() {
             </div>
           </div>
           <h3 className="text-xl font-semibold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-            No accounts connected
+            {canConnectSocialAccounts
+              ? "No accounts connected"
+              : "No team accounts available"}
           </h3>
           <p className="text-muted-foreground text-center max-w-md">
-            You haven't created any accounts yet. Connect your first account to
-            get started.
+            {canConnectSocialAccounts
+              ? "You haven't created any accounts yet. Connect your first account to get started."
+              : "Your organization owners and admins haven't connected any social accounts yet, or you haven't been assigned to teams with social account access."}
           </p>
-          <Button
-            onClick={() => setIsAddingAccount(true)}
-            disabled={!hasValidSubscription(billing?.paymentStatus)}
-            className="bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            <Plus size={16} className="mr-2" />
-            Connect Account
-          </Button>
+          {canConnectSocialAccounts ? (
+            <Button
+              onClick={() => setIsAddingAccount(true)}
+              disabled={!hasValidSubscription(billing?.paymentStatus)}
+              className="bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Plus size={16} className="mr-2" />
+              Connect Account
+            </Button>
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button disabled className="opacity-50">
+                    <Plus size={16} className="mr-2" />
+                    Connect Account
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    Only organization owners and admins can connect social
+                    accounts
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
       ) : (
         <div className="space-y-6">
@@ -839,9 +863,27 @@ export default function SocialAccounts() {
                   </div>
                 </div>
                 <p className="text-muted-foreground">
-                  Manage your connected social media accounts and their
-                  permissions
+                  {canConnectSocialAccounts
+                    ? "Manage your connected social media accounts and their permissions"
+                    : "View social media accounts available through your team assignments"}
                 </p>
+
+                {!canConnectSocialAccounts &&
+                  user?.userType === "organization" && (
+                    <div className="mt-2 p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm">
+                      <div className="flex items-start gap-2">
+                        <Users className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-medium">
+                            Team-based access:{" "}
+                          </span>
+                          Social accounts are connected by organization owners
+                          and admins, then assigned to teams. You can access
+                          accounts through teams you're a member of.
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                 {/* Quick Stats */}
                 <div className="flex items-center gap-4 pt-2">
@@ -874,14 +916,33 @@ export default function SocialAccounts() {
                   </div>
                 </div>
               </div>
-              <Button
-                onClick={() => setIsAddingAccount(true)}
-                className="w-full sm:w-auto bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
-                disabled={!hasValidSubscription(billing?.paymentStatus)}
-              >
-                <Plus size={16} className="mr-2" />
-                Connect Account
-              </Button>
+              {canConnectSocialAccounts ? (
+                <Button
+                  onClick={() => setIsAddingAccount(true)}
+                  className="w-full sm:w-auto bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+                  disabled={!hasValidSubscription(billing?.paymentStatus)}
+                >
+                  <Plus size={16} className="mr-2" />
+                  Connect Account
+                </Button>
+              ) : (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button disabled className="w-full sm:w-auto opacity-50">
+                        <Plus size={16} className="mr-2" />
+                        Connect Account
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        Only organization owners and admins can connect social
+                        accounts
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </div>
         </div>
@@ -919,19 +980,19 @@ export default function SocialAccounts() {
                 />
               </div>
 
-              <DialogFooter>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    type="button"
-                    disabled={isLoading}
-                    onClick={() => {
-                      setIsAddingAccount(false);
-                      form.reset();
-                    }}
-                  >
-                    Cancel
-                  </Button>
+              <DialogFooter justify="between">
+                <Button
+                  variant="outline"
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => {
+                    setIsAddingAccount(false);
+                    form.reset();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <div className="flex items-center gap-6">
                   {form.watch("platform") === "instagram" && (
                     <Select
                       disabled={isLoading}
@@ -944,15 +1005,18 @@ export default function SocialAccounts() {
                         <SelectValue placeholder="Login Method" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="instagram">
+                        <SelectItem value="instagram" showIndicator>
                           Instagram Login
                         </SelectItem>
-                        <SelectItem value="facebook">Facebook Login</SelectItem>
+                        <SelectItem value="facebook" showIndicator>
+                          Facebook Login
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   )}
                   <Button
                     type="submit"
+                    className="min-w-[140px]"
                     disabled={
                       isLoading ||
                       !form.watch("platform") ||
