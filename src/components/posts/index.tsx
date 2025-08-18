@@ -3,8 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "../ui/button";
 import {
-  CheckCircle2,
-  Clock,
   AlertCircle,
   Plus,
   RefreshCw,
@@ -14,6 +12,12 @@ import {
   BarChart2,
   Trash2,
   Folder,
+  Image,
+  Video,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+  Play,
 } from "lucide-react";
 import { useAuth } from "../../store/hooks";
 import {
@@ -24,7 +28,7 @@ import {
   CardContent,
   CardFooter,
 } from "../ui/card";
-import { Badge } from "../ui/badge";
+import { StatusBadge } from "../ui/badge";
 import { formatDate, getSocialIcon } from "../../lib/utils";
 import { getPlatformSimpleTextColor } from "../../lib/platformUtils";
 import { Skeleton } from "../ui/skeleton";
@@ -54,12 +58,89 @@ import {
 } from "../ui/select";
 import { hasValidSubscription } from "../../lib/access";
 
-const STATUS_ICONS = {
-  published: CheckCircle2,
-  posted: CheckCircle2,
-  scheduled: Clock,
-  failed: AlertCircle,
-  default: Clock,
+// Media Carousel Component
+const MediaCarousel = ({ mediaUrls, mediaType }: { mediaUrls: string[]; mediaType: string }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  if (!mediaUrls || mediaUrls.length === 0) return null;
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % mediaUrls.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + mediaUrls.length) % mediaUrls.length);
+  };
+
+  return (
+    <div className="relative bg-gray-50 dark:bg-gray-800 rounded-lg overflow-hidden">
+      {/* Media Display */}
+      <div className="relative aspect-video">
+        {mediaType === 'video' ? (
+          <video
+            src={mediaUrls[currentIndex]}
+            className="w-full h-full object-cover"
+            controls
+            playsInline
+          />
+        ) : (
+          <img
+            src={mediaUrls[currentIndex]}
+            alt={`Media ${currentIndex + 1}`}
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+            loading="lazy"
+          />
+        )}
+        
+        {/* Navigation Buttons */}
+        {mediaUrls.length > 1 && (
+          <>
+            <button
+              onClick={prevSlide}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </>
+        )}
+
+        {/* Video Play Overlay */}
+        {mediaType === 'video' && (
+          <div className="absolute top-2 left-2 bg-black/50 text-white rounded-full p-1">
+            <Play className="h-3 w-3 fill-current" />
+          </div>
+        )}
+      </div>
+
+      {/* Indicators */}
+      {mediaUrls.length > 1 && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1">
+          {mediaUrls.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`w-2 h-2 rounded-full transition-colors ${
+                index === currentIndex ? 'bg-white' : 'bg-white/50'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Media Counter */}
+      {mediaUrls.length > 1 && (
+        <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+          {currentIndex + 1} / {mediaUrls.length}
+        </div>
+      )}
+    </div>
+  );
 };
 
 const Posts = () => {
@@ -173,20 +254,6 @@ const Posts = () => {
       },
     });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "published":
-      case "posted":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
-      case "scheduled":
-        return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
-      case "failed":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
-    }
-  };
-
   const handleEditPost = (postId: string) => {
     navigate(`/dashboard/edit-post/${postId}`);
   };
@@ -216,9 +283,9 @@ const Posts = () => {
             New Post
           </Button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="overflow-hidden">
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i} className="overflow-hidden border-0 shadow-md bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 mb-6 break-inside-avoid">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -270,15 +337,16 @@ const Posts = () => {
 
   if (!posts?.data?.length) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-4 h-[60vh]">
-        <div className="rounded-full bg-primary/10 p-4">
-          <MessageSquare className="h-8 w-8 text-primary" />
+      <div className="flex flex-col items-center justify-center space-y-6 h-[60vh]">
+        <div className="rounded-full bg-gradient-to-br from-primary/10 to-primary/5 p-6 shadow-lg">
+          <MessageSquare className="h-12 w-12 text-primary" />
         </div>
-        <h3 className="text-xl font-semibold">No posts yet</h3>
-        <p className="text-muted-foreground text-center max-w-md">
-          You haven't created any posts yet. Create your first post to get
-          started.
-        </p>
+        <div className="text-center space-y-2">
+          <h3 className="text-2xl font-semibold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">No posts yet</h3>
+          <p className="text-muted-foreground text-center max-w-md text-lg">
+            You haven't created any posts yet. Create your first post to get started with your social media journey.
+          </p>
+        </div>
         <Button
           onClick={() => {
             if (!hasValidSubscription(billing?.paymentStatus)) {
@@ -338,58 +406,86 @@ const Posts = () => {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {posts.data.length} post{posts.data.length !== 1 ? "s" : ""} in
-            total
-          </p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-transparent dark:from-gray-900 dark:to-transparent rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {posts.data.length} post{posts.data.length !== 1 ? "s" : ""} published
+            </p>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Latest activity
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
           {posts?.data?.map((post: any) => {
-            const StatusIcon =
-              STATUS_ICONS[post.status as keyof typeof STATUS_ICONS] ||
-              STATUS_ICONS.default;
             const platform = post.platform?.toLowerCase() ?? "";
 
             return (
               <Card
                 key={post._id}
-                className="overflow-hidden hover:shadow-md transition-shadow group"
+                className="overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200 group border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 shadow-md mb-6 break-inside-avoid"
               >
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-4 px-6 pt-6 bg-gradient-to-r from-transparent to-gray-50/30 dark:to-gray-800/30">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div>
-                        <i
-                          className={`${getSocialIcon(
-                            platform
-                          )} text-lg ${getPlatformSimpleTextColor(platform)}`}
-                        />
+                    <div className="flex items-center space-x-4">
+                      <div className="relative">
+                        <div className="relative">
+                          <img
+                            src={post.metadata?.profileImageUrl ?? post.metadata?.profile?.threads_profile_picture_url ?? 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="100%" height="100%" fill="transparent"/></svg>'}
+                            alt="Profile"
+                            className="h-10 w-10 rounded-full object-cover border-2 border-gray-100 dark:border-gray-700"
+                            onError={(e) => {
+                              console.log('Profile image failed for platform:', platform, 'URL:', e.currentTarget.src);
+                              // Replace with fallback background
+                              e.currentTarget.style.display = 'none';
+                            }}
+                            onLoad={(e) => {
+                              console.log('Profile image loaded for platform:', platform, 'URL:', e.currentTarget.src);
+                            }}
+                          />
+                          {/* Fallback icon - always rendered but conditionally visible */}
+                          <div 
+                            className={`absolute inset-0 h-10 w-10 rounded-full border-2 border-gray-100 dark:border-gray-700 flex items-center justify-center ${getPlatformSimpleTextColor(platform)} bg-gray-50 dark:bg-gray-800`}
+                            style={{ display: (!post.metadata?.profileImageUrl && !post.metadata?.profile?.threads_profile_picture_url) ? 'flex' : 'none' }}
+                          >
+                            <i className={`${getSocialIcon(platform)} text-lg`} />
+                          </div>
+                          {/* Platform badge */}
+                          <div className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center ${getPlatformSimpleTextColor(platform)} bg-white dark:bg-gray-800`}>
+                            <i className={`${getSocialIcon(platform)} text-xs`} />
+                          </div>
+                        </div>
                       </div>
-                      <div className="space-y-0.5">
-                        <CardTitle className="text-sm font-medium">
-                          {post.metadata?.socialPost?.username ??
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <CardTitle className="text-sm font-semibold truncate">
+                          {post.metadata?.accountName ??
+                            post.metadata?.socialPost?.username ??
                             post.metadata?.socialPost?.accountName ??
-                            post.metadata?.accountName ??
                             "Unknown Account"}
                         </CardTitle>
-                        <CardDescription className="text-xs">
-                          {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                        <CardDescription className="text-xs capitalize text-muted-foreground">
+                          {platform}
                         </CardDescription>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge
-                        variant="outline"
-                        className={`text-xs font-normal px-2 py-0.5 h-6 ${getStatusColor(
-                          post.status
-                        )}`}
-                      >
-                        <StatusIcon className="h-2.5 w-2.5 mr-1" />
-                        <span className="capitalize">{post.status}</span>
-                      </Badge>
+                      {post.mediaType && (
+                        <div className="flex items-center space-x-1 text-xs text-muted-foreground bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                          {post.mediaType === 'image' && <Image className="h-3 w-3" />}
+                          {post.mediaType === 'video' && <Video className="h-3 w-3" />}
+                          {post.mediaType === 'text' && <FileText className="h-3 w-3" />}
+                          <span className="capitalize">{post.mediaType}</span>
+                        </div>
+                      )}
+                      <StatusBadge
+                        status={
+                          post.status === "posted" || post.status === "published" ? "published" : post.status
+                        }
+                        size="sm"
+                      />
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -455,57 +551,78 @@ const Posts = () => {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="py-0 px-4">
-                  <div className="text-sm line-clamp-3 mb-3">
+                <CardContent className="py-0 px-6">
+                  <div className="text-sm line-clamp-3 mb-3 leading-relaxed text-gray-700 dark:text-gray-300">
                     {post.content}
                   </div>
-                  {post.imageUrl && (
-                    <div className="mb-3 rounded-md overflow-hidden">
-                      <img
-                        src={post.imageUrl}
-                        alt="Post Preview"
-                        className="w-full h-40 object-cover"
+                  {/* Media Display with Carousel */}
+                  {(post.mediaUrls?.length > 0 || post.imageUrl || post.metadata?.videoUrl) && (
+                    <div className="mb-3">
+                      <MediaCarousel
+                        mediaUrls={
+                          post.mediaUrls?.length > 0
+                            ? post.mediaUrls
+                            : post.imageUrl
+                            ? [post.imageUrl]
+                            : post.metadata?.videoUrl
+                            ? [post.metadata.videoUrl]
+                            : []
+                        }
+                        mediaType={post.mediaType || 'image'}
                       />
                     </div>
                   )}
                 </CardContent>
-                <CardFooter className="flex justify-between items-center pt-0 px-4 pb-3">
-                  <div className="flex flex-col space-y-1">
-                    <span className="text-xs text-muted-foreground">
-                      {formatDate(post.postedAt ?? post.createdAt, "PPP p")}
-                    </span>
-                    {post.collection && (
-                      <div className="flex items-center space-x-1 text-xs">
-                        <Folder className="h-3 w-3 text-muted-foreground" />
-                        <Link
-                          to={`/dashboard/collections/${post.collection._id}`}
-                          className="text-primary hover:underline hover:text-primary/80 transition-colors"
-                        >
-                          {post.collection.name}
-                        </Link>
-                      </div>
-                    )}
+                <CardFooter className="flex flex-col space-y-3 pt-0 px-6 pb-6">
+                  <div className="flex justify-between items-center w-full">
+                    <div className="flex flex-col space-y-1">
+                      <span className="text-xs text-muted-foreground flex items-center space-x-1">
+                        <span>Published {formatDate(post.publishedDate ?? post.postedAt ?? post.createdAt, "MMM d, yyyy")}</span>
+                      </span>
+                      {post.collection && (
+                        <div className="flex items-center space-x-1 text-xs">
+                          <Folder className="h-3 w-3 text-muted-foreground" />
+                          <Link
+                            to={`/dashboard/collections/${post.collection._id}`}
+                            className="text-primary hover:underline hover:text-primary/80 transition-colors"
+                          >
+                            {post.collection.name}
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-green-50 dark:hover:bg-green-900/20"
+                        onClick={() => handleViewAnalytics(post._id)}
+                        disabled={!["posted", "published"].includes(post.status)}
+                        title="View Analytics"
+                      >
+                        <BarChart2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        onClick={() => handleEditPost(post._id)}
+                        disabled={["published", "posted"].includes(post.status)}
+                        title="Edit Post"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex space-x-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => handleViewAnalytics(post._id)}
-                      disabled={!["posted", "published"].includes(post.status)}
-                    >
-                      <BarChart2 className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => handleEditPost(post._id)}
-                      disabled={["published", "posted"].includes(post.status)}
-                    >
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
+                  {/* {post.mediaUrls?.length > 1 && (
+                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-gray-100 dark:border-gray-800">
+                      <span className="flex items-center space-x-1">
+                        <Image className="h-3 w-3" />
+                        <span>{post.mediaUrls.length} media files</span>
+                      </span>
+                      <span>{post.mediaType}</span>
+                    </div>
+                  )} */}
                 </CardFooter>
               </Card>
             );
@@ -530,7 +647,7 @@ const Posts = () => {
           setCollectionConfig({ ...collectionConfig, isOpen: false })
         }
       >
-        <DialogContent>
+        <DialogContent variant="elevated">
           <DialogHeader>
             <DialogTitle>Add to Collection</DialogTitle>
             <DialogDescription>

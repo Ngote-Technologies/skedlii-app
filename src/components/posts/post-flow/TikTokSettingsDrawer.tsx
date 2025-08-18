@@ -111,7 +111,7 @@ export default function TikTokSettingsDrawer({
 
         <Accordion
           type="multiple"
-          className="max-h-[75vh] overflow-y-auto p-4 space-y-2"
+          className="max-h-[75vh] p-4 space-y-2"
         >
           {Object.entries(localOptions).map(([accountId, opts]) => (
             <AccordionItem key={accountId} value={accountId}>

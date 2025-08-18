@@ -15,7 +15,19 @@ export const useAuth = () => {
     register,
     fetchUserData,
     clearError: clearAuthError,
+    updateSubscriptionInfo,
+
+    // Enhanced authentication context
+    userRole,
+    userType,
+    subscriptionInfo,
+
+    // Computed permissions
     isAdmin,
+    canManageOrganization,
+    canManageBilling,
+    canConnectSocialAccounts,
+    canCreateTeams,
   } = useAuthStore();
 
   const {
@@ -43,6 +55,11 @@ export const useAuth = () => {
     authLoading,
     authError,
 
+    // Enhanced authentication context
+    userRole,
+    userType,
+    subscriptionInfo,
+
     // Team state
     teams,
     activeTeam,
@@ -55,7 +72,15 @@ export const useAuth = () => {
     register,
     fetchUserData,
     clearAuthError,
+    updateSubscriptionInfo,
+
+    // Computed permissions
     isAdmin,
+    canManageOrganization,
+    canManageBilling,
+    canConnectSocialAccounts,
+    canCreateTeams,
+
     // Team actions
     fetchTeams,
     setActiveTeam,

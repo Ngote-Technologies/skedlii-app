@@ -2,9 +2,14 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
 import { useToast } from "../../hooks/use-toast";
+import {
+  useActiveOrganization,
+  useOrganizationPermissions,
+} from "../organization";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Users } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -48,12 +53,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Badge } from "../ui/badge";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Avatar, AvatarFallback } from "../ui/avatar";
@@ -63,7 +63,6 @@ import { Loader2, Plus, UserPlus, X } from "lucide-react";
 const teamSchema = z.object({
   name: z.string().min(1, "Team name is required"),
   description: z.string().optional(),
-  organizationId: z.number(),
 });
 
 const memberSchema = z.object({
@@ -78,37 +77,69 @@ export default function TeamManagement() {
   const [isCreatingTeam, setIsCreatingTeam] = useState(false);
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
+  const [teamToDelete, setTeamToDelete] = useState<any>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const activeOrganization = useActiveOrganization();
+  const permissions = useOrganizationPermissions();
 
-  // Get teams
+  // Get teams for active organization
   const { data: teams = [], isLoading: isLoadingTeams } = useQuery({
-    queryKey: ["/teams"],
+    queryKey: ["/teams", "organization", activeOrganization?._id],
+    queryFn: () =>
+      activeOrganization
+        ? apiRequest("GET", `/teams/organization/${activeOrganization._id}`)
+        : Promise.resolve([]),
+    enabled: !!activeOrganization,
   }) as { data: any[]; isLoading: boolean };
 
-  // Get organizations (for team creation)
-  const { data: organizations = [], isLoading: isLoadingOrgs } = useQuery({
-    queryKey: ["/organizations"],
-  }) as { data: any[]; isLoading: boolean };
+  // Get organization members (for team member addition)
+  const { data: organizationData, isLoading: isLoadingUsers } = useQuery({
+    queryKey: ["/organizations", activeOrganization?._id],
+    queryFn: () =>
+      activeOrganization
+        ? apiRequest("GET", `/organizations/${activeOrganization._id}`)
+        : Promise.resolve(null),
+    enabled: !!activeOrganization,
+  });
 
-  // Get users (for member addition)
-  const { data: users = [], isLoading: isLoadingUsers } = useQuery({
-    queryKey: ["/users"],
-  }) as { data: any[]; isLoading: boolean };
+  const users = organizationData?.members || [];
 
   // Get team members for selected team
   const { data: teamMembers = [], isLoading: isLoadingMembers } = useQuery({
-    queryKey: ["/teams", selectedTeam?.id, "members"],
-    enabled: !!selectedTeam,
+    queryKey: [
+      "/teams",
+      "organization",
+      activeOrganization?._id,
+      selectedTeam?._id,
+      "members",
+    ],
+    queryFn: () => {
+      if (!selectedTeam || !activeOrganization) return Promise.resolve([]);
+      // Use organization-scoped endpoint
+      return apiRequest(
+        "GET",
+        `/teams/organization/${activeOrganization._id}/${selectedTeam._id}/members`
+      );
+    },
+    enabled: !!selectedTeam && !!activeOrganization,
   }) as { data: any[]; isLoading: boolean };
 
   // Create team mutation
   const { mutate: createTeam, isPending: isCreatingTeamPending } = useMutation({
     mutationFn: async (data: TeamFormData) => {
-      return await apiRequest("POST", "/teams", data);
+      if (!activeOrganization) throw new Error("No active organization");
+      return await apiRequest(
+        "POST",
+        `/teams/organization/${activeOrganization._id}`,
+        data
+      );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/teams"] });
+      queryClient.invalidateQueries({
+        queryKey: ["/teams", "organization", activeOrganization?._id],
+      });
       toast({
         title: "Team created",
         description: "Your team has been created successfully",
@@ -128,16 +159,23 @@ export default function TeamManagement() {
   // Add team member mutation
   const { mutate: addTeamMember, isPending: isAddingMemberPending } =
     useMutation({
-      mutationFn: async (data: { teamId: number; member: MemberFormData }) => {
+      mutationFn: async (data: { teamId: string; member: MemberFormData }) => {
+        if (!activeOrganization) throw new Error("No active organization");
         return await apiRequest(
           "POST",
-          `/teams/${data.teamId}/members`,
+          `/teams/organization/${activeOrganization._id}/${data.teamId}/members`,
           data.member
         );
       },
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: ["/teams", selectedTeam?.id, "members"],
+          queryKey: [
+            "/teams",
+            "organization",
+            activeOrganization?._id,
+            selectedTeam?._id,
+            "members",
+          ],
         });
         toast({
           title: "Member added",
@@ -163,17 +201,24 @@ export default function TeamManagement() {
         teamId,
         userId,
       }: {
-        teamId: number;
+        teamId: string;
         userId: number;
       }) => {
+        if (!activeOrganization) throw new Error("No active organization");
         return await apiRequest(
           "DELETE",
-          `/teams/${teamId}/members/${userId}`
+          `/teams/organization/${activeOrganization._id}/${teamId}/members/${userId}`
         );
       },
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: ["/teams", selectedTeam?.id, "members"],
+          queryKey: [
+            "/teams",
+            "organization",
+            activeOrganization?._id,
+            selectedTeam?._id,
+            "members",
+          ],
         });
         toast({
           title: "Member removed",
@@ -189,12 +234,44 @@ export default function TeamManagement() {
       },
     });
 
+  // Delete team mutation
+  const { mutate: deleteTeam, isPending: isDeletingTeam } = useMutation({
+    mutationFn: async (teamId: string) => {
+      if (!activeOrganization) throw new Error("No active organization");
+      return await apiRequest(
+        "DELETE",
+        `/teams/organization/${activeOrganization._id}/${teamId}`
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["/teams", "organization", activeOrganization?._id],
+      });
+      toast({
+        title: "Team deleted",
+        description: "The team has been deleted successfully",
+      });
+      setIsDeleteDialogOpen(false);
+      setTeamToDelete(null);
+      // Clear selected team if it was the deleted one
+      if (selectedTeam && selectedTeam._id === teamToDelete?._id) {
+        setSelectedTeam(null);
+      }
+    },
+    onError: () => {
+      toast({
+        title: "Deletion failed",
+        description: "Failed to delete team. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const teamForm = useForm<TeamFormData>({
     resolver: zodResolver(teamSchema),
     defaultValues: {
       name: "",
       description: "",
-      organizationId: organizations?.[0]?.id,
     },
   });
 
@@ -213,7 +290,7 @@ export default function TeamManagement() {
   function onMemberSubmit(data: MemberFormData) {
     if (selectedTeam) {
       addTeamMember({
-        teamId: selectedTeam.id,
+        teamId: selectedTeam._id,
         member: {
           userId: data.userId,
           role: data.role,
@@ -230,14 +307,47 @@ export default function TeamManagement() {
   function handleRemoveMember(userId: number) {
     if (selectedTeam) {
       removeTeamMember({
-        teamId: selectedTeam.id,
+        teamId: selectedTeam._id,
         userId,
       });
     }
   }
 
   function getUserById(userId: number) {
-    return users.find((user: any) => user.id === userId);
+    return users.find((user: any) => user._id === userId || user.id === userId);
+  }
+
+  function openDeleteDialog(team: any) {
+    setTeamToDelete(team);
+    setIsDeleteDialogOpen(true);
+  }
+
+  function handleDeleteTeam() {
+    if (teamToDelete) {
+      deleteTeam(teamToDelete._id);
+    }
+  }
+
+  function canDeleteTeam() {
+    // Only organization owners/admins can delete teams (same permissions as creating teams)
+    return permissions.canCreateTeams;
+  }
+
+  // Show message if no organization is selected
+  if (!activeOrganization) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+            No Organization Selected
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">
+            Please select an organization to manage teams
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -245,12 +355,16 @@ export default function TeamManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Team Management</h2>
-          <p className="text-muted-foreground">Create and manage your teams</p>
+          <p className="text-muted-foreground">
+            Create and manage teams in {activeOrganization.name}
+          </p>
         </div>
-        <Button onClick={() => setIsCreatingTeam(true)}>
-          <Plus size={16} className="mr-2" />
-          Create Team
-        </Button>
+        {permissions.canCreateTeams && (
+          <Button onClick={() => setIsCreatingTeam(true)}>
+            <Plus size={16} className="mr-2" />
+            Create Team
+          </Button>
+        )}
       </div>
 
       <Tabs defaultValue="teams">
@@ -269,15 +383,12 @@ export default function TeamManagement() {
           ) : teams.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {teams.map((team: any) => {
-                const organization = organizations.find(
-                  (org: any) => org.id === team.organizationId
-                );
                 return (
-                  <Card key={team.id} className="overflow-hidden">
+                  <Card key={team._id} className="overflow-hidden">
                     <CardHeader>
                       <CardTitle>{team.name}</CardTitle>
                       <CardDescription>
-                        {organization?.name || "Organization not found"}
+                        {activeOrganization.name}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -293,13 +404,6 @@ export default function TeamManagement() {
                     </CardContent>
                     <CardFooter className="flex flex-col gap-2 border-t pt-4 bg-muted/40">
                       <Button
-                        variant="default"
-                        className="w-full"
-                        onClick={() => setSelectedTeam(team)}
-                      >
-                        View Members
-                      </Button>
-                      <Button
                         variant="outline"
                         className="w-full"
                         onClick={() => openAddMemberDialog(team)}
@@ -307,6 +411,23 @@ export default function TeamManagement() {
                         <UserPlus size={16} className="mr-2" />
                         Add Member
                       </Button>
+                      <Button
+                        variant="default"
+                        className="w-full"
+                        onClick={() => setSelectedTeam(team)}
+                      >
+                        View Members
+                      </Button>
+                      {canDeleteTeam() && (
+                        <Button
+                          variant="destructive"
+                          className="w-full"
+                          onClick={() => openDeleteDialog(team)}
+                        >
+                          <X size={16} className="mr-2" />
+                          Delete Team
+                        </Button>
+                      )}
                     </CardFooter>
                   </Card>
                 );
@@ -488,47 +609,6 @@ export default function TeamManagement() {
                 )}
               />
 
-              <FormField
-                control={teamForm.control}
-                name="organizationId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Organization</FormLabel>
-                    <Select
-                      onValueChange={(value) => field.onChange(parseInt(value))}
-                      defaultValue={field.value?.toString()}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select organization" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {isLoadingOrgs ? (
-                          <div className="flex items-center justify-center p-2">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          </div>
-                        ) : organizations.length > 0 ? (
-                          organizations.map((org: any) => (
-                            <SelectItem key={org.id} value={org.id.toString()}>
-                              {org.name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="none" disabled>
-                            No organizations available
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      The organization this team belongs to
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <DialogFooter>
                 <Button
                   variant="outline"
@@ -587,8 +667,8 @@ export default function TeamManagement() {
                         ) : users.length > 0 ? (
                           users.map((user: any) => (
                             <SelectItem
-                              key={user.id}
-                              value={user.id.toString()}
+                              key={user._id}
+                              value={user._id.toString()}
                             >
                               {user.name || user.username} ({user.email})
                             </SelectItem>
@@ -652,6 +732,39 @@ export default function TeamManagement() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Team Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Team</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{teamToDelete?.name}"? This
+              action cannot be undone. All team members will be removed from the
+              team.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isDeletingTeam}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteTeam}
+              disabled={isDeletingTeam}
+            >
+              {isDeletingTeam && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Delete Team
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

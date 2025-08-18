@@ -17,6 +17,8 @@ export interface SendInvitationResponse {
   role: string;
   organizationId: string;
   teamIds: string[];
+  userExists: boolean;
+  organizationName: string;
   settings: {
     permissions: string[];
     theme: string;
@@ -31,6 +33,10 @@ export interface VerifyInvitationResponse {
   firstName: string;
   lastName: string;
   organizationName: string;
+  role: string;
+  userExists: boolean;
+  expiresAt: string;
+  emailMismatch: boolean;
 }
 
 export interface ResendInvitationResponse {
@@ -39,7 +45,7 @@ export interface ResendInvitationResponse {
 
 export const invitationsApi = {
   sendInvitation: async (data: SendInvitationRequest): Promise<SendInvitationResponse> => {
-    const response = await axiosInstance.post<SendInvitationResponse>('/users/invite', data);
+    const response = await axiosInstance.post<SendInvitationResponse>('/invitations', data);
     return response.data;
   },
 
@@ -48,8 +54,9 @@ export const invitationsApi = {
     return response.data;
   },
 
-  acceptInvitation: async (token: string, password: string): Promise<{ email: string }> => {
-    const response = await axiosInstance.post<{ email: string }>(`/invitations/${token}/accept`, { password });
+  acceptInvitation: async (token: string, password?: string): Promise<{ email: string }> => {
+    const body = password ? { password } : {};
+    const response = await axiosInstance.post<{ email: string }>(`/invitations/${token}/accept`, body);
     return response.data;
   },
 
