@@ -1,6 +1,8 @@
 import { Button } from "../components/ui/button";
 import { ThemeToggle } from "../components/ui/theme-toggle";
 import { useAuth } from "../store/hooks";
+import { useAccessControl } from "../hooks/useAccessControl";
+import { Permission } from "../lib/access-control";
 import { Link, useLocation } from "react-router-dom";
 import {
   DropdownMenu,
@@ -14,7 +16,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { getInitials } from "../lib/utils";
 import {
   Menu,
-  Search,
   Bell,
   ChevronRight,
   Sparkles,
@@ -25,16 +26,20 @@ import {
 import { useMobileMenuStore } from "../store/layout";
 import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import DashboardSidebar from "./DashboardSidebar";
-import { Input } from "../components/ui/input";
 import { useState } from "react";
 import { Badge } from "../components/ui/badge";
 import NotificationBadge from "../components/ui/notification-badge";
 import { useDynamicBreadcrumbs } from "../hooks/useDynamicBreadcrumbs";
+import {
+  CompactOrganizationSwitcher,
+  CreateOrganizationDialog,
+} from "../components/organization";
 
 export default function DashboardHeader() {
-  const { user, logout } = useAuth();
+  const { user, logout, canManageBilling } = useAuth();
+  const { hasPermission } = useAccessControl();
   const location = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateOrgDialogOpen, setIsCreateOrgDialogOpen] = useState(false);
 
   const mobileMenuOpen = useMobileMenuStore(
     (state: any) => state.mobileMenuOpen
@@ -72,7 +77,9 @@ export default function DashboardHeader() {
                     {crumb.icon}
                     <span
                       className={
-                        crumb.isLoading ? "animate-pulse text-gray-500" : "max-w-[200px] truncate"
+                        crumb.isLoading
+                          ? "animate-pulse text-gray-500"
+                          : "max-w-[200px] truncate"
                       }
                       title={crumb.fullLabel || crumb.label}
                     >
@@ -86,15 +93,19 @@ export default function DashboardHeader() {
                     title={crumb.fullLabel || crumb.label}
                   >
                     {crumb.icon}
-                    <span className="max-w-[150px] truncate">{crumb.label}</span>
+                    <span className="max-w-[150px] truncate">
+                      {crumb.label}
+                    </span>
                   </Link>
                 ) : (
-                  <div 
+                  <div
                     className="flex items-center space-x-1 text-gray-500"
                     title={crumb.fullLabel || crumb.label}
                   >
                     {crumb.icon}
-                    <span className="max-w-[150px] truncate">{crumb.label}</span>
+                    <span className="max-w-[150px] truncate">
+                      {crumb.label}
+                    </span>
                   </div>
                 )}
               </div>
@@ -102,31 +113,13 @@ export default function DashboardHeader() {
           </nav>
         </div>
 
-        {/* Center Section - Search */}
-        {/* <div className="hidden lg:flex flex-1 max-w-md mx-6">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="search"
-              placeholder="Search posts, accounts, or collections..."
-              className="pl-10 bg-gray-50 border-gray-200 focus:bg-white dark:bg-gray-800 dark:border-gray-700 dark:focus:bg-gray-900"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div> */}
-
         {/* Right Section - Actions & Profile */}
         <div className="flex items-center space-x-3">
-          {/* Mobile Search Button */}
-          {/* <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden h-9 w-9"
-            aria-label="Search"
-          >
-            <Search className="h-4 w-4" />
-          </Button> */}
+          {/* Organization Switcher */}
+          <CompactOrganizationSwitcher
+            className="flex"
+            onCreateOrganization={() => setIsCreateOrgDialogOpen(true)}
+          />
 
           {/* Notifications */}
           <Button
@@ -184,18 +177,22 @@ export default function DashboardHeader() {
                   Profile Settings
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard/accounts" className="cursor-pointer">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Social Accounts
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/dashboard/billing" className="cursor-pointer">
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Upgrade Plan
-                </Link>
-              </DropdownMenuItem>
+              {hasPermission(Permission.SOCIAL_ACCOUNTS_VIEW) && (
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard/accounts" className="cursor-pointer">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Social Accounts
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {canManageBilling && (
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard/billing" className="cursor-pointer">
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Upgrade Plan
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link to="/dashboard/help" className="cursor-pointer">
@@ -234,6 +231,14 @@ export default function DashboardHeader() {
           </Sheet>
         </div>
       </div>
+
+      {/* Create Organization Dialog */}
+      <CreateOrganizationDialog
+        open={isCreateOrgDialogOpen}
+        onOpenChange={setIsCreateOrgDialogOpen}
+      />
+
+      {/* Debug Component */}
     </header>
   );
 }

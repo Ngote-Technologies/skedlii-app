@@ -127,7 +127,7 @@ export function UpgradeConfirmationDialog({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto border-border/50 bg-gradient-to-br from-background to-muted/20">
+      <AlertDialogContent className="max-w-2xl max-h-[80vh] border-border/50 bg-gradient-to-br from-background to-muted/20">
         {/* Background gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-lg" />
 

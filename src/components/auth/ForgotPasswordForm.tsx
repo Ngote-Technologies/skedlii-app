@@ -8,21 +8,13 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { apiRequest } from "../../lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
-import {
-  Mail,
-  ArrowLeft,
-  Send,
-  CheckCircle,
-  AlertCircle,
-  Sparkles,
-} from "lucide-react";
+import { Mail, ArrowLeft, Send, CheckCircle, AlertCircle } from "lucide-react";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -41,7 +33,6 @@ export default function ForgotPasswordForm({
 }: ForgotPasswordFormProps) {
   const { toast } = useToast();
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),

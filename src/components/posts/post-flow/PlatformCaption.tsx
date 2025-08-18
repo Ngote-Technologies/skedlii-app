@@ -7,13 +7,15 @@ import {
   CardTitle,
   CardFooter,
 } from "../../ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../ui/tabs";
-import { Globe, Image, Info, Type, Wand2, RotateCcw, CheckCircle2, AlertCircle } from "lucide-react";
+  Globe,
+  Image,
+  Info,
+  Type,
+  RotateCcw,
+  CheckCircle2,
+} from "lucide-react";
 import { Label } from "../../ui/label";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
@@ -25,7 +27,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../../ui/tooltip";
-import { getPlatformIcon, getPlatformTextColor } from "../../../lib/platformUtils";
+import {
+  getPlatformIcon,
+  getPlatformTextColor,
+} from "../../../lib/platformUtils";
 
 interface PlatformCaptionsProps {
   accounts: any[];
@@ -98,8 +103,6 @@ export default function PlatformCaptions({
     return platform.charAt(0).toUpperCase() + platform.slice(1);
   };
 
-
-
   // Change tab and load appropriate caption
   const handleTabChange = (platform: string) => {
     setActiveTab(platform);
@@ -159,7 +162,8 @@ export default function PlatformCaptions({
           <div>
             <CardTitle className="text-xl">Write Your Content</CardTitle>
             <CardDescription>
-              Craft compelling captions for each platform with custom character limits
+              Craft compelling captions for each platform with custom character
+              limits
             </CardDescription>
           </div>
         </div>
@@ -168,8 +172,8 @@ export default function PlatformCaptions({
         <CardContent className="pb-0">
           <div className="overflow-x-auto scrollbar-hide mb-6">
             <TabsList className="w-max min-w-full bg-gray-50 dark:bg-gray-800/50 p-1 rounded-xl flex-nowrap">
-              <TabsTrigger 
-                value="global" 
+              <TabsTrigger
+                value="global"
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300",
                   "data-[state=active]:bg-white data-[state=active]:shadow-lg dark:data-[state=active]:bg-gray-900"
@@ -177,10 +181,12 @@ export default function PlatformCaptions({
               >
                 <Globe className="h-4 w-4" />
                 <span className="font-medium">Global</span>
-                <div className={cn(
-                  "w-2 h-2 rounded-full transition-colors",
-                  globalCaption.length > 0 ? "bg-green-500" : "bg-gray-300"
-                )} />
+                <div
+                  className={cn(
+                    "w-2 h-2 rounded-full transition-colors",
+                    globalCaption.length > 0 ? "bg-green-500" : "bg-gray-300"
+                  )}
+                />
               </TabsTrigger>
 
               {selectedPlatforms.map((platform) => {
@@ -188,7 +194,7 @@ export default function PlatformCaptions({
                 const characterCount = getCharacterCount(platform);
                 const characterLimit = getCharacterLimits(platform);
                 const isOverLimit = characterCount > characterLimit;
-                
+
                 return (
                   <TabsTrigger
                     key={platform}
@@ -199,8 +205,10 @@ export default function PlatformCaptions({
                     )}
                   >
                     {getPlatformIcon(platform)}
-                    <span className="font-medium">{formatPlatformName(platform)}</span>
-                    
+                    <span className="font-medium">
+                      {formatPlatformName(platform)}
+                    </span>
+
                     {/* Status indicator */}
                     <div className="flex items-center gap-1">
                       {hasCustomCaption ? (
@@ -208,16 +216,18 @@ export default function PlatformCaptions({
                       ) : (
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
                       )}
-                      
+
                       {/* Character count indicator */}
-                      <div className={cn(
-                        "text-xs px-1.5 py-0.5 rounded-full font-medium",
-                        isOverLimit
-                          ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
-                          : characterCount > characterLimit * 0.8
-                          ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
-                          : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                      )}>
+                      <div
+                        className={cn(
+                          "text-xs px-1.5 py-0.5 rounded-full font-medium",
+                          isOverLimit
+                            ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                            : characterCount > characterLimit * 0.8
+                            ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+                            : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                        )}
+                      >
                         {Math.round((characterCount / characterLimit) * 100)}%
                       </div>
                     </div>
@@ -231,10 +241,16 @@ export default function PlatformCaptions({
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="global-caption" className="text-lg font-semibold">
+                  <Label
+                    htmlFor="global-caption"
+                    className="text-lg font-semibold"
+                  >
                     Global Caption
                   </Label>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                  >
                     All Platforms
                   </Badge>
                 </div>
@@ -262,7 +278,7 @@ export default function PlatformCaptions({
                   placeholder="Write your caption here. This will be used for all platforms unless you customize per platform."
                   className="min-h-[200px] resize-y pr-16 text-base leading-relaxed"
                 />
-                
+
                 {/* Character count overlay */}
                 <div className="absolute bottom-3 right-3 flex items-center gap-2">
                   <div className="bg-white dark:bg-gray-800 px-2 py-1 rounded-md shadow-sm border text-xs font-medium">
@@ -284,35 +300,45 @@ export default function PlatformCaptions({
                     How your content fits across platforms
                   </span>
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {selectedPlatforms.map((platform) => {
                     const limit = getCharacterLimits(platform);
-                    const percentage = Math.min((globalCaption.length / limit) * 100, 100);
+                    const percentage = Math.min(
+                      (globalCaption.length / limit) * 100,
+                      100
+                    );
                     const isOverLimit = globalCaption.length > limit;
-                    
+
                     return (
-                      <div key={platform} className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
+                      <div
+                        key={platform}
+                        className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm"
+                      >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-1.5">
                             {getPlatformIcon(platform)}
-                            <span className="text-sm font-medium">{formatPlatformName(platform)}</span>
+                            <span className="text-sm font-medium">
+                              {formatPlatformName(platform)}
+                            </span>
                           </div>
-                          <span className={cn(
-                            "text-xs font-medium",
-                            isOverLimit ? "text-red-600" : "text-green-600"
-                          )}>
+                          <span
+                            className={cn(
+                              "text-xs font-medium",
+                              isOverLimit ? "text-red-600" : "text-green-600"
+                            )}
+                          >
                             {globalCaption.length}/{limit}
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                          <div 
+                          <div
                             className={cn(
                               "h-1.5 rounded-full transition-all duration-300",
-                              isOverLimit 
-                                ? "bg-red-500" 
-                                : percentage > 80 
-                                ? "bg-yellow-500" 
+                              isOverLimit
+                                ? "bg-red-500"
+                                : percentage > 80
+                                ? "bg-yellow-500"
                                 : "bg-green-500"
                             )}
                             style={{ width: `${Math.min(percentage, 100)}%` }}
@@ -437,7 +463,9 @@ export default function PlatformCaptions({
                 variant="ghost"
                 size="sm"
                 className={`h-7 gap-1 ${
-                  platformCaptions[platform] ? getPlatformTextColor(platform) : ""
+                  platformCaptions[platform]
+                    ? getPlatformTextColor(platform)
+                    : ""
                 }`}
                 onClick={() => handleTabChange(platform)}
               >

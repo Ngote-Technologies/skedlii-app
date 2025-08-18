@@ -7,7 +7,6 @@ import { useAuth } from "../../store/hooks";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -30,6 +29,9 @@ import {
   Mail,
   Lock,
   Building,
+  FileText,
+  Briefcase,
+  Users,
 } from "lucide-react";
 import { useToast } from "../../hooks/use-toast";
 
@@ -51,6 +53,11 @@ const registerSchema = z
       invalid_type_error: "Invalid user type",
     }),
     organizationName: z.string().optional(),
+    organizationDescription: z.string().optional(),
+    organizationIndustry: z.string().optional(),
+    organizationSize: z.enum(["1-10", "11-50", "51-200", "201-500", "500+"], {
+      required_error: "Please select organization size",
+    }).optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -61,6 +68,13 @@ const registerSchema = z
     {
       message: "Organization name is required",
       path: ["organizationName"],
+    }
+  )
+  .refine(
+    (data) => (data.userType === "organization" ? data.organizationSize : true),
+    {
+      message: "Organization size is required",
+      path: ["organizationSize"],
     }
   );
 
@@ -87,17 +101,30 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
       terms: false,
       userType: "individual",
       organizationName: "",
+      organizationDescription: "",
+      organizationIndustry: "",
+      organizationSize: undefined,
     },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      const { confirmPassword, organizationName, ...rest } = data;
+      const { 
+        confirmPassword, 
+        organizationName, 
+        organizationDescription, 
+        organizationIndustry, 
+        organizationSize,
+        ...rest 
+      } = data;
 
       const registerData = {
         ...rest,
         ...(organizationName !== "" && { organizationName }),
+        ...(organizationDescription !== "" && { organizationDescription }),
+        ...(organizationIndustry !== "" && { organizationIndustry }),
+        ...(organizationSize && { organizationSize }),
       };
 
       const response: any = await register(registerData);
@@ -139,17 +166,17 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                    <Input
-                      label="First Name"
-                      placeholder="Enter your first name"
-                      autoComplete="given-name"
-                      error={fieldState.error?.message}
-                      clearable
-                      onClear={() => field.onChange("")}
-                      prefixIcon={<User className="w-4 h-4" />}
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
+                  <Input
+                    label="First Name"
+                    placeholder="Enter your first name"
+                    autoComplete="given-name"
+                    error={fieldState.error?.message}
+                    clearable
+                    onClear={() => field.onChange("")}
+                    prefixIcon={<User className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -167,17 +194,17 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                    <Input
-                      label="Last Name"
-                      placeholder="Enter your last name"
-                      autoComplete="family-name"
-                      error={fieldState.error?.message}
-                      clearable
-                      onClear={() => field.onChange("")}
-                      prefixIcon={<User className="w-4 h-4" />}
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
+                  <Input
+                    label="Last Name"
+                    placeholder="Enter your last name"
+                    autoComplete="family-name"
+                    error={fieldState.error?.message}
+                    clearable
+                    onClear={() => field.onChange("")}
+                    prefixIcon={<User className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -195,18 +222,18 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                    <Input
-                      label="Email Address"
-                      type="email"
-                      placeholder="Enter your email"
-                      autoComplete="email"
-                      error={fieldState.error?.message}
-                      clearable
-                      onClear={() => field.onChange("")}
-                      prefixIcon={<Mail className="w-4 h-4" />}
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
+                  <Input
+                    label="Email Address"
+                    type="email"
+                    placeholder="Enter your email"
+                    autoComplete="email"
+                    error={fieldState.error?.message}
+                    clearable
+                    onClear={() => field.onChange("")}
+                    prefixIcon={<Mail className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -227,13 +254,8 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
                   User Type
                 </FormLabel>
                 <FormControl>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                    >
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20">
                       <SelectValue placeholder="Select user type" />
                     </SelectTrigger>
                     <SelectContent variant="elevated">
@@ -243,14 +265,10 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
                           <span>Individual</span>
                         </div>
                       </SelectItem>
-                      <SelectItem
-                        value="organization"
-                        disabled
-                        className="opacity-50"
-                      >
+                      <SelectItem value="organization" className="cursor-pointer">
                         <div className="flex items-center gap-2">
                           <Building className="w-4 h-4" />
-                          <span>Organization (coming soon)</span>
+                          <span>Organization</span>
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -267,12 +285,13 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
           />
           {/* Enhanced Organization Name field */}
           {form.watch("userType") === "organization" && (
-            <FormField
-              control={form.control}
-              name="organizationName"
-              render={({ field, fieldState }) => (
-                <FormItem className="relative">
-                  <FormControl>
+            <>
+              <FormField
+                control={form.control}
+                name="organizationName"
+                render={({ field, fieldState }) => (
+                  <FormItem className="relative">
+                    <FormControl>
                       <Input
                         label="Organization Name"
                         placeholder="Enter your organization name"
@@ -283,16 +302,131 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
                         className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
                         {...field}
                       />
-                  </FormControl>
-                  {fieldState.error && (
-                    <FormMessage className="flex items-center gap-2 mt-2">
-                      <AlertCircle className="w-4 h-4" />
-                      {fieldState.error.message}
-                    </FormMessage>
-                  )}
-                </FormItem>
-              )}
-            />
+                    </FormControl>
+                    {fieldState.error && (
+                      <FormMessage className="flex items-center gap-2 mt-2">
+                        <AlertCircle className="w-4 h-4" />
+                        {fieldState.error.message}
+                      </FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+              
+              {/* Organization Description field */}
+              <FormField
+                control={form.control}
+                name="organizationDescription"
+                render={({ field, fieldState }) => (
+                  <FormItem className="relative">
+                    <FormControl>
+                      <Input
+                        label="Organization Description (Optional)"
+                        placeholder="Brief description of your organization"
+                        error={fieldState.error?.message}
+                        clearable
+                        onClear={() => field.onChange("")}
+                        prefixIcon={<FileText className="w-4 h-4" />}
+                        className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                        {...field}
+                      />
+                    </FormControl>
+                    {fieldState.error && (
+                      <FormMessage className="flex items-center gap-2 mt-2">
+                        <AlertCircle className="w-4 h-4" />
+                        {fieldState.error.message}
+                      </FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+              
+              {/* Organization Industry field */}
+              <FormField
+                control={form.control}
+                name="organizationIndustry"
+                render={({ field, fieldState }) => (
+                  <FormItem className="relative">
+                    <FormControl>
+                      <Input
+                        label="Industry (Optional)"
+                        placeholder="e.g., Technology, Healthcare, Marketing"
+                        error={fieldState.error?.message}
+                        clearable
+                        onClear={() => field.onChange("")}
+                        prefixIcon={<Briefcase className="w-4 h-4" />}
+                        className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                        {...field}
+                      />
+                    </FormControl>
+                    {fieldState.error && (
+                      <FormMessage className="flex items-center gap-2 mt-2">
+                        <AlertCircle className="w-4 h-4" />
+                        {fieldState.error.message}
+                      </FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+              
+              {/* Organization Size field */}
+              <FormField
+                control={form.control}
+                name="organizationSize"
+                render={({ field, fieldState }) => (
+                  <FormItem className="relative">
+                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Organization Size
+                    </FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20">
+                          <SelectValue placeholder="Select organization size" />
+                        </SelectTrigger>
+                        <SelectContent variant="elevated">
+                          <SelectItem value="1-10" className="cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              <span>1-10 employees</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="11-50" className="cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              <span>11-50 employees</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="51-200" className="cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              <span>51-200 employees</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="201-500" className="cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              <span>201-500 employees</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="500+" className="cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              <span>500+ employees</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    {fieldState.error && (
+                      <FormMessage className="flex items-center gap-2 mt-2">
+                        <AlertCircle className="w-4 h-4" />
+                        {fieldState.error.message}
+                      </FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+            </>
           )}
           {/* Enhanced Password field */}
           <FormField
@@ -301,17 +435,17 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                    <Input
-                      label="Password"
-                      type="password"
-                      placeholder="Create a secure password"
-                      autoComplete="new-password"
-                      error={fieldState.error?.message}
-                      helperText="At least 8 characters"
-                      prefixIcon={<Lock className="w-4 h-4" />}
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
+                  <Input
+                    label="Password"
+                    type="password"
+                    placeholder="Create a secure password"
+                    autoComplete="new-password"
+                    error={fieldState.error?.message}
+                    helperText="At least 8 characters"
+                    prefixIcon={<Lock className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">
@@ -329,16 +463,16 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             render={({ field, fieldState }) => (
               <FormItem className="relative">
                 <FormControl>
-                    <Input
-                      label="Confirm Password"
-                      type="password"
-                      placeholder="Confirm your password"
-                      autoComplete="new-password"
-                      error={fieldState.error?.message}
-                      prefixIcon={<Lock className="w-4 h-4" />}
-                      className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
-                      {...field}
-                    />
+                  <Input
+                    label="Confirm Password"
+                    type="password"
+                    placeholder="Confirm your password"
+                    autoComplete="new-password"
+                    error={fieldState.error?.message}
+                    prefixIcon={<Lock className="w-4 h-4" />}
+                    className="transition-all duration-200 hover:border-primary-300 focus:border-primary-500 focus:ring-primary-500/20"
+                    {...field}
+                  />
                 </FormControl>
                 {fieldState.error && (
                   <FormMessage className="flex items-center gap-2 mt-2">

@@ -16,12 +16,14 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Building,
 } from "lucide-react";
 import { useAuth } from "../store/hooks";
 import { useMemo } from "react";
 import { ScrollArea } from "../components/ui/scroll-area";
-import { hasValidSubscription } from "../lib/access";
 import { Badge } from "../components/ui/badge";
+import { useAccessControl } from "../hooks/useAccessControl";
+import { Permission } from "../lib/access-control";
 
 export default function DashboardSidebar({
   closeMenu,
@@ -36,26 +38,40 @@ export default function DashboardSidebar({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAdmin, user } = useAuth();
+  const { isAdmin, user, canManageBilling } = useAuth();
   const { billing } = user;
+  const {
+    hasPermission,
+    canCreateTeams,
+    hasValidSubscription: hasValidSub,
+    userContext,
+  } = useAccessControl();
+  const userType = userContext.userType;
 
-  const bottomNavItems = [
-    {
-      label: "Settings",
-      href: "/dashboard/settings",
-      icon: <Settings size={18} />,
-    },
-    {
-      label: "Billing",
-      href: "/dashboard/billing",
-      icon: <CreditCard size={18} />,
-    },
-    {
-      label: "Help & Support",
-      href: "/dashboard/help",
-      icon: <HelpCircle size={18} />,
-    },
-  ];
+  const bottomNavItems = useMemo(
+    () =>
+      [
+        {
+          label: "Settings",
+          href: "/dashboard/settings",
+          icon: <Settings size={18} />,
+          show: true, // Everyone can access settings
+        },
+        {
+          label: "Billing",
+          href: "/dashboard/billing",
+          icon: <CreditCard size={18} />,
+          show: canManageBilling, // Only users who can manage billing
+        },
+        {
+          label: "Help & Support",
+          href: "/dashboard/help",
+          icon: <HelpCircle size={18} />,
+          show: true, // Everyone can access help
+        },
+      ].filter((item) => item.show),
+    [canManageBilling]
+  );
 
   const menuItems = useMemo(() => {
     const mainItems = [
@@ -64,60 +80,102 @@ export default function DashboardSidebar({
         label: "Dashboard",
         href: "/dashboard",
         badge: null,
+        show: true, // Everyone can access dashboard
       },
       {
         icon: <Link2 size={18} />,
         label: "Social Accounts",
         href: "/dashboard/accounts",
         badge: null,
+        show: hasPermission(Permission.SOCIAL_ACCOUNTS_VIEW),
       },
       {
         icon: <CalendarCheck size={18} />,
         label: "Scheduled Posts",
         href: "/dashboard/scheduled",
         badge: null,
+        show: hasValidSub && hasPermission(Permission.CONTENT_VIEW),
       },
       {
         icon: <CalendarSync size={18} />,
         label: "Published Posts",
         href: "/dashboard/posts",
         badge: null,
+        show: hasValidSub && hasPermission(Permission.CONTENT_VIEW),
       },
       {
         icon: <Plus size={18} />,
         label: "Create Post",
         href: "/dashboard/post-flow",
-        disabled: !hasValidSubscription(billing?.paymentStatus),
-        badge: !hasValidSubscription(billing?.paymentStatus) ? "Pro" : null,
+        disabled: !hasValidSub || !hasPermission(Permission.CONTENT_CREATE),
+        badge: !hasValidSub
+          ? "Pro"
+          : !hasPermission(Permission.CONTENT_CREATE)
+          ? "Access"
+          : null,
         premium: true,
+        show: true, // Show but may be disabled
       },
       {
         icon: <Folder size={18} />,
         label: "Collections",
         href: "/dashboard/collections",
-        disabled: !hasValidSubscription(billing?.paymentStatus),
-        badge: !hasValidSubscription(billing?.paymentStatus) ? "Pro" : null,
+        disabled: !hasValidSub || !hasPermission(Permission.COLLECTIONS_VIEW),
+        badge: !hasValidSub
+          ? "Pro"
+          : !hasPermission(Permission.COLLECTIONS_VIEW)
+          ? "Access"
+          : null,
+        show: true, // Show but may be disabled
+      },
+      {
+        icon: <Building size={18} />,
+        label: "Organization",
+        href: "/dashboard/organizations",
+        disabled:
+          userType === "individual" || !hasPermission(Permission.ORG_VIEW),
+        badge:
+          userType === "individual"
+            ? "Org"
+            : !hasPermission(Permission.ORG_VIEW)
+            ? "Access"
+            : null,
+        show: userType === "organization", // Only show for organization users
       },
       {
         icon: <Users size={18} />,
         label: "Team Management",
         href: "/dashboard/teams",
-        disabled: user?.userType === "individual",
-        badge: user?.userType === "individual" ? "Org" : null,
+        disabled: !canCreateTeams || !hasPermission(Permission.TEAMS_VIEW),
+        badge:
+          userType === "individual"
+            ? "Org"
+            : !hasPermission(Permission.TEAMS_VIEW)
+            ? "Access"
+            : null,
+        show: userType === "organization", // Only show for organization users
       },
       {
         icon: <BarChart3 size={18} />,
         label: "Analytics",
         href: "/dashboard/analytics",
-        disabled: !hasValidSubscription(billing?.paymentStatus),
-        badge: !hasValidSubscription(billing?.paymentStatus) ? "Pro" : null,
+        disabled: !hasValidSub || !hasPermission(Permission.ANALYTICS_VIEW),
+        badge: !hasValidSub
+          ? "Pro"
+          : !hasPermission(Permission.ANALYTICS_VIEW)
+          ? "Access"
+          : null,
+        show: true, // Show but may be disabled
       },
     ];
+
+    // Filter items based on show property
+    const filteredMainItems = mainItems.filter((item) => item.show);
 
     // For mobile, add bottom nav items to main navigation
     if (isMobile) {
       return [
-        ...mainItems,
+        ...filteredMainItems,
         ...bottomNavItems.map(
           (item) =>
             ({
@@ -126,13 +184,24 @@ export default function DashboardSidebar({
               disabled: false,
               premium: false,
               isBottomNavItem: true,
+              show: true,
             } as any)
         ),
       ];
     }
 
-    return mainItems;
-  }, [isAdmin, billing, user?.userType, isMobile, bottomNavItems]);
+    return filteredMainItems;
+  }, [
+    isAdmin,
+    billing,
+    user?.userType,
+    isMobile,
+    bottomNavItems,
+    hasPermission,
+    hasValidSub,
+    userType,
+    canCreateTeams,
+  ]);
 
   const handleNavigation = () => {
     console.log("handleNavigationClicked");
@@ -208,13 +277,15 @@ export default function DashboardSidebar({
                 "w-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group",
                 isMobile ? "h-12 text-base touch-manipulation" : ""
               )}
-              disabled={!hasValidSubscription(billing?.paymentStatus)}
+              disabled={
+                !hasValidSub || !hasPermission(Permission.CONTENT_CREATE)
+              }
             >
               <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform duration-200" />
               Create Post
-              {!hasValidSubscription(billing?.paymentStatus) && (
+              {(!hasValidSub || !hasPermission(Permission.CONTENT_CREATE)) && (
                 <Badge variant="secondary" className="ml-2 text-xs">
-                  Pro
+                  {!hasValidSub ? "Pro" : "Access"}
                 </Badge>
               )}
             </Button>
@@ -230,7 +301,9 @@ export default function DashboardSidebar({
                 handleNavigation();
               }}
               className="w-full h-12 shadow-lg hover:shadow-xl transition-all duration-300 group"
-              disabled={!hasValidSubscription(billing?.paymentStatus)}
+              disabled={
+                !hasValidSub || !hasPermission(Permission.CONTENT_CREATE)
+              }
             >
               <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
               <span className="sr-only">Create Post</span>

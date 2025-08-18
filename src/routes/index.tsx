@@ -58,6 +58,10 @@ const Collection = React.lazy(
 const HelpArticlePage = React.lazy(
   () => import("../components/help-support/platform/HelpArticlePage")
 );
+const OrganizationDashboard = React.lazy(() => import("../components/organization/OrganizationDashboard"));
+const OrganizationSettings = React.lazy(() => import("../components/organization/OrganizationSettings"));
+const OrganizationMembers = React.lazy(() => import("../components/organization/OrganizationMembers"));
+const AcceptInvitation = React.lazy(() => import("../pages/AcceptInvitation"));
 
 const AppRoutes = () => {
   return (
@@ -110,6 +114,10 @@ const AppRoutes = () => {
               }
             />
             <Route
+              path="/accept-invitation"
+              element={<AcceptInvitation />}
+            />
+            <Route
               path="/dashboard"
               element={
                 <ProtectedRoute>
@@ -134,6 +142,9 @@ const AppRoutes = () => {
               <Route path="billing" element={<Billing />} />
               <Route path="help" element={<HelpSupport />} />
               <Route path="help/:articleId" element={<HelpArticlePage />} />
+              <Route path="organizations" element={<OrganizationDashboard />} />
+              <Route path="organizations/settings" element={<OrganizationSettings />} />
+              <Route path="organizations/members" element={<OrganizationMembers />} />
             </Route>
             <Route path="*" element={<NotFound />} />
             </Routes>

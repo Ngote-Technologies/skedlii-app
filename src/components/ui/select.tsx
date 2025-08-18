@@ -15,7 +15,7 @@ const SelectValue = SelectPrimitive.Value;
 
 // Enhanced SelectTrigger with variants
 const selectTriggerVariants = cva(
-  "flex w-full items-center justify-between rounded-lg border bg-background text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+  "flex w-full items-center justify-between rounded-lg border bg-background text-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
   {
     variants: {
       variant: {
@@ -32,12 +32,13 @@ const selectTriggerVariants = cva(
       state: {
         default: "",
         error: "border-red-500 focus:border-red-500 focus:ring-red-500/20",
-        success: "border-green-500 focus:border-green-500 focus:ring-green-500/20",
-      }
+        success:
+          "border-green-500 focus:border-green-500 focus:ring-green-500/20",
+      },
     },
     defaultVariants: {
       variant: "default",
-      size: "default", 
+      size: "default",
       state: "default",
     },
   }
@@ -54,30 +55,45 @@ interface SelectTriggerProps
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   SelectTriggerProps
->(({ className, children, variant, size, state, error, success, loading, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      selectTriggerVariants({ 
-        variant, 
-        size, 
-        state: error ? "error" : success ? "success" : state 
-      }),
-      "data-[placeholder]:text-muted-foreground",
-      className
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon asChild>
-      {loading ? (
-        <div className="animate-spin h-4 w-4 border-2 border-muted-foreground border-t-transparent rounded-full" />
-      ) : (
-        <ChevronDown className="h-4 w-4 opacity-50 transition-transform data-[state=open]:rotate-180" />
+>(
+  (
+    {
+      className,
+      children,
+      variant,
+      size,
+      state,
+      error,
+      success,
+      loading,
+      ...props
+    },
+    ref
+  ) => (
+    <SelectPrimitive.Trigger
+      ref={ref}
+      className={cn(
+        selectTriggerVariants({
+          variant,
+          size,
+          state: error ? "error" : success ? "success" : state,
+        }),
+        "data-[placeholder]:text-muted-foreground",
+        className
       )}
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-));
+      {...props}
+    >
+      {children}
+      <SelectPrimitive.Icon asChild>
+        {loading ? (
+          <div className="animate-spin h-4 w-4 border-2 border-muted-foreground border-t-transparent rounded-full" />
+        ) : (
+          <ChevronDown className="h-4 w-4 opacity-50 transition-transform data-[state=open]:rotate-180" />
+        )}
+      </SelectPrimitive.Icon>
+    </SelectPrimitive.Trigger>
+  )
+);
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectScrollUpButton = React.forwardRef<
@@ -112,7 +128,8 @@ const SelectScrollDownButton = React.forwardRef<
     <ChevronDown className="h-4 w-4" />
   </SelectPrimitive.ScrollDownButton>
 ));
-SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName;
+SelectScrollDownButton.displayName =
+  SelectPrimitive.ScrollDownButton.displayName;
 
 // Enhanced SelectContent with variants
 const selectContentVariants = cva(
@@ -123,7 +140,7 @@ const selectContentVariants = cva(
         default: "border-border",
         elevated: "border-0 shadow-xl",
         blur: "border-border/50 backdrop-blur-sm bg-popover/95",
-      }
+      },
     },
     defaultVariants: {
       variant: "default",
@@ -173,7 +190,10 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={cn("px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide", className)}
+    className={cn(
+      "px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide",
+      className
+    )}
     {...props}
   />
 ));
@@ -187,7 +207,7 @@ const selectItemVariants = cva(
       variant: {
         default: "hover:bg-accent/50",
         subtle: "hover:bg-muted/50",
-      }
+      },
     },
     defaultVariants: {
       variant: "default",
@@ -204,12 +224,17 @@ interface SelectItemProps
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
   SelectItemProps
->(({ className, children, variant, showIndicator = true, ...props }, ref) => (
+>(({ className, children, variant, showIndicator = false, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
-    className={cn(selectItemVariants({ variant }), showIndicator && "pl-8", className)}
+    className={cn(
+      selectItemVariants({ variant }),
+      showIndicator && "pl-8",
+      className
+    )}
     {...props}
   >
+    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     {showIndicator && (
       <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
@@ -217,7 +242,6 @@ const SelectItem = React.forwardRef<
         </SelectPrimitive.ItemIndicator>
       </span>
     )}
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
   </SelectPrimitive.Item>
 ));
 SelectItem.displayName = SelectPrimitive.Item.displayName;
@@ -238,7 +262,12 @@ SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 interface SearchableSelectProps {
   placeholder?: string;
   searchPlaceholder?: string;
-  items: Array<{ value: string; label: string; disabled?: boolean; group?: string }>;
+  items: Array<{
+    value: string;
+    label: string;
+    disabled?: boolean;
+    group?: string;
+  }>;
   value?: string;
   onValueChange?: (value: string) => void;
   disabled?: boolean;
@@ -273,15 +302,16 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
   const filteredItems = React.useMemo(() => {
     if (!searchQuery) return items;
-    return items.filter(item =>
-      item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.value.toLowerCase().includes(searchQuery.toLowerCase())
+    return items.filter(
+      (item) =>
+        item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.value.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [items, searchQuery]);
 
   const groupedItems = React.useMemo(() => {
     if (!groupLabels) return { "": filteredItems };
-    
+
     return filteredItems.reduce((acc, item) => {
       const group = item.group || "";
       if (!acc[group]) acc[group] = [];
@@ -297,12 +327,17 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   }, [isOpen]);
 
   return (
-    <Select value={value} onValueChange={onValueChange} onOpenChange={setIsOpen} disabled={disabled}>
-      <SelectTrigger 
-        variant={variant} 
-        size={size} 
-        error={error} 
-        success={success} 
+    <Select
+      value={value}
+      onValueChange={onValueChange}
+      onOpenChange={setIsOpen}
+      disabled={disabled}
+    >
+      <SelectTrigger
+        variant={variant}
+        size={size}
+        error={error}
+        success={success}
         loading={loading}
       >
         <SelectValue placeholder={placeholder} />
@@ -329,7 +364,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         </div>
 
         {/* Items */}
-        {Object.keys(groupedItems).length === 0 || filteredItems.length === 0 ? (
+        {Object.keys(groupedItems).length === 0 ||
+        filteredItems.length === 0 ? (
           <div className="py-6 text-center text-sm text-muted-foreground">
             {emptyMessage}
           </div>

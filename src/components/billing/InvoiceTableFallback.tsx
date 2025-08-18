@@ -1,4 +1,4 @@
-import { Badge, StatusBadge } from "../ui/badge";
+import { StatusBadge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { DataTable, type Column } from "../ui/table";
 import { ArrowDownToLine, FileText, Calendar, DollarSign } from "lucide-react";
@@ -92,7 +92,7 @@ export function InvoiceTableFallback({ invoices }: InvoiceTableFallbackProps) {
       header: "Action",
       sortable: false,
       align: "right",
-      render: (value, invoice) => (
+      render: (value) => (
         <Button
           asChild
           variant="ghost"

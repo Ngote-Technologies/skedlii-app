@@ -1,8 +1,5 @@
 import {
-  CheckCircle2,
-  ArrowRightCircle,
   PauseCircle,
-  AlertCircle,
   TrendingUp,
   Calendar,
   CreditCard,
@@ -10,7 +7,7 @@ import {
   BarChart3,
   Zap,
   Crown,
-  Shield
+  Shield,
 } from "lucide-react";
 import { Badge, StatusBadge } from "../ui/badge";
 import { Progress } from "../ui/progress";
@@ -41,37 +38,6 @@ const Subscriptions = ({
   cancelSubscription: () => void;
   setActiveTab: (value: string) => void;
 }) => {
-  const getStatusBadge = () => {
-    switch (billing?.paymentStatus) {
-      case "paid":
-      case "active":
-        return (
-          <Badge className="bg-green-500 hover:bg-green-600">
-            <CheckCircle2 className="h-3 w-3 mr-1" /> Active
-          </Badge>
-        );
-      case "trialing":
-        return (
-          <Badge className="bg-blue-500 hover:bg-blue-600">
-            <ArrowRightCircle className="h-3 w-3 mr-1" /> Trial Active
-          </Badge>
-        );
-      case "cancelled":
-        return (
-          <Badge className="bg-yellow-500 hover:bg-yellow-600">
-            <PauseCircle className="h-3 w-3 mr-1" /> Cancelled
-          </Badge>
-        );
-      case "inactive":
-      default:
-        return (
-          <Badge className="bg-gray-500 hover:bg-gray-600">
-            <AlertCircle className="h-3 w-3 mr-1" /> Inactive
-          </Badge>
-        );
-    }
-  };
-
   const renderBillingStatus = () => {
     switch (billing?.subscriptionStatus) {
       case "active":
@@ -106,17 +72,19 @@ const Subscriptions = ({
         <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-background to-muted/30 border border-border/50 p-6">
           {/* Background gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
-          
+
           <div className="relative flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-gray-500/10">
               <Users className="h-6 w-6 text-gray-600" />
             </div>
             <div>
               <h3 className="text-lg font-semibold">Free Plan</h3>
-              <p className="text-sm text-muted-foreground">Basic features included</p>
+              <p className="text-sm text-muted-foreground">
+                Basic features included
+              </p>
             </div>
           </div>
-          
+
           {/* Free Plan Usage */}
           <div className="relative space-y-4 mb-6">
             <div className="space-y-2">
@@ -126,7 +94,7 @@ const Subscriptions = ({
               </div>
               <Progress value={50} className="h-2" />
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Social accounts</span>
@@ -135,12 +103,13 @@ const Subscriptions = ({
               <Progress value={66} className="h-2" />
             </div>
           </div>
-          
+
           <p className="text-muted-foreground mb-4">
-            Upgrade to unlock unlimited posts, more social accounts, and premium features.
+            Upgrade to unlock unlimited posts, more social accounts, and premium
+            features.
           </p>
-          
-          <Button 
+
+          <Button
             onClick={() => setActiveTab("plans")}
             className="w-full bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
           >
@@ -158,7 +127,7 @@ const Subscriptions = ({
       <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-background to-muted/30 border border-border/50">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
-        
+
         <div className="relative p-6">
           {/* Subscription Header */}
           <div className="flex items-center justify-between mb-6">
@@ -168,12 +137,15 @@ const Subscriptions = ({
               </div>
               <div>
                 <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-                  {billing?.paymentDescription || 'Premium Plan'}
+                  {billing?.paymentDescription || "Premium Plan"}
                 </h3>
                 <StatusBadge status={billing?.paymentStatus} size="sm" />
               </div>
             </div>
-            <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-600">
+            <Badge
+              variant="outline"
+              className="bg-green-500/10 border-green-500/20 text-green-600"
+            >
               <Shield className="h-3 w-3 mr-1" />
               Secure
             </Badge>
@@ -187,38 +159,42 @@ const Subscriptions = ({
                 <span>Billing Information</span>
               </div>
               {renderBillingStatus()}
-              
+
               <div className="flex items-center gap-2 text-sm">
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Payment Method:</span>
                 <span className="font-medium">•••• •••• •••• 4242</span>
               </div>
             </div>
-            
+
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <BarChart3 className="h-4 w-4" />
                 <span>Usage Overview</span>
               </div>
-              
+
               {/* Usage Meters */}
               <div className="space-y-3">
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Posts this month</span>
+                    <span className="text-muted-foreground">
+                      Posts this month
+                    </span>
                     <span className="font-medium">156 / Unlimited</span>
                   </div>
                   <Progress value={100} className="h-2" />
                 </div>
-                
+
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Social accounts</span>
+                    <span className="text-muted-foreground">
+                      Social accounts
+                    </span>
                     <span className="font-medium">9 / Unlimited</span>
                   </div>
                   <Progress value={100} className="h-2" />
                 </div>
-                
+
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Team members</span>
@@ -238,9 +214,9 @@ const Subscriptions = ({
               <TrendingUp className="h-4 w-4 text-green-500" />
               <span>Subscription is active and up to date</span>
             </div>
-            
+
             <div className="flex items-center gap-3">
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => setActiveTab("plans")}
                 className="border-border/50 hover:bg-primary/5"
@@ -248,13 +224,16 @@ const Subscriptions = ({
                 <Zap className="h-4 w-4 mr-2" />
                 Upgrade Plan
               </Button>
-              
+
               <AlertDialog
                 open={showCancelDialog}
                 onOpenChange={setShowCancelDialog}
               >
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300">
+                  <Button
+                    variant="outline"
+                    className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                  >
                     <PauseCircle className="h-4 w-4 mr-2" />
                     Cancel Subscription
                   </Button>
@@ -268,13 +247,21 @@ const Subscriptions = ({
                       Cancel Subscription?
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-center space-y-2">
-                      <span className="block">Your subscription will remain active until the end of your current billing period.</span>
-                      <span className="block text-sm">After that, your account will revert to the Free plan with limited features.</span>
+                      <span className="block">
+                        Your subscription will remain active until the end of
+                        your current billing period.
+                      </span>
+                      <span className="block text-sm">
+                        After that, your account will revert to the Free plan
+                        with limited features.
+                      </span>
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter className="gap-2">
-                    <AlertDialogCancel className="flex-1">Keep Subscription</AlertDialogCancel>
-                    <AlertDialogAction 
+                    <AlertDialogCancel className="flex-1">
+                      Keep Subscription
+                    </AlertDialogCancel>
+                    <AlertDialogAction
                       onClick={() => cancelSubscription()}
                       className="flex-1 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white border-0"
                     >

@@ -1,6 +1,13 @@
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { ArrowDownToLine, Calendar, DollarSign, FileText, Download, Receipt, CreditCard } from "lucide-react";
+import {
+  Calendar,
+  DollarSign,
+  FileText,
+  Download,
+  Receipt,
+  CreditCard,
+} from "lucide-react";
 import { format } from "date-fns";
 
 interface Invoice {
@@ -36,7 +43,10 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
         </p>
         <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/10">
           <p className="text-xs text-primary font-medium">💡 Pro Tip</p>
-          <p className="text-xs text-muted-foreground mt-1">All invoices are automatically generated and can be downloaded as PDF files.</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            All invoices are automatically generated and can be downloaded as
+            PDF files.
+          </p>
         </div>
       </div>
     );
@@ -149,7 +159,9 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
                   </div>
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/50">
                     <div className="w-6 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-sm flex items-center justify-center">
-                      <span className="text-[8px] font-bold text-white">••••</span>
+                      <span className="text-[8px] font-bold text-white">
+                        ••••
+                      </span>
                     </div>
                     <span className="text-xs font-medium">•••• 4242</span>
                   </div>
