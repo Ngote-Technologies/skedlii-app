@@ -8,10 +8,8 @@ import { useOrganizationStore } from "./organizationStore";
 export type UserRole =
   | "org_owner"
   | "admin"
-  | "user"
   | "member"
-  | "viewer"
-  | "super_admin";
+  | "viewer";
 export type UserType = "individual" | "organization";
 export type SubscriptionStatus =
   | "active"
@@ -55,6 +53,7 @@ interface AuthState {
   fetchUserData: () => Promise<void>;
   clearError: () => void;
   updateSubscriptionInfo: (info: SubscriptionInfo) => void;
+  refreshPermissions: (organizationId?: string) => Promise<void>;
 }
 
 // Helper functions for computing permissions based on user context
@@ -84,7 +83,7 @@ const computePermissions = (
   return {
     // Individual users are admins of their own accounts, org owners are admins
     isAdmin:
-      isIndividualUser || isOrganizationOwner || userRole === "super_admin",
+      isIndividualUser || isOrganizationOwner,
 
     // Only organization owners can manage organization settings
     canManageOrganization: isOrganizationOwner,
@@ -239,19 +238,30 @@ export const useAuthStore = create<AuthState>()(
 
           localStorage.setItem("auth_token", data.token);
 
-          // Compute enhanced authentication context
+          // Use server-computed permissions if available, fallback to client-side computation
           const userRole = data.user?.role as UserRole;
           const userType = data.user?.userType as UserType;
-          const subscriptionInfo = computeSubscriptionInfo(
-            data.user,
-            data.organization
-          );
-          const permissions = computePermissions(
-            data.user,
-            userRole,
-            userType,
-            subscriptionInfo
-          );
+          
+          let subscriptionInfo: SubscriptionInfo;
+          let permissions: any;
+
+          if (data.computedPermissions && data.subscriptionInfo) {
+            // Use server-computed values
+            subscriptionInfo = data.subscriptionInfo;
+            permissions = data.computedPermissions;
+          } else {
+            // Fallback to client-side computation
+            subscriptionInfo = computeSubscriptionInfo(
+              data.user,
+              data.organization
+            );
+            permissions = computePermissions(
+              data.user,
+              userRole,
+              userType,
+              subscriptionInfo
+            );
+          }
 
           set({
             token: data.token,
@@ -265,7 +275,7 @@ export const useAuthStore = create<AuthState>()(
             userType,
             subscriptionInfo,
 
-            // Computed permissions
+            // Use server-computed permissions
             ...permissions,
           });
 
@@ -294,19 +304,30 @@ export const useAuthStore = create<AuthState>()(
           const response = await authApi.registerUser(data);
           localStorage.setItem("auth_token", response.token);
 
-          // Compute enhanced authentication context
+          // Use server-computed permissions if available, fallback to client-side computation
           const userRole = response.user?.role as UserRole;
           const userType = response.user?.userType as UserType;
-          const subscriptionInfo = computeSubscriptionInfo(
-            response.user,
-            response.organization
-          );
-          const permissions = computePermissions(
-            response.user,
-            userRole,
-            userType,
-            subscriptionInfo
-          );
+          
+          let subscriptionInfo: SubscriptionInfo;
+          let permissions: any;
+
+          if (response.computedPermissions && response.subscriptionInfo) {
+            // Use server-computed values
+            subscriptionInfo = response.subscriptionInfo;
+            permissions = response.computedPermissions;
+          } else {
+            // Fallback to client-side computation
+            subscriptionInfo = computeSubscriptionInfo(
+              response.user,
+              response.organization
+            );
+            permissions = computePermissions(
+              response.user,
+              userRole,
+              userType,
+              subscriptionInfo
+            );
+          }
 
           set({
             token: response.token,
@@ -320,7 +341,7 @@ export const useAuthStore = create<AuthState>()(
             userType,
             subscriptionInfo,
 
-            // Computed permissions
+            // Use server-computed permissions
             ...permissions,
           });
         } catch (error: any) {
@@ -336,19 +357,30 @@ export const useAuthStore = create<AuthState>()(
         try {
           const data = await authApi.getCurrentUser();
 
-          // Compute enhanced authentication context
+          // Use server-computed permissions if available, fallback to client-side computation
           const userRole = data.user?.role as UserRole;
           const userType = data.user?.userType as UserType;
-          const subscriptionInfo = computeSubscriptionInfo(
-            data.user,
-            data.organization
-          );
-          const permissions = computePermissions(
-            data.user,
-            userRole,
-            userType,
-            subscriptionInfo
-          );
+          
+          let subscriptionInfo: SubscriptionInfo;
+          let permissions: any;
+
+          if (data.computedPermissions && data.subscriptionInfo) {
+            // Use server-computed values
+            subscriptionInfo = data.subscriptionInfo;
+            permissions = data.computedPermissions;
+          } else {
+            // Fallback to client-side computation
+            subscriptionInfo = computeSubscriptionInfo(
+              data.user,
+              data.organization
+            );
+            permissions = computePermissions(
+              data.user,
+              userRole,
+              userType,
+              subscriptionInfo
+            );
+          }
 
           set({
             user: data.user,
@@ -361,7 +393,7 @@ export const useAuthStore = create<AuthState>()(
             userType,
             subscriptionInfo,
 
-            // Computed permissions
+            // Use server-computed permissions
             ...permissions,
           });
         } catch (error: any) {
@@ -384,6 +416,22 @@ export const useAuthStore = create<AuthState>()(
           subscriptionInfo: info,
           ...permissions,
         });
+      },
+
+      refreshPermissions: async (organizationId?: string) => {
+        try {
+          const response = await authApi.refreshPermissions(organizationId);
+          
+          set({
+            userRole: response.userRole,
+            userType: response.userType,
+            subscriptionInfo: response.subscriptionInfo,
+            ...response.computedPermissions,
+          });
+        } catch (error: any) {
+          console.error("Failed to refresh permissions:", error);
+          set({ error: error.message });
+        }
       },
     }),
     {

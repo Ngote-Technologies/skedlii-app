@@ -82,6 +82,7 @@ import { organizationsApi, OrganizationMember } from "../../api/organizations";
 import { useToast } from "../../hooks/use-toast";
 import { getInitials } from "../../lib/utils";
 import { invitationsApi } from "../../api/invitations";
+import { useAccessControl } from "../../hooks/useAccessControl";
 
 const inviteMemberSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -100,6 +101,7 @@ export default function OrganizationMembers() {
   const activeOrganization = useActiveOrganization();
   const permissions = useOrganizationPermissions();
   const { removeMember } = useOrganizationStore();
+  const { canManageRole } = useAccessControl();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -126,7 +128,7 @@ export default function OrganizationMembers() {
   const inviteMutation = useMutation({
     mutationFn: async (data: InviteMemberFormData) => {
       if (!activeOrganization) throw new Error("No active organization");
-      
+
       // Use the real invitation API
       return await invitationsApi.sendInvitation({
         email: data.email,
@@ -140,7 +142,7 @@ export default function OrganizationMembers() {
       const userExists = result.userExists;
       toast({
         title: "Invitation sent",
-        description: userExists 
+        description: userExists
           ? "Invitation sent to existing user. They can join this organization through their email."
           : "Invitation sent to new user. They will receive an email to create their account and join the organization.",
       });
@@ -153,7 +155,10 @@ export default function OrganizationMembers() {
     onError: (error: any) => {
       toast({
         title: "Invitation failed",
-        description: error.response?.data?.error || error.message || "Failed to send invitation.",
+        description:
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to send invitation.",
         variant: "destructive",
       });
     },
@@ -197,13 +202,13 @@ export default function OrganizationMembers() {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case "owner":
-        return "default";
+        return "default"; // Blue badge - highest authority
       case "admin":
-        return "secondary";
+        return "success"; // Green badge - management role  
       case "member":
-        return "outline";
+        return "warning"; // Yellow badge - active contributor
       case "viewer":
-        return "outline";
+        return "outline"; // Subtle badge - read-only access
       default:
         return "outline";
     }
@@ -211,6 +216,26 @@ export default function OrganizationMembers() {
 
   const getRoleDisplayName = (role: string) => {
     return role.charAt(0).toUpperCase() + role.slice(1);
+  };
+
+  // Determine which roles the current user can assign
+  const getAssignableRoles = () => {
+    const allRoles = [
+      { value: "viewer", label: "Viewer - Can view content", level: 1 },
+      {
+        value: "member",
+        label: "Member - Can create and manage content",
+        level: 2,
+      },
+      {
+        value: "admin",
+        label: "Admin - Can manage teams and members",
+        level: 3,
+      },
+    ];
+
+    // Only show roles that are lower in hierarchy than current user
+    return allRoles.filter((role) => canManageRole(role.value as any));
   };
 
   if (!activeOrganization) {
@@ -336,15 +361,11 @@ export default function OrganizationMembers() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="viewer">
-                            Viewer - Can view content
-                          </SelectItem>
-                          <SelectItem value="member">
-                            Member - Can create and manage content
-                          </SelectItem>
-                          <SelectItem value="admin">
-                            Admin - Can manage teams and members
-                          </SelectItem>
+                          {getAssignableRoles().map((role) => (
+                            <SelectItem key={role.value} value={role.value}>
+                              {role.label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -442,15 +463,20 @@ export default function OrganizationMembers() {
                             <Mail className="h-4 w-4 mr-2" />
                             Send Message
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Shield className="h-4 w-4 mr-2" />
-                            Change Role
-                          </DropdownMenuItem>
+                          {canManageRole(member.role as any) && (
+                            <DropdownMenuItem>
+                              <Shield className="h-4 w-4 mr-2" />
+                              Change Role
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-600 dark:text-red-400"
                             onClick={() => setMemberToRemove(member)}
-                            disabled={member.role === "owner"}
+                            disabled={
+                              member.role === "owner" ||
+                              !canManageRole(member.role as any)
+                            }
                           >
                             Remove Member
                           </DropdownMenuItem>

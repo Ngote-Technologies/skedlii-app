@@ -53,6 +53,7 @@ import {
 import { UpdateOrganizationData } from "../../api/organizations";
 import { useToast } from "../../hooks/use-toast";
 import { getInitials } from "../../lib/utils";
+import { useAccessControl } from "../../hooks/useAccessControl";
 
 const organizationSettingsSchema = z.object({
   name: z.string().min(1, "Organization name is required"),
@@ -84,6 +85,7 @@ export default function OrganizationSettings() {
   const activeOrganization = useActiveOrganization();
   const permissions = useOrganizationPermissions();
   const { updateOrganization, deleteOrganization } = useOrganizationStore();
+  const { userContext } = useAccessControl();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -519,46 +521,48 @@ export default function OrganizationSettings() {
         </form>
       </Form>
 
-      {/* Danger Zone */}
-      <Card className="border-red-200 dark:border-red-800">
-        <CardHeader>
-          <CardTitle className="text-red-600 dark:text-red-400">
-            Danger Zone
-          </CardTitle>
-          <CardDescription>
-            Irreversible and destructive actions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete Organization
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the
-                  organization "{activeOrganization.name}" and remove all
-                  associated data including teams, members, and content.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDeleteOrganization}
-                  className="bg-red-600 hover:bg-red-700"
-                >
+      {/* Danger Zone - Only for org owners */}
+      {userContext.userRole === "org_owner" && (
+        <Card className="border-red-200 dark:border-red-800">
+          <CardHeader>
+            <CardTitle className="text-red-600 dark:text-red-400">
+              Danger Zone
+            </CardTitle>
+            <CardDescription>
+              Irreversible and destructive actions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  <Trash2 className="h-4 w-4 mr-2" />
                   Delete Organization
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </CardContent>
-      </Card>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the
+                    organization "{activeOrganization.name}" and remove all
+                    associated data including teams, members, and content.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteOrganization}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Delete Organization
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

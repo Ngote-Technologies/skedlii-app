@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../store/hooks";
 import { useToast } from "../../hooks/use-toast";
+import { useAccessControl } from "../../hooks/useAccessControl";
 import {
   Card,
   CardContent,
@@ -34,6 +35,7 @@ const Billing = () => {
   const { user, fetchUserData } = useAuth();
   const { billing } = user;
   const { toast } = useToast();
+  const { canManageBilling } = useAccessControl();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<TabValue>("subscription");
   const [billingInterval, setBillingInterval] = useState("monthly");
@@ -277,16 +279,20 @@ const Billing = () => {
               Manage your subscription and payment details
             </p>
           </div>
-          
+
           {/* Quick Stats */}
           <div className="hidden md:flex items-center gap-4">
             <div className="text-center">
-              <div className="text-sm font-bold text-foreground">{billing?.paymentStatus === 'active' ? 'Active' : 'Inactive'}</div>
+              <div className="text-sm font-bold text-foreground">
+                {billing?.paymentStatus === "active" ? "Active" : "Inactive"}
+              </div>
               <div className="text-xs text-muted-foreground">Status</div>
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="text-center">
-              <div className="text-sm font-bold text-foreground">${billing?.amountPaid || '0'}</div>
+              <div className="text-sm font-bold text-foreground">
+                ${billing?.amountPaid || "0"}
+              </div>
               <div className="text-xs text-muted-foreground">Last Payment</div>
             </div>
           </div>
@@ -303,8 +309,8 @@ const Billing = () => {
           {TAB_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
-              <TabsTrigger 
-                key={item.value} 
+              <TabsTrigger
+                key={item.value}
                 value={item.value}
                 className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
               >
@@ -324,7 +330,9 @@ const Billing = () => {
                   <CreditCard className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl">Subscription Details</CardTitle>
+                  <CardTitle className="text-xl">
+                    Subscription Details
+                  </CardTitle>
                   <CardDescription>
                     View and manage your current subscription
                   </CardDescription>
@@ -338,6 +346,7 @@ const Billing = () => {
                 setShowCancelDialog={setShowCancelDialog}
                 cancelSubscription={handleCancelSubscription}
                 setActiveTab={setActiveTab as any}
+                canManageBilling={canManageBilling}
               />
             </CardContent>
           </Card>
@@ -359,13 +368,13 @@ const Billing = () => {
                     </CardDescription>
                   </div>
                 </div>
-                
+
                 {/* Billing Toggle */}
                 <div className="flex items-center justify-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
                   <span
                     className={`text-sm transition-all duration-200 ${
-                      billingInterval === "monthly" 
-                        ? "font-bold text-primary" 
+                      billingInterval === "monthly"
+                        ? "font-bold text-primary"
                         : "text-muted-foreground"
                     }`}
                   >
@@ -379,8 +388,8 @@ const Billing = () => {
                   />
                   <span
                     className={`text-sm transition-all duration-200 ${
-                      billingInterval === "yearly" 
-                        ? "font-bold text-primary" 
+                      billingInterval === "yearly"
+                        ? "font-bold text-primary"
                         : "text-muted-foreground"
                     }`}
                   >
@@ -401,6 +410,7 @@ const Billing = () => {
                 isYearly={billingInterval === "yearly"}
                 billing={billing}
                 handleUpgradeDowngrade={handleUpgradeDowngrade}
+                canManageBilling={canManageBilling}
               />
             </CardContent>
           </Card>
@@ -422,30 +432,36 @@ const Billing = () => {
                     </CardDescription>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                   {/* Invoice Stats */}
                   <div className="hidden md:flex items-center gap-4 mr-4">
                     <div className="text-center">
-                      <div className="text-sm font-bold text-foreground">{invoices.length}</div>
+                      <div className="text-sm font-bold text-foreground">
+                        {invoices.length}
+                      </div>
                       <div className="text-xs text-muted-foreground">Total</div>
                     </div>
                     <div className="w-px h-8 bg-border" />
                     <div className="text-center">
                       <div className="text-sm font-bold text-green-600">
-                        {invoices.filter(i => i.status === 'paid').length}
+                        {invoices.filter((i) => i.status === "paid").length}
                       </div>
                       <div className="text-xs text-muted-foreground">Paid</div>
                     </div>
                   </div>
-                  
+
                   <Button
                     onClick={toggleViewMode}
                     variant="outline"
                     size="sm"
                     className="hidden lg:flex items-center gap-2 bg-background/50 hover:bg-background/80"
                   >
-                    {viewMode === "card" ? <FileText className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
+                    {viewMode === "card" ? (
+                      <FileText className="h-4 w-4" />
+                    ) : (
+                      <CreditCard className="h-4 w-4" />
+                    )}
                     {viewMode === "card" ? "Table" : "Card"} View
                   </Button>
                 </div>

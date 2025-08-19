@@ -1,11 +1,15 @@
 import React from "react";
-import { Permission, ACCESS_CONTROL_MESSAGES, FEATURES } from "../../lib/access-control";
-import { 
-  usePermissionGuard, 
-  useFeatureAccess, 
-  useSubscriptionGate, 
-  useRoleGuard, 
-  useUserTypeGuard 
+import {
+  Permission,
+  ACCESS_CONTROL_MESSAGES,
+  FEATURES,
+} from "../../lib/access-control";
+import {
+  usePermissionGuard,
+  useFeatureAccess,
+  useSubscriptionGate,
+  useRoleGuard,
+  useUserTypeGuard,
 } from "../../hooks/useAccessControl";
 import { UserRole, UserType } from "../../store/authStore";
 
@@ -109,7 +113,8 @@ export function SubscriptionGuard({
   fallbackComponent,
   children,
 }: SubscriptionGuardProps) {
-  const { hasAccess, needsUpgrade, needsSubscription, currentTier } = useSubscriptionGate(requiredTier);
+  const { hasAccess, needsUpgrade, needsSubscription, currentTier } =
+    useSubscriptionGate(requiredTier);
 
   if (!hasAccess) {
     if (customUpgradeComponent) {

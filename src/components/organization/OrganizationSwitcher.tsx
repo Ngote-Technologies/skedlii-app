@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Check, ChevronsUpDown, Plus, Building } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
+import { useNavigate } from 'react-router-dom';
 import {
   Command,
   CommandEmpty,
@@ -53,13 +54,13 @@ export default function OrganizationSwitcher({
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case 'owner':
-        return 'default';
+        return 'default'; // Blue badge - highest authority
       case 'admin':
-        return 'secondary';
+        return 'success'; // Green badge - management role
       case 'member':
-        return 'outline';
+        return 'warning'; // Yellow badge - active contributor
       case 'viewer':
-        return 'outline';
+        return 'outline'; // Subtle badge - read-only access
       default:
         return 'outline';
     }
@@ -227,6 +228,7 @@ export function CompactOrganizationSwitcher({
   onCreateOrganization 
 }: OrganizationSwitcherProps) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const { activeOrganization, organizations, switchOrganization, fetchUserOrganizations } = useOrganizationStore();
 
   // Fetch organizations on component mount
@@ -237,6 +239,9 @@ export function CompactOrganizationSwitcher({
   const handleOrganizationSelect = async (organizationId: string) => {
     await switchOrganization(organizationId);
     setOpen(false);
+    
+    // Navigate to the organization dashboard
+    navigate('/dashboard/organizations');
   };
 
   if (organizations.length === 0) {

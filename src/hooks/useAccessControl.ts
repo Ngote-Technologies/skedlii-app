@@ -149,7 +149,7 @@ export function useRoleManagement() {
     canManageRole,
     isOrganizationOwner: userContext.userRole === "org_owner",
     isOrganizationAdmin: userContext.userRole === "admin",
-    isOrganizationMember: ["member", "user"].includes(userContext.userRole || ""),
+    isOrganizationMember: userContext.userRole === "member",
     isIndividualUser: userContext.userType === "individual",
     userRole: userContext.userRole,
     userType: userContext.userType,

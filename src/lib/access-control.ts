@@ -111,11 +111,11 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   ],
 
   member: [
-    // Organization (view only)
+    // Organization (view only - no member directory access)
     Permission.ORG_VIEW,
-    Permission.ORG_MEMBERS_VIEW,
+    // Permission.ORG_MEMBERS_VIEW, // Removed: Members shouldn't see full org directory
 
-    // Teams (view and limited management)
+    // Teams (view and limited management - can see teams they belong to)
     Permission.TEAMS_VIEW,
     Permission.TEAM_MEMBERS_VIEW,
 
@@ -136,33 +136,17 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.ANALYTICS_VIEW,
   ],
 
-  user: [
-    // Same as member for organization context
-    Permission.ORG_VIEW,
-    Permission.ORG_MEMBERS_VIEW,
-    Permission.TEAMS_VIEW,
-    Permission.TEAM_MEMBERS_VIEW,
-    Permission.SOCIAL_ACCOUNTS_VIEW,
-    Permission.CONTENT_VIEW,
-    Permission.CONTENT_CREATE,
-    Permission.CONTENT_EDIT,
-    Permission.CONTENT_PUBLISH,
-    Permission.COLLECTIONS_VIEW,
-    Permission.COLLECTIONS_CREATE,
-    Permission.ANALYTICS_VIEW,
-  ],
-
   viewer: [
-    // Organization (view only)
+    // Organization (basic info only - no member access)
     Permission.ORG_VIEW,
-    Permission.ORG_MEMBERS_VIEW,
+    // Permission.ORG_MEMBERS_VIEW, // Removed: Too permissive for viewer role
 
-    // Teams (view only)
-    Permission.TEAMS_VIEW,
-    Permission.TEAM_MEMBERS_VIEW,
+    // Teams (removed - viewers shouldn't see team structure)
+    // Permission.TEAMS_VIEW, // Removed: Too permissive for viewer role
+    // Permission.TEAM_MEMBERS_VIEW, // Removed: Too permissive for viewer role
 
-    // Social accounts (view only)
-    Permission.SOCIAL_ACCOUNTS_VIEW,
+    // Social accounts (removed - viewers shouldn't see org's social strategy)
+    // Permission.SOCIAL_ACCOUNTS_VIEW, // Removed: Too permissive for viewer role
 
     // Content (view only)
     Permission.CONTENT_VIEW,
@@ -172,11 +156,6 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
     // Analytics (view only)
     Permission.ANALYTICS_VIEW,
-  ],
-
-  super_admin: [
-    // Super admins have all permissions
-    ...Object.values(Permission),
   ],
 };
 
@@ -253,9 +232,7 @@ export function canManageRole(
     org_owner: 4,
     admin: 3,
     member: 2,
-    user: 2,
     viewer: 1,
-    super_admin: 5,
   };
 
   return roleHierarchy[managerContext.userRole] > roleHierarchy[targetRole];
