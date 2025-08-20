@@ -56,9 +56,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { hasValidSubscription } from "../../lib/access";
 import { useAccessControl } from "../../hooks/useAccessControl";
-import { PermissionGuard } from "../access-control/PermissionGuard";
 
 // Media Carousel Component
 const MediaCarousel = ({ mediaUrls, mediaType }: { mediaUrls: string[]; mediaType: string }) => {
@@ -158,9 +156,8 @@ const Posts = () => {
   });
 
   const { user, isAuthenticated } = useAuth();
-  const { billing } = user;
   const navigate = useNavigate();
-  const { hasPermission, Permission } = useAccessControl();
+  const { hasValidSubscription } = useAccessControl();
 
   const {
     data: collections = [],
@@ -350,29 +347,19 @@ const Posts = () => {
             You haven't created any posts yet. Create your first post to get started with your social media journey.
           </p>
         </div>
-        <PermissionGuard permission={Permission.CONTENT_CREATE}>
+        {hasValidSubscription && (
           <Button
-            onClick={() => {
-              if (!hasValidSubscription(billing?.paymentStatus)) {
-                toast({
-                  variant: "destructive",
-                  title: "Upgrade your plan to manage collections.",
-                });
-              } else {
-                navigate("/dashboard/post-flow");
-              }
-            }}
+            onClick={() => navigate("/dashboard/post-flow")}
           >
             <Plus size={16} className="mr-2" />
             Create Post
           </Button>
-        </PermissionGuard>
+        )}
       </div>
     );
   }
 
   return (
-    <PermissionGuard permission={Permission.CONTENT_VIEW}>
       <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
@@ -393,24 +380,15 @@ const Posts = () => {
             />
             Refresh
           </Button>
-          <PermissionGuard permission={Permission.CONTENT_CREATE}>
+          {hasValidSubscription && (
             <Button
-              onClick={() => {
-                if (!hasValidSubscription(billing?.paymentStatus)) {
-                  toast({
-                    variant: "destructive",
-                    title: "Upgrade your plan to manage collections.",
-                  });
-                } else {
-                  navigate("/dashboard/post-flow");
-                }
-              }}
+              onClick={() => navigate("/dashboard/post-flow")}
               className="gap-2"
             >
               <Plus size={16} />
               New Post
             </Button>
-          </PermissionGuard>
+          )}
         </div>
       </div>
 
@@ -505,7 +483,7 @@ const Posts = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          {hasPermission(Permission.CONTENT_EDIT) && (
+                          {hasValidSubscription && (
                             <DropdownMenuItem
                               onClick={() => handleEditPost(post._id)}
                               disabled={["published", "posted"].includes(
@@ -517,7 +495,7 @@ const Posts = () => {
                               <span>Edit</span>
                             </DropdownMenuItem>
                           )}
-                          {hasPermission(Permission.COLLECTIONS_MANAGE) && (
+                          {hasValidSubscription && (
                             <DropdownMenuItem
                               onClick={() =>
                                 setCollectionConfig({
@@ -535,7 +513,7 @@ const Posts = () => {
                               <span>Add to Collection</span>
                             </DropdownMenuItem>
                           )}
-                          {hasPermission(Permission.ANALYTICS_VIEW) && (
+                          {hasValidSubscription && (
                             <DropdownMenuItem
                               onClick={() => handleViewAnalytics(post._id)}
                               disabled={
@@ -547,7 +525,7 @@ const Posts = () => {
                               <span>View Analytics</span>
                             </DropdownMenuItem>
                           )}
-                          {hasPermission(Permission.CONTENT_DELETE) && (
+                          {hasValidSubscription && (
                             <DropdownMenuItem
                               className="text-xs text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
                               onClick={() =>
@@ -608,7 +586,7 @@ const Posts = () => {
                       )}
                     </div>
                     <div className="flex space-x-1">
-                      {hasPermission(Permission.ANALYTICS_VIEW) && (
+                      {hasValidSubscription && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -620,7 +598,7 @@ const Posts = () => {
                           <BarChart2 className="h-4 w-4" />
                         </Button>
                       )}
-                      {hasPermission(Permission.CONTENT_EDIT) && (
+                      {hasValidSubscription && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -728,7 +706,6 @@ const Posts = () => {
         </DialogContent>
       </Dialog>
     </div>
-    </PermissionGuard>
   );
 };
 

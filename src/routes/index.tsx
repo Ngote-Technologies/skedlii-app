@@ -136,7 +136,6 @@ const AppRoutes = () => {
               <Route path="analytics" element={<AnalyticsDashboard />} />
               <Route path="post-flow" element={<PostFlow />} />
               <Route path="posts" element={<Posts />} />
-              <Route path="teams" element={<TeamManagement />} />
               <Route path="scheduled" element={<ScheduledPosts />} />
               <Route path="settings" element={<UserSettings />} />
               <Route path="billing" element={<Billing />} />
@@ -145,6 +144,7 @@ const AppRoutes = () => {
               <Route path="organizations" element={<OrganizationDashboard />} />
               <Route path="organizations/settings" element={<OrganizationSettings />} />
               <Route path="organizations/members" element={<OrganizationMembers />} />
+              <Route path="organizations/teams" element={<TeamManagement />} />
             </Route>
             <Route path="*" element={<NotFound />} />
             </Routes>

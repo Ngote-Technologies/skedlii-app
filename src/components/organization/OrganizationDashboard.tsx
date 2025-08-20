@@ -195,18 +195,12 @@ export default function OrganizationDashboard() {
                 </Link>
               </Button>
             )}
-            {permissions.canCreateTeams && (
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                asChild
-              >
-                <Link to="/dashboard/teams">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Manage Teams
-                </Link>
-              </Button>
-            )}
+            <Button variant="outline" className="w-full justify-start" asChild>
+              <Link to="/dashboard/organizations/teams">
+                <Shield className="h-4 w-4 mr-2" />
+                {permissions.canCreateTeams ? "Manage" : "View"} Teams
+              </Link>
+            </Button>
             <Button variant="outline" className="w-full justify-start" asChild>
               <Link to="/dashboard/accounts">
                 <Calendar className="h-4 w-4 mr-2" />
@@ -222,11 +216,18 @@ export default function OrganizationDashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent Members */}
+        {/* Members Section */}
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle>Recent Members</CardTitle>
-            <CardDescription>Recently joined team members</CardDescription>
+            <CardTitle>
+              {permissions.canManageMembers ? "Recent Members" : "Team Members"}
+            </CardTitle>
+            <CardDescription>
+              {permissions.canManageMembers 
+                ? "Recently joined team members"
+                : "Members you collaborate with"
+              }
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {organizationDetails?.members &&
@@ -257,7 +258,10 @@ export default function OrganizationDashboard() {
                     asChild
                   >
                     <Link to="/dashboard/organizations/members">
-                      View all {organizationDetails.members.length} members
+                      {permissions.canManageMembers 
+                        ? `View all ${organizationDetails.members.length} members`
+                        : `View all ${organizationDetails.members.length} team members`
+                      }
                     </Link>
                   </Button>
                 )}
@@ -265,7 +269,12 @@ export default function OrganizationDashboard() {
             ) : (
               <div className="text-center text-gray-500 dark:text-gray-400 py-4">
                 <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No members yet</p>
+                <p className="text-sm">
+                  {permissions.canManageMembers 
+                    ? "No members yet"
+                    : "No team members to show"
+                  }
+                </p>
               </div>
             )}
           </CardContent>

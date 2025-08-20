@@ -5,8 +5,6 @@ import {
   FEATURES,
 } from "../../lib/access-control";
 import {
-  usePermissionGuard,
-  useFeatureAccess,
   useSubscriptionGate,
   useRoleGuard,
   useUserTypeGuard,
@@ -23,21 +21,16 @@ interface PermissionGuardProps {
 }
 
 /**
+ * @deprecated Use subscription-based or direct permission checks instead
  * Component that conditionally renders children based on user permissions
  */
 export function PermissionGuard({
-  permission,
-  requireAll = false,
   subscriptionTier,
   fallbackComponent,
   fallbackMessage,
   children,
 }: PermissionGuardProps) {
-  const { hasAccess, message } = usePermissionGuard(permission, {
-    requireAll,
-    subscriptionTier,
-    fallbackMessage,
-  });
+  const { hasAccess } = useSubscriptionGate(subscriptionTier);
 
   if (!hasAccess) {
     if (fallbackComponent) {
@@ -47,7 +40,7 @@ export function PermissionGuard({
     if (fallbackMessage !== null) {
       return (
         <div className="text-sm text-muted-foreground p-3 rounded-md bg-muted/50 border border-border">
-          {message}
+          {fallbackMessage || "This feature requires a subscription upgrade"}
         </div>
       );
     }
@@ -66,15 +59,15 @@ interface FeatureGuardProps {
 }
 
 /**
+ * @deprecated Use SubscriptionGuard instead
  * Component that conditionally renders children based on predefined features
  */
 export function FeatureGuard({
-  featureKey,
   fallbackComponent,
   fallbackMessage,
   children,
 }: FeatureGuardProps) {
-  const { hasAccess } = useFeatureAccess(featureKey);
+  const { hasAccess } = useSubscriptionGate();
 
   if (!hasAccess) {
     if (fallbackComponent) {

@@ -101,7 +101,28 @@ export default function OrganizationMembers() {
   const activeOrganization = useActiveOrganization();
   const permissions = useOrganizationPermissions();
   const { removeMember } = useOrganizationStore();
-  const { canManageRole } = useAccessControl();
+  const { userContext } = useAccessControl();
+
+  // Function to check if current user can manage a specific role
+  const canManageRole = (targetRole: string) => {
+    const currentRole = userContext.userRole;
+
+    // Role hierarchy levels
+    const roleHierarchy = {
+      owner: 5,
+      org_owner: 5, // Same as owner
+      admin: 4,
+      member: 3,
+      viewer: 2,
+    };
+
+    const currentLevel =
+      roleHierarchy[currentRole as keyof typeof roleHierarchy] || 0;
+    const targetLevel =
+      roleHierarchy[targetRole as keyof typeof roleHierarchy] || 0;
+
+    return currentLevel > targetLevel;
+  };
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -204,7 +225,7 @@ export default function OrganizationMembers() {
       case "owner":
         return "default"; // Blue badge - highest authority
       case "admin":
-        return "success"; // Green badge - management role  
+        return "success"; // Green badge - management role
       case "member":
         return "warning"; // Yellow badge - active contributor
       case "viewer":

@@ -35,13 +35,13 @@ import { useEffect } from "react";
 import { useAuth } from "../../store/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { Badge, StatusBadge, BadgeGroup } from "../ui/badge";
-import { hasValidSubscription } from "../../lib/access";
+import { useAccessControl } from "../../hooks/useAccessControl";
 import { toast } from "../../hooks/use-toast";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, authLoading } = useAuth();
-  const { billing } = user;
+  const { hasValidSubscription } = useAccessControl();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -111,7 +111,7 @@ export default function DashboardPage() {
     <main className="flex-1 overflow-auto">
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Upgrade Banner */}
-        {!hasValidSubscription(billing?.paymentStatus) && (
+        {!hasValidSubscription && (
           <Card className="mb-6 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50">
             <CardContent className="flex items-center justify-between p-4">
               <div className="flex items-center space-x-3">
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                       variant="default"
                       size="lg"
                       className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300 group"
-                      disabled={!hasValidSubscription(billing?.paymentStatus)}
+                      disabled={!hasValidSubscription}
                     >
                       <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
                       Create Post
@@ -351,7 +351,7 @@ export default function DashboardPage() {
                       description: "New content",
                       color: "hover:bg-blue-50 dark:hover:bg-blue-900/20",
                       onClick: () => {
-                        if (!hasValidSubscription(billing?.paymentStatus)) {
+                        if (!hasValidSubscription) {
                           toast({
                             variant: "destructive",
                             title: "Upgrade your plan to post content.",
@@ -455,7 +455,7 @@ export default function DashboardPage() {
             <TabsList>
               <TabsTrigger value="recent">Recent Posts</TabsTrigger>
               <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-              {hasValidSubscription(billing?.paymentStatus) && (
+              {hasValidSubscription && (
                 <TabsTrigger value="insights">Insights</TabsTrigger>
               )}
             </TabsList>

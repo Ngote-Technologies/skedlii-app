@@ -2,7 +2,6 @@ import { Button } from "../components/ui/button";
 import { ThemeToggle } from "../components/ui/theme-toggle";
 import { useAuth } from "../store/hooks";
 import { useAccessControl } from "../hooks/useAccessControl";
-import { Permission } from "../lib/access-control";
 import { Link, useLocation } from "react-router-dom";
 import {
   DropdownMenu,
@@ -37,7 +36,7 @@ import {
 
 export default function DashboardHeader() {
   const { user, logout, canManageBilling } = useAuth();
-  const { hasPermission } = useAccessControl();
+  const { canConnectSocialAccounts } = useAccessControl();
   const location = useLocation();
   const [isCreateOrgDialogOpen, setIsCreateOrgDialogOpen] = useState(false);
 
@@ -177,7 +176,7 @@ export default function DashboardHeader() {
                   Profile Settings
                 </Link>
               </DropdownMenuItem>
-              {hasPermission(Permission.SOCIAL_ACCOUNTS_VIEW) && (
+              {canConnectSocialAccounts && (
                 <DropdownMenuItem asChild>
                   <Link to="/dashboard/accounts" className="cursor-pointer">
                     <Calendar className="mr-2 h-4 w-4" />

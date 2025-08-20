@@ -28,7 +28,6 @@ import { Button } from "../ui/button";
 import { Loader2, Plus, FolderOpen, FileText, Calendar } from "lucide-react";
 import { CollectionsView } from "./CollectionView";
 import { useAccessControl } from "../../hooks/useAccessControl";
-import { PermissionGuard } from "../access-control/PermissionGuard";
 
 const collectionSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -39,7 +38,7 @@ type CollectionFormData = z.infer<typeof collectionSchema>;
 
 export default function Collections() {
   const { toast } = useToast();
-  const { Permission } = useAccessControl();
+  const { hasValidSubscription } = useAccessControl();
 
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -165,7 +164,6 @@ export default function Collections() {
   }
 
   return (
-    <PermissionGuard permission={Permission.COLLECTIONS_VIEW}>
       <div className="space-y-6">
         {/* Enhanced Header Section */}
         <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
@@ -220,7 +218,7 @@ export default function Collections() {
             </div>
 
             <div className="flex items-start">
-              <PermissionGuard permission={Permission.COLLECTIONS_CREATE}>
+              {hasValidSubscription && (
                 <Button
                   onClick={() => setIsCreating(true)}
                   className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200"
@@ -228,7 +226,7 @@ export default function Collections() {
                   <Plus size={16} className="mr-2" />
                   New Collection
                 </Button>
-              </PermissionGuard>
+              )}
             </div>
           </div>
         </div>
@@ -426,6 +424,5 @@ export default function Collections() {
           </DialogContent>
         </Dialog>
       </div>
-    </PermissionGuard>
   );
 }

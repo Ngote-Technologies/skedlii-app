@@ -23,7 +23,6 @@ import { useMemo } from "react";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { Badge } from "../components/ui/badge";
 import { useAccessControl } from "../hooks/useAccessControl";
-import { Permission } from "../lib/access-control";
 
 export default function DashboardSidebar({
   closeMenu,
@@ -41,8 +40,8 @@ export default function DashboardSidebar({
   const { isAdmin, user, canManageBilling } = useAuth();
   const { billing } = user;
   const {
-    hasPermission,
     canCreateTeams,
+    canConnectSocialAccounts,
     hasValidSubscription: hasValidSub,
     userContext,
   } = useAccessControl();
@@ -87,32 +86,28 @@ export default function DashboardSidebar({
         label: "Social Accounts",
         href: "/dashboard/accounts",
         badge: null,
-        show: hasPermission(Permission.SOCIAL_ACCOUNTS_VIEW),
+        show: canConnectSocialAccounts || isAdmin,
       },
       {
         icon: <CalendarCheck size={18} />,
         label: "Scheduled Posts",
         href: "/dashboard/scheduled",
         badge: null,
-        show: hasValidSub && hasPermission(Permission.CONTENT_VIEW),
+        show: hasValidSub,
       },
       {
         icon: <CalendarSync size={18} />,
         label: "Published Posts",
         href: "/dashboard/posts",
         badge: null,
-        show: hasValidSub && hasPermission(Permission.CONTENT_VIEW),
+        show: hasValidSub,
       },
       {
         icon: <Plus size={18} />,
         label: "Create Post",
         href: "/dashboard/post-flow",
-        disabled: !hasValidSub || !hasPermission(Permission.CONTENT_CREATE),
-        badge: !hasValidSub
-          ? "Pro"
-          : !hasPermission(Permission.CONTENT_CREATE)
-          ? "Access"
-          : null,
+        disabled: !hasValidSub,
+        badge: !hasValidSub ? "Pro" : null,
         premium: true,
         show: true, // Show but may be disabled
       },
@@ -120,51 +115,24 @@ export default function DashboardSidebar({
         icon: <Folder size={18} />,
         label: "Collections",
         href: "/dashboard/collections",
-        disabled: !hasValidSub || !hasPermission(Permission.COLLECTIONS_VIEW),
-        badge: !hasValidSub
-          ? "Pro"
-          : !hasPermission(Permission.COLLECTIONS_VIEW)
-          ? "Access"
-          : null,
+        disabled: !hasValidSub,
+        badge: !hasValidSub ? "Pro" : null,
         show: true, // Show but may be disabled
       },
       {
         icon: <Building size={18} />,
         label: "Organization",
         href: "/dashboard/organizations",
-        disabled:
-          userType === "individual" || !hasPermission(Permission.ORG_VIEW),
-        badge:
-          userType === "individual"
-            ? "Org"
-            : !hasPermission(Permission.ORG_VIEW)
-            ? "Access"
-            : null,
-        show: userType === "organization", // Only show for organization users
-      },
-      {
-        icon: <Users size={18} />,
-        label: "Team Management",
-        href: "/dashboard/teams",
-        disabled: !canCreateTeams || !hasPermission(Permission.TEAMS_VIEW),
-        badge:
-          userType === "individual"
-            ? "Org"
-            : !hasPermission(Permission.TEAMS_VIEW)
-            ? "Access"
-            : null,
+        disabled: userType === "individual",
+        badge: userType === "individual" ? "Org" : null,
         show: userType === "organization", // Only show for organization users
       },
       {
         icon: <BarChart3 size={18} />,
         label: "Analytics",
         href: "/dashboard/analytics",
-        disabled: !hasValidSub || !hasPermission(Permission.ANALYTICS_VIEW),
-        badge: !hasValidSub
-          ? "Pro"
-          : !hasPermission(Permission.ANALYTICS_VIEW)
-          ? "Access"
-          : null,
+        disabled: !hasValidSub,
+        badge: !hasValidSub ? "Pro" : null,
         show: true, // Show but may be disabled
       },
     ];
@@ -197,10 +165,10 @@ export default function DashboardSidebar({
     user?.userType,
     isMobile,
     bottomNavItems,
-    hasPermission,
     hasValidSub,
     userType,
     canCreateTeams,
+    canConnectSocialAccounts,
   ]);
 
   const handleNavigation = () => {
@@ -277,15 +245,13 @@ export default function DashboardSidebar({
                 "w-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group",
                 isMobile ? "h-12 text-base touch-manipulation" : ""
               )}
-              disabled={
-                !hasValidSub || !hasPermission(Permission.CONTENT_CREATE)
-              }
+              disabled={!hasValidSub}
             >
               <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform duration-200" />
               Create Post
-              {(!hasValidSub || !hasPermission(Permission.CONTENT_CREATE)) && (
+              {!hasValidSub && (
                 <Badge variant="secondary" className="ml-2 text-xs">
-                  {!hasValidSub ? "Pro" : "Access"}
+                  Pro
                 </Badge>
               )}
             </Button>
@@ -301,9 +267,7 @@ export default function DashboardSidebar({
                 handleNavigation();
               }}
               className="w-full h-12 shadow-lg hover:shadow-xl transition-all duration-300 group"
-              disabled={
-                !hasValidSub || !hasPermission(Permission.CONTENT_CREATE)
-              }
+              disabled={!hasValidSub}
             >
               <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
               <span className="sr-only">Create Post</span>

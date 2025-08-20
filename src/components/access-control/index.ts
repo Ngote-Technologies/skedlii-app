@@ -15,9 +15,6 @@ export {
 
 export {
   useAccessControl,
-  useFeatureAccess,
-  usePermissionGuard,
-  useNavigationAccess,
   useRoleManagement,
   useSubscriptionGate,
   useUserTypeGuard,
