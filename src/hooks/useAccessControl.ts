@@ -2,31 +2,31 @@ import { useMemo } from "react";
 import { useAuth } from "../store/hooks";
 import { useOrganizationRole } from "../store/organizationStore";
 import {
-  createAccessControl,
   Permission,
   FEATURES,
   ACCESS_CONTROL_MESSAGES,
-  NavigationItem,
 } from "../lib/access-control";
 import { UserRole, UserType } from "../store/authStore";
 
 /**
- * Hook for accessing permission and subscription-based access control
+ * Hook for accessing backend-computed permissions (single source of truth)
  */
 export function useAccessControl() {
   const { 
     userType, 
     userRole, 
     subscriptionInfo,
+    // Backend-computed permissions (single source of truth)
     canManageOrganization,
     canManageBilling,
     canConnectSocialAccounts,
     canCreateTeams,
+    isAdmin,
   } = useAuth();
   
   const organizationRole = useOrganizationRole();
 
-  // Create user context for access control
+  // Simple user context (no computation - just data)
   const userContext = useMemo(() => ({
     userType: userType as UserType | null,
     userRole: userRole as UserRole | null,
@@ -35,36 +35,61 @@ export function useAccessControl() {
     organizationRole,
   }), [userType, userRole, subscriptionInfo, organizationRole]);
 
-  // Create access control utilities
-  const accessControl = useMemo(() => 
-    createAccessControl(userContext), 
-    [userContext]
-  );
+  // DEPRECATED: These functions now exist for legacy compatibility only
+  // All real permission checking comes from backend computedPermissions
+  const deprecatedPermissionCheckers = useMemo(() => ({
+    hasPermission: (_permission?: any) => {
+      console.warn("hasPermission() is deprecated - use specific permission props from auth store instead");
+      return false;
+    },
+    hasAnyPermission: (_permissions?: any[]) => {
+      console.warn("hasAnyPermission() is deprecated - use specific permission props from auth store instead");
+      return false;
+    },
+    hasAllPermissions: (_permissions?: any[]) => {
+      console.warn("hasAllPermissions() is deprecated - use specific permission props from auth store instead");
+      return false;
+    },
+    canManageRole: (_targetRole?: any) => {
+      console.warn("canManageRole() is deprecated - implement role hierarchy checks in backend");
+      return false;
+    },
+    hasSubscriptionAccess: (tier?: string) => {
+      if (!tier) return subscriptionInfo.hasValidSubscription;
+      // Basic tier checking (enhanced logic should be in backend)
+      const tierHierarchy = { free: 1, creator: 2, pro: 3, enterprise: 4 };
+      const userTier = subscriptionInfo.subscriptionTier?.toLowerCase() || "free";
+      const requiredTierLevel = tierHierarchy[tier.toLowerCase() as keyof typeof tierHierarchy] || 1;
+      const userTierLevel = tierHierarchy[userTier as keyof typeof tierHierarchy] || 1;
+      return userTierLevel >= requiredTierLevel;
+    },
+    canAccessFeature: () => {
+      console.warn("canAccessFeature() is deprecated - feature access should be controlled by backend permissions");
+      return subscriptionInfo.hasValidSubscription;
+    },
+    canAccessNavigation: () => {
+      console.warn("canAccessNavigation() is deprecated - navigation access should be controlled by backend permissions");
+      return true;
+    },
+  }), [subscriptionInfo]);
 
   return {
-    // Core permission checking
-    hasPermission: accessControl.hasPermission,
-    hasAnyPermission: accessControl.hasAnyPermission,
-    hasAllPermissions: accessControl.hasAllPermissions,
-    canManageRole: accessControl.canManageRole,
-    
-    // Subscription checking
-    hasSubscriptionAccess: accessControl.hasSubscriptionAccess,
-    hasValidSubscription: subscriptionInfo.hasValidSubscription,
-    subscriptionTier: subscriptionInfo.subscriptionTier,
-    
-    // Feature access
-    canAccessFeature: accessControl.canAccessFeature,
-    canAccessNavigation: accessControl.canAccessNavigation,
-    
-    // Pre-computed common permissions (from auth store)
+    // Backend-computed permissions (SINGLE SOURCE OF TRUTH)
     canManageOrganization,
     canManageBilling,
     canConnectSocialAccounts,
     canCreateTeams,
+    isAdmin,
     
-    // User context
+    // Subscription info from backend
+    hasValidSubscription: subscriptionInfo.hasValidSubscription,
+    subscriptionTier: subscriptionInfo.subscriptionTier,
+    
+    // User context (for display purposes)
     userContext,
+    
+    // DEPRECATED: Legacy permission functions (emit warnings)
+    ...deprecatedPermissionCheckers,
     
     // Constants for easy access
     Permission,
@@ -74,20 +99,23 @@ export function useAccessControl() {
 }
 
 /**
+ * @deprecated Use specific backend permissions from useAccessControl() instead
  * Hook for checking specific feature access
  */
 export function useFeatureAccess(featureKey: keyof typeof FEATURES) {
-  const { canAccessFeature, userContext } = useAccessControl();
+  console.warn("useFeatureAccess() is deprecated - use specific permission props from useAccessControl() instead");
+  const { hasValidSubscription, userContext } = useAccessControl();
   const feature = FEATURES[featureKey];
   
   return useMemo(() => ({
-    hasAccess: canAccessFeature(feature),
+    hasAccess: hasValidSubscription, // Simplified fallback
     feature,
     userContext,
-  }), [canAccessFeature, feature, userContext]);
+  }), [hasValidSubscription, feature, userContext]);
 }
 
 /**
+ * @deprecated Use specific backend permissions from useAccessControl() instead
  * Hook for permission-based component rendering
  */
 export function usePermissionGuard(
@@ -98,7 +126,8 @@ export function usePermissionGuard(
     fallbackMessage?: string;
   } = {}
 ) {
-  const { hasPermission, hasAnyPermission, hasAllPermissions, hasSubscriptionAccess } = useAccessControl();
+  console.warn("usePermissionGuard() is deprecated - use specific permission props from useAccessControl() instead");
+  const { hasValidSubscription, hasSubscriptionAccess } = useAccessControl();
   
   return useMemo(() => {
     // Check subscription requirement first
@@ -110,33 +139,28 @@ export function usePermissionGuard(
       };
     }
 
-    let hasAccess = false;
-    
-    if (Array.isArray(permission)) {
-      hasAccess = options.requireAll 
-        ? hasAllPermissions(permission)
-        : hasAnyPermission(permission);
-    } else {
-      hasAccess = hasPermission(permission);
-    }
+    // Simplified fallback - backend should handle specific permissions
+    const hasAccess = hasValidSubscription;
 
     return {
       hasAccess,
       reason: hasAccess ? null : "insufficient_permissions",
       message: hasAccess ? null : (options.fallbackMessage || ACCESS_CONTROL_MESSAGES.INSUFFICIENT_PERMISSIONS),
     };
-  }, [permission, options, hasPermission, hasAnyPermission, hasAllPermissions, hasSubscriptionAccess]);
+  }, [permission, options, hasValidSubscription, hasSubscriptionAccess]);
 }
 
 /**
+ * @deprecated Use specific backend permissions for navigation control instead
  * Hook for navigation access control
  */
-export function useNavigationAccess(navigationItems: NavigationItem[]) {
-  const { canAccessNavigation } = useAccessControl();
+export function useNavigationAccess(navigationItems: any[]) {
+  console.warn("useNavigationAccess() is deprecated - use specific permission props for navigation control instead");
   
   return useMemo(() => {
-    return navigationItems.filter(item => canAccessNavigation(item));
-  }, [navigationItems, canAccessNavigation]);
+    // Return all items - let backend permissions control visibility in components
+    return navigationItems;
+  }, [navigationItems]);
 }
 
 /**

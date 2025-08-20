@@ -1,6 +1,24 @@
 import { UserRole, UserType } from "../store/authStore";
 
-// Core permission definitions matching backend system
+/**
+ * ⚠️ IMPORTANT: FRONTEND PERMISSION COMPUTATION IS DEPRECATED
+ * 
+ * This file contains DEPRECATED client-side permission computation logic.
+ * The frontend now uses backend computedPermissions as the single source of truth.
+ * 
+ * What's still active:
+ * - Permission enum definitions (for type safety)
+ * - Error message constants 
+ * 
+ * What's deprecated:
+ * - hasPermission(), hasAnyPermission() functions
+ * - createAccessControl() function  
+ * - Role-based permission matrix (ROLE_PERMISSIONS)
+ * 
+ * All permission checks now come from backend via authStore.computedPermissions
+ */
+
+// Core permission definitions matching backend system (STILL ACTIVE - for type safety)
 export enum Permission {
   // Organization management
   ORG_VIEW = "org:view",
@@ -59,8 +77,12 @@ export enum Permission {
 
 // Role-based permission matrix matching backend system
 const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
+  owner: [
+    // Database stores this format - same permissions as org_owner
+    ...Object.values(Permission),
+  ],
   org_owner: [
-    // Owners have all permissions
+    // Code expects this format - same permissions as owner
     ...Object.values(Permission),
   ],
 
@@ -169,6 +191,8 @@ interface UserContext {
 }
 
 /**
+ * @deprecated FRONTEND PERMISSION COMPUTATION IS DEPRECATED
+ * Use authStore.computedPermissions from backend instead
  * Check if user has a specific permission
  */
 export function hasPermission(
@@ -229,7 +253,8 @@ export function canManageRole(
   }
 
   const roleHierarchy = {
-    org_owner: 4,
+    owner: 4,      // Database format
+    org_owner: 4,  // Code format - same level as owner
     admin: 3,
     member: 2,
     viewer: 1,
@@ -374,7 +399,7 @@ export const FEATURES = {
   ORGANIZATION_BILLING: {
     permission: Permission.BILLING_MANAGE,
     userTypes: ["individual", "organization"] as UserType[],
-    roles: ["org_owner"] as UserRole[],
+    roles: ["owner", "org_owner"] as UserRole[], // Both role formats
   },
   ANALYTICS_EXPORT: {
     permission: Permission.ANALYTICS_EXPORT,
