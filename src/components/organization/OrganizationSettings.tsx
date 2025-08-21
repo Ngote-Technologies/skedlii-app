@@ -120,8 +120,8 @@ export default function OrganizationSettings() {
       return await updateOrganization(activeOrganization._id, data);
     },
     onSuccess: () => {
-      toast({
-        title: "Settings updated",
+      toast.success({
+        title: "Settings Updated",
         description: "Organization settings have been saved successfully.",
       });
       queryClient.invalidateQueries({
@@ -129,10 +129,9 @@ export default function OrganizationSettings() {
       });
     },
     onError: (error: any) => {
-      toast({
-        title: "Update failed",
+      toast.error({
+        title: "Settings Update Failed",
         description: error.message || "Failed to update organization settings.",
-        variant: "destructive",
       });
     },
   });
@@ -143,16 +142,15 @@ export default function OrganizationSettings() {
       return await deleteOrganization(activeOrganization._id);
     },
     onSuccess: () => {
-      toast({
-        title: "Organization deleted",
+      toast.success({
+        title: "Organization Deleted",
         description: "Organization has been permanently deleted.",
       });
     },
     onError: (error: any) => {
-      toast({
-        title: "Deletion failed",
+      toast.error({
+        title: "Organization Deletion Failed",
         description: error.message || "Failed to delete organization.",
-        variant: "destructive",
       });
     },
   });

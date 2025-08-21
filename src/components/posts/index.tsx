@@ -198,18 +198,17 @@ const Posts = () => {
       },
       onSuccess: () => {
         setDeleteConfig({ id: "", isOpen: false, postAccountId: "" });
-        toast({
-          title: "Post deleted",
+        toast.success({
+          title: "Post Deleted",
           description: "The post has been removed successfully.",
         });
         refetchPosts();
       },
       onError: () => {
         setDeleteConfig({ id: "", isOpen: false, postAccountId: "" });
-        toast({
-          title: "Something went wrong",
-          description: "Please try again!",
-          variant: "destructive",
+        toast.error({
+          title: "Post Deletion Failed",
+          description: "Failed to delete post. Please try again.",
         });
       },
     });
@@ -237,19 +236,17 @@ const Posts = () => {
       },
       onSuccess: () => {
         setCollectionConfig({ collectionId: "", postId: "", isOpen: false });
-        toast({
-          title: "Post added to collection",
-          description: "The post has been added to the collection",
+        toast.success({
+          title: "Post Added to Collection",
+          description: "The post has been added to the collection.",
         });
         refetchCollections();
         refetchPosts();
       },
       onError: () => {
-        toast({
-          title: "Addition failed",
-          description:
-            "Failed to add the post to the collection. Please try again.",
-          variant: "destructive",
+        toast.error({
+          title: "Collection Addition Failed",
+          description: "Failed to add the post to the collection. Please try again.",
         });
       },
     });

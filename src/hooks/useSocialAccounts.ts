@@ -10,10 +10,9 @@ export const useConnectLinkedIn = () => {
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
-      toast({
+      toast.error({
         title: "Connection Failed",
-        description: errorMsg ?? "Failed to connect to LinkedIn, try again!",
-        variant: "destructive",
+        description: errorMsg ?? "Failed to connect to LinkedIn. Please try again.",
       });
     },
   });
@@ -27,10 +26,9 @@ export const useConnectTwitter = () => {
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
-      toast({
-        title: "Connection Failed",
-        description: errorMsg ?? "Failed to connect to Twitter, try again!",
-        variant: "destructive",
+      toast.error({
+        title: "Twitter Connection Failed",
+        description: errorMsg ?? "Failed to connect to Twitter. Please check your account and try again.",
       });
     },
   });
@@ -44,10 +42,9 @@ export const useConnectThreads = () => {
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
-      toast({
-        title: "Connection Failed",
-        description: errorMsg ?? "Failed to connect to Threads, try again!",
-        variant: "destructive",
+      toast.error({
+        title: "Threads Connection Failed",
+        description: errorMsg ?? "Failed to connect to Threads. Please check your account and try again.",
       });
     },
   });
@@ -67,10 +64,9 @@ export const useConnectMeta = () => {
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
-      toast({
-        title: "Connection Failed",
-        description: errorMsg ?? "Failed to connect to Meta, try again!",
-        variant: "destructive",
+      toast.error({
+        title: "Meta Connection Failed",
+        description: errorMsg ?? "Failed to connect to Meta platform. Please try again.",
       });
     },
   });
@@ -84,10 +80,9 @@ export const useConnectInstagram = () => {
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
-      toast({
-        title: "Connection Failed",
-        description: errorMsg ?? "Failed to connect to Instagram, try again!",
-        variant: "destructive",
+      toast.error({
+        title: "Instagram Connection Failed",
+        description: errorMsg ?? "Failed to connect to Instagram. Please check your account and try again.",
       });
     },
   });
@@ -101,10 +96,9 @@ export const useConnectFacebook = () => {
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
-      toast({
-        title: "Connection Failed",
-        description: errorMsg ?? "Failed to connect to Facebook, try again!",
-        variant: "destructive",
+      toast.error({
+        title: "Facebook Connection Failed",
+        description: errorMsg ?? "Failed to connect to Facebook. Please check your account and try again.",
       });
     },
   });
@@ -118,10 +112,9 @@ export const useConnectTikTok = () => {
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
-      toast({
-        title: "Connection Failed",
-        description: errorMsg ?? "Failed to connect to TikTok, try again!",
-        variant: "destructive",
+      toast.error({
+        title: "TikTok Connection Failed",
+        description: errorMsg ?? "Failed to connect to TikTok. Please check your account and try again.",
       });
     },
   });
@@ -135,10 +128,9 @@ export const useConnectYoutube = () => {
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
-      toast({
-        title: "Connection Failed",
-        description: errorMsg ?? "Failed to connect to Youtube, try again!",
-        variant: "destructive",
+      toast.error({
+        title: "YouTube Connection Failed",
+        description: errorMsg ?? "Failed to connect to YouTube. Please check your account and try again.",
       });
     },
   });
@@ -157,10 +149,9 @@ export const useDeleteAccount = () => {
       return response;
     },
     onError: (err: any) => {
-      toast({
-        title: "Connection Failed",
-        description: err.message ?? "Failed to disconnect account, try again!",
-        variant: "destructive",
+      toast.error({
+        title: "Disconnect Failed",
+        description: err.message ?? "Failed to disconnect account. Please try again.",
       });
     },
   });
@@ -173,11 +164,9 @@ export const useRefreshTwitterAccessToken = () => {
       return response;
     },
     onError: (err: any) => {
-      toast({
-        title: "Connection Failed",
-        description:
-          err.message ?? "Failed to refresh access token, try again!",
-        variant: "destructive",
+      toast.error({
+        title: "Token Refresh Failed",
+        description: err.message ?? "Failed to refresh Twitter access token. Please try again.",
       });
     },
   });
@@ -190,11 +179,9 @@ export const useRefreshYoutubeAccessToken = () => {
       return response;
     },
     onError: (err: any) => {
-      toast({
-        title: "Connection Failed",
-        description:
-          err.message ?? "Failed to refresh access token, try again!",
-        variant: "destructive",
+      toast.error({
+        title: "Token Refresh Failed",
+        description: err.message ?? "Failed to refresh YouTube access token. Please try again.",
       });
     },
   });
@@ -207,11 +194,9 @@ export const useRefreshTikTokAccessToken = () => {
       return response;
     },
     onError: (err: any) => {
-      toast({
-        title: "Connection Failed",
-        description:
-          err.message ?? "Failed to refresh access token, try again!",
-        variant: "destructive",
+      toast.error({
+        title: "Token Refresh Failed",
+        description: err.message ?? "Failed to refresh TikTok access token. Please try again.",
       });
     },
   });

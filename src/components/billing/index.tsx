@@ -80,41 +80,34 @@ const Billing = () => {
     }
 
     if (subscribed) {
-      toast({
-        title: "Subscription created",
-        description: "Your subscription has been created successfully",
+      toast.success({
+        title: "Subscription Created",
+        description: "Your subscription has been created successfully.",
       });
     } else if (subscriptionUpdated) {
-      toast({
-        title: "Subscription updated",
-        description: "Your subscription has been updated successfully",
+      toast.success({
+        title: "Subscription Updated",
+        description: "Your subscription has been updated successfully.",
       });
     } else if (upgrade === "success") {
-      toast({
-        title: "Subscription upgraded successfully!",
-        description: plan
-          ? `Welcome to ${plan}!`
-          : "Your subscription has been upgraded",
+      toast.success({
+        title: "Subscription Upgraded Successfully!",
+        description: plan ? `Welcome to ${plan}!` : "Your subscription has been upgraded.",
       });
     } else if (downgrade === "success") {
-      toast({
-        title: "Subscription downgraded",
-        description: plan
-          ? `Changed to ${plan}`
-          : "Your subscription has been downgraded",
+      toast.success({
+        title: "Subscription Downgraded",
+        description: plan ? `Changed to ${plan}` : "Your subscription has been downgraded.",
       });
     } else if (upgrade === "canceled" || downgrade === "canceled") {
-      toast({
-        title: "Subscription change canceled",
-        description:
-          "Your subscription change was canceled. No changes were made.",
-        variant: "destructive",
+      toast.warning({
+        title: "Subscription Change Canceled",
+        description: "Your subscription change was canceled. No changes were made.",
       });
     } else if (error) {
-      toast({
-        title: "Subscription operation failed",
-        description: message ?? "Failed to process subscription change",
-        variant: "destructive",
+      toast.error({
+        title: "Subscription Operation Failed",
+        description: message ?? "Failed to process subscription change.",
       });
     }
 
@@ -166,10 +159,9 @@ const Billing = () => {
   const handlePreviewSuccess = useCallback(
     (data: any) => {
       if (data.data?.error) {
-        toast({
+        toast.error({
           title: "Preview Error",
           description: data.data.error,
-          variant: "destructive",
         });
         return;
       }
@@ -179,10 +171,9 @@ const Billing = () => {
         setShowUpgradeDialog(true);
       } else {
         fetchUserData();
-        toast({
+        toast.success({
           title: "Subscription Updated",
-          description:
-            data.message || "Subscription has been updated successfully",
+          description: data.message || "Subscription has been updated successfully.",
         });
       }
     },
@@ -191,12 +182,9 @@ const Billing = () => {
 
   const handlePreviewError = useCallback(
     (error: any) => {
-      toast({
-        title: "Failed to process subscription change",
-        description:
-          error?.response?.data?.error ||
-          "Something went wrong, please try again.",
-        variant: "destructive",
+      toast.error({
+        title: "Subscription Change Failed",
+        description: error?.response?.data?.error || "Something went wrong, please try again.",
       });
     },
     [toast]

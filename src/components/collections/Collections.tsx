@@ -60,19 +60,18 @@ export default function Collections() {
         return await apiRequest("POST", "/collections", data);
       },
       onSuccess: () => {
-        toast({
-          title: "Collection created",
-          description: "Your collection has been created successfully",
+        toast.success({
+          title: "Collection Created",
+          description: "Your collection has been created successfully.",
         });
         refetchCollections();
         setIsCreating(false);
         createForm.reset();
       },
       onError: () => {
-        toast({
-          title: "Creation failed",
+        toast.error({
+          title: "Collection Creation Failed",
           description: "Failed to create collection. Please try again.",
-          variant: "destructive",
         });
       },
     });
@@ -90,19 +89,18 @@ export default function Collections() {
         return await apiRequest("PATCH", `collections/${id}`, data);
       },
       onSuccess: () => {
-        toast({
-          title: "Collection updated",
-          description: "Your collection has been updated successfully",
+        toast.success({
+          title: "Collection Updated",
+          description: "Your collection has been updated successfully.",
         });
         refetchCollections();
         setIsEditing(false);
         setCurrentCollection(null);
       },
       onError: () => {
-        toast({
-          title: "Update failed",
+        toast.error({
+          title: "Collection Update Failed",
           description: "Failed to update collection. Please try again.",
-          variant: "destructive",
         });
       },
     });
@@ -114,16 +112,15 @@ export default function Collections() {
     },
     onSuccess: () => {
       refetchCollections();
-      toast({
-        title: "Collection deleted",
-        description: "The collection has been deleted",
+      toast.success({
+        title: "Collection Deleted",
+        description: "The collection has been deleted.",
       });
     },
     onError: () => {
-      toast({
-        title: "Deletion failed",
+      toast.error({
+        title: "Collection Deletion Failed",
         description: "Failed to delete the collection. Please try again.",
-        variant: "destructive",
       });
     },
   });

@@ -352,9 +352,9 @@ export default function DashboardPage() {
                       color: "hover:bg-blue-50 dark:hover:bg-blue-900/20",
                       onClick: () => {
                         if (!hasValidSubscription) {
-                          toast({
-                            variant: "destructive",
-                            title: "Upgrade your plan to post content.",
+                          toast.warning({
+                            title: "Upgrade Required",
+                            description: "Upgrade your plan to start creating and scheduling content.",
                           });
                         } else {
                           navigate("/dashboard/post-flow");

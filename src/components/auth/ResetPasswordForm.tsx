@@ -85,8 +85,8 @@ export default function ResetPasswordForm({
       console.log("Password reset successful:", data);
       setIsSuccess(true);
       setIsLoading(false);
-      toast({
-        title: "Password reset successful",
+      toast.success({
+        title: "Password Reset Successful",
         description: "Your password has been successfully updated.",
       });
     },
@@ -109,10 +109,9 @@ export default function ResetPasswordForm({
 
       console.log("Final error message:", errorMessage);
 
-      toast({
+      toast.error({
         title: "Password Reset Failed",
         description: errorMessage,
-        variant: "destructive",
       });
 
       setIsLoading(false);

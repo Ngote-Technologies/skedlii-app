@@ -161,8 +161,8 @@ export default function OrganizationMembers() {
     },
     onSuccess: (result) => {
       const userExists = result.userExists;
-      toast({
-        title: "Invitation sent",
+      toast.success({
+        title: "Invitation Sent",
         description: userExists
           ? "Invitation sent to existing user. They can join this organization through their email."
           : "Invitation sent to new user. They will receive an email to create their account and join the organization.",
@@ -174,13 +174,9 @@ export default function OrganizationMembers() {
       });
     },
     onError: (error: any) => {
-      toast({
-        title: "Invitation failed",
-        description:
-          error.response?.data?.error ||
-          error.message ||
-          "Failed to send invitation.",
-        variant: "destructive",
+      toast.error({
+        title: "Invitation Failed",
+        description: error.response?.data?.error || error.message || "Failed to send invitation.",
       });
     },
   });
@@ -191,8 +187,8 @@ export default function OrganizationMembers() {
       await removeMember(activeOrganization._id, memberId);
     },
     onSuccess: () => {
-      toast({
-        title: "Member removed",
+      toast.success({
+        title: "Member Removed",
         description: "Member has been removed from the organization.",
       });
       setMemberToRemove(null);
@@ -201,10 +197,9 @@ export default function OrganizationMembers() {
       });
     },
     onError: (error: any) => {
-      toast({
-        title: "Removal failed",
+      toast.error({
+        title: "Member Removal Failed",
         description: error.message || "Failed to remove member.",
-        variant: "destructive",
       });
     },
   });

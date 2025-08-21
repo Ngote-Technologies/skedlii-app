@@ -137,6 +137,19 @@ export default function DashboardSidebar({
       },
     ];
 
+    // Add development items in development mode
+    if (import.meta.env.DEV) {
+      mainItems.push({
+        icon: <div className="text-purple-500">🧪</div>,
+        label: "Toast Demo",
+        href: "/dashboard/dev/toast-demo",
+        badge: "DEV",
+        show: true,
+        disabled: false,
+        premium: false,
+      });
+    }
+
     // Filter items based on show property
     const filteredMainItems = mainItems.filter((item) => item.show);
 

@@ -130,25 +130,22 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
       const response: any = await register(registerData);
 
       if (!response.success) {
-        toast({
-          title: "Registration failed",
-          description: response.message ?? "Unknown error occurred",
-          variant: "destructive",
+        toast.error({
+          title: "Registration Failed",
+          description: response.message ?? "Please check your information and try again.",
         });
         return;
       }
 
-      toast({
-        title: "Account created successfully!",
-        description: `Welcome to Skedlii, ${data.firstName}!`,
-        variant: "success",
+      toast.success({
+        title: "Welcome to Skedlii!",
+        description: `Account created successfully for ${data.firstName}. You can now start managing your social media.`,
       });
     } catch (error: any) {
       console.error("[Unhandled Registration Exception]", error);
-      toast({
-        title: "Unexpected error",
-        description: error?.message ?? "Something went wrong.",
-        variant: "destructive",
+      toast.error({
+        title: "Unexpected Error",
+        description: error?.message ?? "Something went wrong. Please try again.",
       });
     } finally {
       setIsLoading(false);

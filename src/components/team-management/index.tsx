@@ -139,18 +139,17 @@ export default function TeamManagement() {
       queryClient.invalidateQueries({
         queryKey: ["/teams", "organization", activeOrganization?._id],
       });
-      toast({
-        title: "Team created",
-        description: "Your team has been created successfully",
+      toast.success({
+        title: "Team Created",
+        description: "Your team has been created successfully.",
       });
       setIsCreatingTeam(false);
       teamForm.reset();
     },
     onError: () => {
-      toast({
-        title: "Creation failed",
+      toast.error({
+        title: "Team Creation Failed",
         description: "Failed to create team. Please try again.",
-        variant: "destructive",
       });
     },
   });
@@ -176,19 +175,17 @@ export default function TeamManagement() {
             "members",
           ],
         });
-        toast({
-          title: "Member added",
-          description: "The team member has been added successfully",
+        toast.success({
+          title: "Member Added",
+          description: "The team member has been added successfully.",
         });
         setIsAddingMember(false);
         memberForm.reset();
       },
       onError: () => {
-        toast({
-          title: "Addition failed",
-          description:
-            "Failed to add team member. User may already be part of the team.",
-          variant: "destructive",
+        toast.error({
+          title: "Member Addition Failed",
+          description: "Failed to add team member. User may already be part of the team.",
         });
       },
     });
@@ -219,16 +216,15 @@ export default function TeamManagement() {
             "members",
           ],
         });
-        toast({
-          title: "Member removed",
-          description: "The team member has been removed from the team",
+        toast.success({
+          title: "Member Removed",
+          description: "The team member has been removed from the team.",
         });
       },
       onError: () => {
-        toast({
-          title: "Removal failed",
+        toast.error({
+          title: "Member Removal Failed",
           description: "Failed to remove team member. Please try again.",
-          variant: "destructive",
         });
       },
     });
@@ -246,9 +242,9 @@ export default function TeamManagement() {
       queryClient.invalidateQueries({
         queryKey: ["/teams", "organization", activeOrganization?._id],
       });
-      toast({
-        title: "Team deleted",
-        description: "The team has been deleted successfully",
+      toast.success({
+        title: "Team Deleted",
+        description: "The team has been deleted successfully.",
       });
       setIsDeleteDialogOpen(false);
       setTeamToDelete(null);
@@ -258,10 +254,9 @@ export default function TeamManagement() {
       }
     },
     onError: () => {
-      toast({
-        title: "Deletion failed",
+      toast.error({
+        title: "Team Deletion Failed",
         description: "Failed to delete team. Please try again.",
-        variant: "destructive",
       });
     },
   });

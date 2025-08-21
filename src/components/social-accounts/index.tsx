@@ -201,10 +201,9 @@ export default function SocialAccounts() {
         connectYoutube();
         break;
       default:
-        toast({
-          title: "Connection failed",
-          description: "Failed to connect social account",
-          variant: "destructive",
+        toast.error({
+          title: "Connection Failed",
+          description: "Failed to connect social account.",
         });
         break;
     }
@@ -229,9 +228,9 @@ export default function SocialAccounts() {
 
       // Legacy: ?success=true
       if (searchParams.get("success") === "true") {
-        toast({
-          title: "Social account connected",
-          description: "Your social account has been connected successfully",
+        toast.success({
+          title: "Social Account Connected",
+          description: "Your social account has been connected successfully.",
         });
         window.history.replaceState({}, "", "/dashboard/accounts");
         return;
@@ -241,10 +240,9 @@ export default function SocialAccounts() {
       if (searchParams.get("error")) {
         const message = searchParams.get("message");
         // OAuth error will be displayed in the toast below
-        toast({
-          title: "Social account connection failed",
-          description: message ?? "Failed to connect social account",
-          variant: "destructive",
+        toast.error({
+          title: "Social Account Connection Failed",
+          description: message ?? "Failed to connect social account.",
         });
         window.history.replaceState({}, "", "/dashboard/accounts");
         return;
@@ -255,18 +253,17 @@ export default function SocialAccounts() {
         const decodedMessage = decodeURIComponent(
           searchParams.get("message") ?? ""
         );
-        toast({
-          title: "Social account connection failed",
-          description: decodedMessage ?? "Something went wrong",
-          variant: "destructive",
+        toast.error({
+          title: "Social Account Connection Failed",
+          description: decodedMessage ?? "Something went wrong.",
         });
         window.history.replaceState({}, "", "/dashboard/accounts");
       }
 
       if (searchParams.get("status") === "success") {
-        toast({
-          title: "Social account connected",
-          description: "Your social account has been connected successfully",
+        toast.success({
+          title: "Social Account Connected",
+          description: "Your social account has been connected successfully.",
         });
         window.history.replaceState({}, "", "/dashboard/accounts");
       }
@@ -324,10 +321,9 @@ export default function SocialAccounts() {
         connectMeta({ platform: "facebook" });
         break;
       default:
-        toast({
-          title: "Reauthorization failed",
-          description: "Failed to reauthorize social account",
-          variant: "destructive",
+        toast.error({
+          title: "Reauthorization Failed",
+          description: "Failed to reauthorize social account.",
         });
         break;
     }

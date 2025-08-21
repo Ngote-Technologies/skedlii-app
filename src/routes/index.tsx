@@ -62,6 +62,7 @@ const OrganizationDashboard = React.lazy(() => import("../components/organizatio
 const OrganizationSettings = React.lazy(() => import("../components/organization/OrganizationSettings"));
 const OrganizationMembers = React.lazy(() => import("../components/organization/OrganizationMembers"));
 const AcceptInvitation = React.lazy(() => import("../pages/AcceptInvitation"));
+const ToastDemo = React.lazy(() => import("../components/ui/toast-demo"));
 
 const AppRoutes = () => {
   return (
@@ -145,6 +146,10 @@ const AppRoutes = () => {
               <Route path="organizations/settings" element={<OrganizationSettings />} />
               <Route path="organizations/members" element={<OrganizationMembers />} />
               <Route path="organizations/teams" element={<TeamManagement />} />
+              {/* Development/Testing Routes */}
+              {import.meta.env.DEV && (
+                <Route path="dev/toast-demo" element={<ToastDemo />} />
+              )}
             </Route>
             <Route path="*" element={<NotFound />} />
             </Routes>
