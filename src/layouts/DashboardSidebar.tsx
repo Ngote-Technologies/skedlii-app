@@ -7,7 +7,6 @@ import {
   Folder,
   Home,
   Link2,
-  Users,
   Settings,
   CalendarSync,
   Plus,

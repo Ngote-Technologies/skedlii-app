@@ -212,3 +212,14 @@ export const useGetSocialAccounts = (userId: string) => {
     enabled: !!userId,
   });
 };
+
+export const useGetOrganizationSocialAccounts = (organizationId: string) => {
+  return useQuery({
+    queryKey: ["/social-accounts/organization", organizationId],
+    queryFn: async () => {
+      const response = await socialApi.getOrganizationSocialAccounts(organizationId);
+      return response;
+    },
+    enabled: !!organizationId,
+  });
+};

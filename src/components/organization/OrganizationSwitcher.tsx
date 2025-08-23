@@ -21,6 +21,7 @@ import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useOrganizationStore } from '../../store/organizationStore';
 import { getInitials } from '../../lib/utils';
+import { useAuth } from '../../store/hooks';
 
 interface OrganizationSwitcherProps {
   className?: string;
@@ -32,6 +33,7 @@ export default function OrganizationSwitcher({
   onCreateOrganization 
 }: OrganizationSwitcherProps) {
   const [open, setOpen] = useState(false);
+  const { canManageOrganization } = useAuth();
   const {
     organizations,
     activeOrganization,
@@ -90,16 +92,31 @@ export default function OrganizationSwitcher({
     );
   }
 
-  // If no organizations, show create organization prompt
+  // If no organizations, show create organization prompt (only for org owners)
   if (organizations.length === 0) {
+    if (canManageOrganization && onCreateOrganization) {
+      return (
+        <Button
+          variant="outline"
+          onClick={onCreateOrganization}
+          className={cn("justify-start", className)}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Create Organization
+        </Button>
+      );
+    }
+    
+    // For non-org owners with no organizations, show a disabled state
     return (
       <Button
         variant="outline"
-        onClick={onCreateOrganization}
-        className={cn("justify-start", className)}
+        disabled
+        className={cn("justify-start opacity-60", className)}
+        title="No organizations available"
       >
-        <Plus className="mr-2 h-4 w-4" />
-        Create Organization
+        <Building className="mr-2 h-4 w-4" />
+        No Organizations
       </Button>
     );
   }
@@ -198,7 +215,7 @@ export default function OrganizationSwitcher({
                 </CommandItem>
               ))}
             </CommandGroup>
-            {onCreateOrganization && (
+            {onCreateOrganization && canManageOrganization && (
               <>
                 <CommandSeparator className="mx-1" />
                 <CommandGroup className="p-1">
@@ -229,6 +246,7 @@ export function CompactOrganizationSwitcher({
 }: OrganizationSwitcherProps) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { canManageOrganization } = useAuth();
   const { activeOrganization, organizations, switchOrganization, fetchUserOrganizations } = useOrganizationStore();
 
   // Fetch organizations on component mount
@@ -245,14 +263,30 @@ export function CompactOrganizationSwitcher({
   };
 
   if (organizations.length === 0) {
+    if (canManageOrganization && onCreateOrganization) {
+      return (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onCreateOrganization}
+          className={cn("h-8 px-2", className)}
+          title="Create Organization"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      );
+    }
+    
+    // For non-org owners with no organizations, show disabled state
     return (
       <Button
         variant="ghost"
         size="sm"
-        onClick={onCreateOrganization}
-        className={cn("h-8 px-2", className)}
+        disabled
+        className={cn("h-8 px-2 opacity-60", className)}
+        title="No organizations available"
       >
-        <Plus className="h-4 w-4" />
+        <Building className="h-4 w-4" />
       </Button>
     );
   }
@@ -326,7 +360,7 @@ export function CompactOrganizationSwitcher({
                 </CommandItem>
               ))}
             </CommandGroup>
-            {onCreateOrganization && (
+            {onCreateOrganization && canManageOrganization && (
               <>
                 <CommandSeparator className="mx-1" />
                 <CommandGroup className="p-1">

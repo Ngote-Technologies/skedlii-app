@@ -6,8 +6,8 @@ import { useTeamStore } from "./teamStore";
 import { useOrganizationStore } from "./organizationStore";
 
 export type UserRole =
-  | "owner"      // Database stores this format
-  | "org_owner"  // Code expects this format - both are treated as equivalent  
+  | "owner" // Database stores this format
+  | "org_owner" // Code expects this format - both are treated as equivalent
   | "admin"
   | "member"
   | "viewer";
@@ -137,10 +137,12 @@ export const useAuthStore = create<AuthState>()(
           // Backend is now the single source of truth for permissions
           const userRole = data.user?.role as UserRole;
           const userType = data.user?.userType as UserType;
-          
+
           // Always require backend to provide computedPermissions and subscriptionInfo
           if (!data.computedPermissions || !data.subscriptionInfo) {
-            throw new Error("Backend must provide computedPermissions and subscriptionInfo");
+            throw new Error(
+              "Backend must provide computedPermissions and subscriptionInfo"
+            );
           }
 
           set({
@@ -187,10 +189,12 @@ export const useAuthStore = create<AuthState>()(
           // Backend is now the single source of truth for permissions
           const userRole = response.user?.role as UserRole;
           const userType = response.user?.userType as UserType;
-          
+
           // Always require backend to provide computedPermissions and subscriptionInfo
           if (!response.computedPermissions || !response.subscriptionInfo) {
-            throw new Error("Backend must provide computedPermissions and subscriptionInfo");
+            throw new Error(
+              "Backend must provide computedPermissions and subscriptionInfo"
+            );
           }
 
           set({
@@ -224,11 +228,15 @@ export const useAuthStore = create<AuthState>()(
           // Backend is now the single source of truth for permissions
           const userRole = data.user?.role as UserRole;
           const userType = data.user?.userType as UserType;
-          
+
           // Always require backend to provide computedPermissions and subscriptionInfo
           if (!data.computedPermissions || !data.subscriptionInfo) {
-            throw new Error("Backend must provide computedPermissions and subscriptionInfo");
+            throw new Error(
+              "Backend must provide computedPermissions and subscriptionInfo"
+            );
           }
+
+          console.log({ data });
 
           set({
             user: data.user,
@@ -254,19 +262,22 @@ export const useAuthStore = create<AuthState>()(
       updateSubscriptionInfo: async (info: SubscriptionInfo) => {
         // Update subscription info and refresh permissions from backend
         set({ subscriptionInfo: info });
-        
+
         // Trigger backend permission refresh since subscription affects permissions
         try {
           await get().refreshPermissions();
         } catch (error) {
-          console.error("Failed to refresh permissions after subscription update:", error);
+          console.error(
+            "Failed to refresh permissions after subscription update:",
+            error
+          );
         }
       },
 
       refreshPermissions: async (organizationId?: string) => {
         try {
           const response = await authApi.refreshPermissions(organizationId);
-          
+
           set({
             userRole: response.userRole,
             userType: response.userType,

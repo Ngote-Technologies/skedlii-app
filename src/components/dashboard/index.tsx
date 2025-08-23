@@ -35,6 +35,7 @@ import { useEffect } from "react";
 import { useAuth } from "../../store/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { Badge, StatusBadge, BadgeGroup } from "../ui/badge";
+import { DashboardStatsSkeleton } from "../ui/skeleton";
 import { useAccessControl } from "../../hooks/useAccessControl";
 import { toast } from "../../hooks/use-toast";
 
@@ -193,136 +194,140 @@ export default function DashboardPage() {
           </div>
 
           {/* Enhanced Analytics Cards with Micro-interactions */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {[
-              {
-                label: "Total Posts",
-                value: posts?.data?.length ?? 0,
-                icon: <Activity className="h-6 w-6" />,
-                color: "bg-blue-500",
-                gradient: "from-blue-500 to-cyan-500",
-                footer: getFooter(
-                  postsLoading,
-                  posts?.data?.length ?? 0,
-                  "Published content"
-                ),
-                to: "/dashboard/posts",
-                trend: "+12%",
-                trendUp: true,
-              },
-              {
-                label: "Scheduled Posts",
-                value: scheduledPosts?.data?.length ?? 0,
-                icon: <CalendarClock className="h-6 w-6" />,
-                color: "bg-purple-500",
-                gradient: "from-purple-500 to-pink-500",
-                footer: getFooter(
-                  scheduledPostsLoading,
-                  scheduledPosts?.data?.length ?? 0,
-                  "Ready to publish"
-                ),
-                to: "/dashboard/scheduled",
-                trend: "+8%",
-                trendUp: true,
-              },
-              {
-                label: "Social Accounts",
-                value: socialAccounts?.length ?? 0,
-                icon: <Users className="h-6 w-6" />,
-                color: "bg-green-500",
-                gradient: "from-green-500 to-emerald-500",
-                footer: getFooter(
-                  socialAccountsLoading,
-                  socialAccounts?.length ?? 0,
-                  "Connected platforms"
-                ),
-                to: "/dashboard/accounts",
-                trend: "2 new",
-                trendUp: true,
-              },
-              {
-                label: "Collections",
-                value: collections?.count ?? 0,
-                icon: <FolderPlus className="h-6 w-6" />,
-                color: "bg-orange-500",
-                gradient: "from-orange-500 to-red-500",
-                footer: getFooter(
-                  collectionsLoading,
-                  collections?.count ?? 0,
-                  "Organized content"
-                ),
-                to: "/dashboard/collections",
-                trend: "+3",
-                trendUp: true,
-              },
-            ].map(
-              ({
-                label,
-                value,
-                icon,
-                gradient,
-                footer,
-                to,
-                trend,
-                trendUp,
-              }) => {
-                return (
-                  <Link to={to} key={label} className="group">
-                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 shadow-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 group-hover:scale-[1.02] group-hover:-translate-y-1 group-active:scale-[0.98]">
-                      {/* Background gradient */}
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}
-                      ></div>
+          {postsLoading || scheduledPostsLoading || socialAccountsLoading || collectionsLoading ? (
+            <DashboardStatsSkeleton />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {[
+                {
+                  label: "Total Posts",
+                  value: posts?.data?.length ?? 0,
+                  icon: <Activity className="h-6 w-6" />,
+                  color: "bg-blue-500",
+                  gradient: "from-blue-500 to-cyan-500",
+                  footer: getFooter(
+                    postsLoading,
+                    posts?.data?.length ?? 0,
+                    "Published content"
+                  ),
+                  to: "/dashboard/posts",
+                  trend: "+12%",
+                  trendUp: true,
+                },
+                {
+                  label: "Scheduled Posts",
+                  value: scheduledPosts?.data?.length ?? 0,
+                  icon: <CalendarClock className="h-6 w-6" />,
+                  color: "bg-purple-500",
+                  gradient: "from-purple-500 to-pink-500",
+                  footer: getFooter(
+                    scheduledPostsLoading,
+                    scheduledPosts?.data?.length ?? 0,
+                    "Ready to publish"
+                  ),
+                  to: "/dashboard/scheduled",
+                  trend: "+8%",
+                  trendUp: true,
+                },
+                {
+                  label: "Social Accounts",
+                  value: socialAccounts?.length ?? 0,
+                  icon: <Users className="h-6 w-6" />,
+                  color: "bg-green-500",
+                  gradient: "from-green-500 to-emerald-500",
+                  footer: getFooter(
+                    socialAccountsLoading,
+                    socialAccounts?.length ?? 0,
+                    "Connected platforms"
+                  ),
+                  to: "/dashboard/accounts",
+                  trend: "2 new",
+                  trendUp: true,
+                },
+                {
+                  label: "Collections",
+                  value: collections?.count ?? 0,
+                  icon: <FolderPlus className="h-6 w-6" />,
+                  color: "bg-orange-500",
+                  gradient: "from-orange-500 to-red-500",
+                  footer: getFooter(
+                    collectionsLoading,
+                    collections?.count ?? 0,
+                    "Organized content"
+                  ),
+                  to: "/dashboard/collections",
+                  trend: "+3",
+                  trendUp: true,
+                },
+              ].map(
+                ({
+                  label,
+                  value,
+                  icon,
+                  gradient,
+                  footer,
+                  to,
+                  trend,
+                  trendUp,
+                }) => {
+                  return (
+                    <Link to={to} key={label} className="group">
+                      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 shadow-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 group-hover:scale-[1.02] group-hover:-translate-y-1 group-active:scale-[0.98]">
+                        {/* Background gradient */}
+                        <div
+                          className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}
+                        ></div>
 
-                      <CardContent className="relative p-4 sm:p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <div
-                            className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-sm group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}
-                          >
-                            <div className="text-white group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
-                              {icon}
+                        <CardContent className="relative p-4 sm:p-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <div
+                              className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-sm group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}
+                            >
+                              <div className="text-white group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                                {icon}
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-1 text-sm">
+                              {trendUp ? (
+                                <TrendingUp className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <TrendingDown className="h-4 w-4 text-red-500" />
+                              )}
+                              <span
+                                className={`font-medium ${
+                                  trendUp
+                                    ? "text-green-600 dark:text-green-400"
+                                    : "text-red-600 dark:text-red-400"
+                                }`}
+                              >
+                                {trend}
+                              </span>
                             </div>
                           </div>
-                          <div className="flex items-center space-x-1 text-sm">
-                            {trendUp ? (
-                              <TrendingUp className="h-4 w-4 text-green-500" />
-                            ) : (
-                              <TrendingDown className="h-4 w-4 text-red-500" />
-                            )}
-                            <span
-                              className={`font-medium ${
-                                trendUp
-                                  ? "text-green-600 dark:text-green-400"
-                                  : "text-red-600 dark:text-red-400"
-                              }`}
-                            >
-                              {trend}
-                            </span>
-                          </div>
-                        </div>
 
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                            {label}
-                          </p>
-                          <div className="flex items-baseline space-x-2">
-                            <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                              {value ?? (
-                                <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                              )}
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                              {label}
+                            </p>
+                            <div className="flex items-baseline space-x-2">
+                              <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                                {value ?? (
+                                  <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                                )}
+                              </p>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-500">
+                              {footer}
                             </p>
                           </div>
-                          <p className="text-xs text-gray-500 dark:text-gray-500">
-                            {footer}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              }
-            )}
-          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                }
+              )}
+            </div>
+          )}
 
           {/* Quick Actions Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
