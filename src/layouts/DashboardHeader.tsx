@@ -2,7 +2,6 @@ import { Button } from "../components/ui/button";
 import { ThemeToggle } from "../components/ui/theme-toggle";
 import { useAuth } from "../store/hooks";
 import { useAccessControl } from "../hooks/useAccessControl";
-import { Permission } from "../lib/access-control";
 import { Link, useLocation } from "react-router-dom";
 import {
   DropdownMenu,
@@ -22,6 +21,7 @@ import {
   Calendar,
   Settings,
   HelpCircle,
+  RefreshCw,
 } from "lucide-react";
 import { useMobileMenuStore } from "../store/layout";
 import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
@@ -34,12 +34,15 @@ import {
   CompactOrganizationSwitcher,
   CreateOrganizationDialog,
 } from "../components/organization";
+import { useToast } from "../hooks/use-toast";
 
 export default function DashboardHeader() {
-  const { user, logout, canManageBilling } = useAuth();
-  const { hasPermission } = useAccessControl();
+  const { user, logout, canManageBilling, fetchUserData } = useAuth();
+  const { canConnectSocialAccounts } = useAccessControl();
   const location = useLocation();
   const [isCreateOrgDialogOpen, setIsCreateOrgDialogOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const { toast } = useToast();
 
   const mobileMenuOpen = useMobileMenuStore(
     (state: any) => state.mobileMenuOpen
@@ -50,6 +53,28 @@ export default function DashboardHeader() {
 
   // Generate breadcrumbs using dynamic system
   const breadcrumbs = useDynamicBreadcrumbs(location.pathname);
+
+  // Handle sync functionality
+  const handleSync = async () => {
+    if (isSyncing) return; // Prevent multiple simultaneous syncs
+    
+    setIsSyncing(true);
+    try {
+      await fetchUserData();
+      toast.success({
+        title: "Data Synced",
+        description: "Your account data has been refreshed successfully.",
+      });
+    } catch (error) {
+      console.error("Sync failed:", error);
+      toast.error({
+        title: "Sync Failed",
+        description: "Failed to refresh your data. Please try again.",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   return (
     <header className="h-16 border-b bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 sticky top-0 z-50 shadow-sm">
@@ -132,6 +157,19 @@ export default function DashboardHeader() {
             <NotificationBadge count={3} variant="count" size="md" />
           </Button>
 
+          {/* Sync Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+            onClick={handleSync}
+            disabled={isSyncing}
+            aria-label="Sync data"
+            title="Refresh account data"
+          >
+            <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
+          </Button>
+
           {/* Theme Toggle */}
           <ThemeToggle variant="ghost" />
 
@@ -177,7 +215,7 @@ export default function DashboardHeader() {
                   Profile Settings
                 </Link>
               </DropdownMenuItem>
-              {hasPermission(Permission.SOCIAL_ACCOUNTS_VIEW) && (
+              {canConnectSocialAccounts && (
                 <DropdownMenuItem asChild>
                   <Link to="/dashboard/accounts" className="cursor-pointer">
                     <Calendar className="mr-2 h-4 w-4" />

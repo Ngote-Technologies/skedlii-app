@@ -16,6 +16,21 @@ export const socialApi = {
     }
   },
 
+  // Get organization social accounts
+  getOrganizationSocialAccounts: async (organizationId: string) => {
+    try {
+      const response = await axiosInstance.get(`/social-accounts/organization/${organizationId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch organization social accounts:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to fetch organization social accounts"
+      );
+    }
+  },
+
   listAccountsIndividual: async ({ userId }: { userId: string }) => {
     try {
       const response = await axiosInstance.get(`/social-accounts/${userId}`);

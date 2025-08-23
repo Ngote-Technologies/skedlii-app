@@ -66,8 +66,8 @@ const AcceptInvitation: React.FC = () => {
           queryClient.invalidateQueries({ queryKey: ['user'] });
           queryClient.invalidateQueries({ queryKey: ['teams'] });
           
-          toast({
-            title: "Successfully joined organization!",
+          toast.success({
+            title: "Successfully Joined Organization!",
             description: `You've been added to ${invitation?.organizationName}. You can now switch to this organization from your dashboard.`,
           });
 
@@ -77,8 +77,8 @@ const AcceptInvitation: React.FC = () => {
           }, 2000);
         } catch (error) {
           // Still show success but with a note about refreshing
-          toast({
-            title: "Successfully joined organization!",
+          toast.success({
+            title: "Successfully Joined Organization!",
             description: `You've been added to ${invitation?.organizationName}. Please refresh the page to see the new organization.`,
           });
           
@@ -88,8 +88,8 @@ const AcceptInvitation: React.FC = () => {
         }
       } else {
         // User is not logged in
-        toast({
-          title: "Invitation accepted!",
+        toast.success({
+          title: "Invitation Accepted!",
           description: invitation?.userExists
             ? `You've been added to ${invitation.organizationName}. Please log in to access this organization.`
             : "Your account has been created successfully. You can now log in.",
@@ -102,13 +102,9 @@ const AcceptInvitation: React.FC = () => {
       }
     },
     onError: (error: any) => {
-      toast({
-        title: "Failed to accept invitation",
-        description:
-          error.response?.data?.error ||
-          error.message ||
-          "Something went wrong",
-        variant: "destructive",
+      toast.error({
+        title: "Failed to Accept Invitation",
+        description: error.response?.data?.error || error.message || "Something went wrong.",
       });
     },
   });
@@ -143,10 +139,9 @@ const AcceptInvitation: React.FC = () => {
 
     // Prevent submission if there's an email mismatch
     if (invitation?.emailMismatch) {
-      toast({
-        title: "Email mismatch",
-        description: "Please log out and use the correct account for this invitation",
-        variant: "destructive",
+      toast.warning({
+        title: "Email Mismatch",
+        description: "Please log out and use the correct account for this invitation.",
       });
       return;
     }
@@ -160,19 +155,17 @@ const AcceptInvitation: React.FC = () => {
     // For new users (not logged in), validate password
     if (needsPassword) {
       if (passwordErrors.length > 0) {
-        toast({
-          title: "Invalid password",
-          description: "Please fix the password requirements",
-          variant: "destructive",
+        toast.error({
+          title: "Invalid Password",
+          description: "Please fix the password requirements.",
         });
         return;
       }
 
       if (password !== confirmPassword) {
-        toast({
-          title: "Passwords do not match",
-          description: "Please make sure both passwords are identical",
-          variant: "destructive",
+        toast.error({
+          title: "Passwords Do Not Match",
+          description: "Please make sure both passwords are identical.",
         });
         return;
       }

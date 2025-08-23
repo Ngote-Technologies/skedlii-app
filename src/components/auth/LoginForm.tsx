@@ -49,35 +49,30 @@ export default function LoginForm({
     },
   });
 
-  console.log({ form });
-
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
       const response = await login(data.email, data.password);
 
       if (!response.success) {
-        toast({
-          title: "Login failed",
-          description: response.message ?? "Unknown error occurred",
-          variant: "destructive",
+        toast.error({
+          title: "Login Failed",
+          description: response.message ?? "Please check your credentials and try again.",
         });
         return;
       }
 
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${
+      toast.success({
+        title: "Welcome Back!",
+        description: `Successfully signed in as ${
           response.data.user?.firstName ?? response.data.user?.email
-        }!`,
-        variant: "success",
+        }`,
       });
     } catch (error: any) {
       console.error("[Unhandled Login Exception]", error);
-      toast({
-        title: "Unexpected error",
-        description: error?.message ?? "Something went wrong.",
-        variant: "destructive",
+      toast.error({
+        title: "Unexpected Error",
+        description: error?.message ?? "Something went wrong. Please try again.",
       });
     } finally {
       setIsLoading(false);

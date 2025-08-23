@@ -16,11 +16,13 @@ const Plans = ({
   isYearly,
   billing,
   handleUpgradeDowngrade,
+  canManageBilling,
 }: {
   displayedPlans: any[];
   isYearly: boolean;
   billing: any;
   handleUpgradeDowngrade: (plan: any) => void;
+  canManageBilling?: boolean;
 }) => {
   const getPlanActionText = (planId: string) => {
     if (!billing?.planId) {
@@ -218,6 +220,10 @@ const Plans = ({
                       : plan.isPopular
                       ? `bg-gradient-to-r ${theme.gradient} hover:shadow-lg hover:shadow-primary/25 text-white border-0`
                       : "hover:bg-primary/5 border-border/50"
+                  } ${
+                    !canManageBilling
+                      ? "disabled:opacity-50 disabled:cursor-not-allowed"
+                      : ""
                   }`}
                   variant={
                     isCurrentPlan
@@ -227,13 +233,18 @@ const Plans = ({
                       : "outline"
                   }
                   onClick={() => handleUpgradeDowngrade(plan)}
-                  disabled={isCurrentPlan}
+                  disabled={isCurrentPlan || !canManageBilling}
+                  title={
+                    !canManageBilling
+                      ? "Only account owners can manage billing"
+                      : ""
+                  }
                 >
                   {isCurrentPlan && <CheckCircle2 className="h-4 w-4 mr-2" />}
                   {plan.isPopular && !isCurrentPlan && (
                     <Zap className="h-4 w-4 mr-2" />
                   )}
-                  {getPlanActionText(plan.id)}
+                  {!canManageBilling ? "View Only" : getPlanActionText(plan.id)}
                 </Button>
               </div>
             </div>

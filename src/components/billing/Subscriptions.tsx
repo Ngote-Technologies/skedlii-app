@@ -31,12 +31,14 @@ const Subscriptions = ({
   setShowCancelDialog,
   cancelSubscription,
   setActiveTab,
+  canManageBilling,
 }: {
   billing: any;
   showCancelDialog: boolean;
   setShowCancelDialog: (value: boolean) => void;
   cancelSubscription: () => void;
   setActiveTab: (value: string) => void;
+  canManageBilling?: boolean;
 }) => {
   const renderBillingStatus = () => {
     switch (billing?.subscriptionStatus) {
@@ -111,7 +113,11 @@ const Subscriptions = ({
 
           <Button
             onClick={() => setActiveTab("plans")}
-            className="w-full bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+            disabled={!canManageBilling}
+            className="w-full bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={
+              !canManageBilling ? "Only account owners can manage billing" : ""
+            }
           >
             <Crown className="h-4 w-4 mr-2" />
             Upgrade Now
@@ -219,58 +225,66 @@ const Subscriptions = ({
               <Button
                 variant="outline"
                 onClick={() => setActiveTab("plans")}
-                className="border-border/50 hover:bg-primary/5"
+                disabled={!canManageBilling}
+                className="border-border/50 hover:bg-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={
+                  !canManageBilling
+                    ? "Only account owners can manage billing"
+                    : ""
+                }
               >
                 <Zap className="h-4 w-4 mr-2" />
                 Upgrade Plan
               </Button>
 
-              <AlertDialog
-                open={showCancelDialog}
-                onOpenChange={setShowCancelDialog}
-              >
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
-                  >
-                    <PauseCircle className="h-4 w-4 mr-2" />
-                    Cancel Subscription
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="sm:max-w-md">
-                  <AlertDialogHeader className="text-center">
-                    <div className="mx-auto mb-4 p-3 rounded-full bg-red-500/10 border border-red-500/20">
-                      <PauseCircle className="h-8 w-8 text-red-600" />
-                    </div>
-                    <AlertDialogTitle className="text-xl font-bold text-red-600">
-                      Cancel Subscription?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-center space-y-2">
-                      <span className="block">
-                        Your subscription will remain active until the end of
-                        your current billing period.
-                      </span>
-                      <span className="block text-sm">
-                        After that, your account will revert to the Free plan
-                        with limited features.
-                      </span>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="gap-2">
-                    <AlertDialogCancel className="flex-1">
-                      Keep Subscription
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => cancelSubscription()}
-                      className="flex-1 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white border-0"
+              {canManageBilling && (
+                <AlertDialog
+                  open={showCancelDialog}
+                  onOpenChange={setShowCancelDialog}
+                >
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
                     >
                       <PauseCircle className="h-4 w-4 mr-2" />
                       Cancel Subscription
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="sm:max-w-md">
+                    <AlertDialogHeader className="text-center">
+                      <div className="mx-auto mb-4 p-3 rounded-full bg-red-500/10 border border-red-500/20">
+                        <PauseCircle className="h-8 w-8 text-red-600" />
+                      </div>
+                      <AlertDialogTitle className="text-xl font-bold text-red-600">
+                        Cancel Subscription?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="text-center space-y-2">
+                        <span className="block">
+                          Your subscription will remain active until the end of
+                          your current billing period.
+                        </span>
+                        <span className="block text-sm">
+                          After that, your account will revert to the Free plan
+                          with limited features.
+                        </span>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2">
+                      <AlertDialogCancel className="flex-1">
+                        Keep Subscription
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => cancelSubscription()}
+                        className="flex-1 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white border-0"
+                      >
+                        <PauseCircle className="h-4 w-4 mr-2" />
+                        Cancel Subscription
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
           </div>
         )}

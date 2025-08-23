@@ -1,19 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "../../lib/utils";
-import {
-  Home,
-  Plus,
-  CalendarCheck,
-  Link2,
-  BarChart3,
-} from "lucide-react";
-import { useAuth } from "../../store/hooks";
-import { hasValidSubscription } from "../../lib/access";
+import { Home, Plus, CalendarCheck, Link2, BarChart3 } from "lucide-react";
+import { useAccessControl } from "../../hooks/useAccessControl";
 
 export default function MobileBottomNav() {
   const location = useLocation();
-  const { user } = useAuth();
-  const { billing } = user;
+  const { hasValidSubscription } = useAccessControl();
 
   // Primary actions for mobile bottom navigation
   const bottomNavItems = [
@@ -35,7 +27,7 @@ export default function MobileBottomNav() {
       href: "/dashboard/post-flow",
       primary: true,
       highlight: true,
-      disabled: !hasValidSubscription(billing?.paymentStatus),
+      disabled: !hasValidSubscription,
     },
     {
       icon: CalendarCheck,
@@ -48,12 +40,12 @@ export default function MobileBottomNav() {
       label: "Analytics",
       href: "/dashboard/analytics",
       primary: true,
-      disabled: !hasValidSubscription(billing?.paymentStatus),
+      disabled: !hasValidSubscription,
     },
   ];
 
   return (
-    <nav 
+    <nav
       className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 backdrop-blur-lg border-t border-gray-200 dark:bg-gray-900/95 dark:border-gray-800 shadow-lg"
       aria-label="Main navigation"
       role="navigation"
@@ -90,8 +82,8 @@ export default function MobileBottomNav() {
               key={item.href}
               to={item.href}
               className="flex flex-col items-center justify-center px-3 py-2 min-w-0 flex-1 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 rounded-lg"
-              aria-label={`${item.label}${isActive ? ' (current page)' : ''}`}
-              aria-current={isActive ? 'page' : undefined}
+              aria-label={`${item.label}${isActive ? " (current page)" : ""}`}
+              aria-current={isActive ? "page" : undefined}
             >
               <div
                 className={cn(
@@ -103,7 +95,7 @@ export default function MobileBottomNav() {
                     : "bg-transparent group-hover:bg-gray-100 dark:group-hover:bg-gray-800"
                 )}
               >
-                <Icon 
+                <Icon
                   className={cn(
                     "w-4 h-4 transition-colors duration-200",
                     isHighlight
@@ -114,7 +106,7 @@ export default function MobileBottomNav() {
                   )}
                 />
               </div>
-              <span 
+              <span
                 className={cn(
                   "text-xs truncate transition-colors duration-200",
                   isActive

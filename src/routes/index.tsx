@@ -62,6 +62,7 @@ const OrganizationDashboard = React.lazy(() => import("../components/organizatio
 const OrganizationSettings = React.lazy(() => import("../components/organization/OrganizationSettings"));
 const OrganizationMembers = React.lazy(() => import("../components/organization/OrganizationMembers"));
 const AcceptInvitation = React.lazy(() => import("../pages/AcceptInvitation"));
+const ToastDemo = React.lazy(() => import("../components/ui/toast-demo"));
 
 const AppRoutes = () => {
   return (
@@ -136,7 +137,6 @@ const AppRoutes = () => {
               <Route path="analytics" element={<AnalyticsDashboard />} />
               <Route path="post-flow" element={<PostFlow />} />
               <Route path="posts" element={<Posts />} />
-              <Route path="teams" element={<TeamManagement />} />
               <Route path="scheduled" element={<ScheduledPosts />} />
               <Route path="settings" element={<UserSettings />} />
               <Route path="billing" element={<Billing />} />
@@ -145,6 +145,11 @@ const AppRoutes = () => {
               <Route path="organizations" element={<OrganizationDashboard />} />
               <Route path="organizations/settings" element={<OrganizationSettings />} />
               <Route path="organizations/members" element={<OrganizationMembers />} />
+              <Route path="organizations/teams" element={<TeamManagement />} />
+              {/* Development/Testing Routes */}
+              {import.meta.env.DEV && (
+                <Route path="dev/toast-demo" element={<ToastDemo />} />
+              )}
             </Route>
             <Route path="*" element={<NotFound />} />
             </Routes>

@@ -6,12 +6,11 @@ import { useTeamStore } from "./teamStore";
 import { useOrganizationStore } from "./organizationStore";
 
 export type UserRole =
-  | "org_owner"
+  | "owner" // Database stores this format
+  | "org_owner" // Code expects this format - both are treated as equivalent
   | "admin"
-  | "user"
   | "member"
-  | "viewer"
-  | "super_admin";
+  | "viewer";
 export type UserType = "individual" | "organization";
 export type SubscriptionStatus =
   | "active"
@@ -54,116 +53,12 @@ interface AuthState {
   register: (data: any) => Promise<void>;
   fetchUserData: () => Promise<void>;
   clearError: () => void;
-  updateSubscriptionInfo: (info: SubscriptionInfo) => void;
+  updateSubscriptionInfo: (info: SubscriptionInfo) => Promise<void>;
+  refreshPermissions: (organizationId?: string) => Promise<void>;
 }
 
-// Helper functions for computing permissions based on user context
-const computePermissions = (
-  user: any,
-  userRole: UserRole | null,
-  userType: UserType | null,
-  subscriptionInfo: SubscriptionInfo
-) => {
-  if (!user || !userType) {
-    return {
-      isAdmin: false,
-      canManageOrganization: false,
-      canManageBilling: false,
-      canConnectSocialAccounts: false,
-      canCreateTeams: false,
-    };
-  }
-
-  const isIndividualUser = userType === "individual";
-  const isOrganizationOwner =
-    userType === "organization" && userRole === "org_owner";
-  const isOrganizationAdmin =
-    userType === "organization" && userRole === "admin";
-  const hasValidSub = subscriptionInfo.hasValidSubscription;
-
-  return {
-    // Individual users are admins of their own accounts, org owners are admins
-    isAdmin:
-      isIndividualUser || isOrganizationOwner || userRole === "super_admin",
-
-    // Only organization owners can manage organization settings
-    canManageOrganization: isOrganizationOwner,
-
-    // Individual users manage their own billing, org owners manage organization billing
-    canManageBilling: isIndividualUser || isOrganizationOwner,
-
-    // Individual users and org owners/admins can connect social accounts
-    canConnectSocialAccounts:
-      isIndividualUser || isOrganizationOwner || isOrganizationAdmin,
-
-    // Org owners and admins can create teams (with valid subscription)
-    canCreateTeams: (isOrganizationOwner || isOrganizationAdmin) && hasValidSub,
-  };
-};
-
-// Helper function for subscription inheritance logic
-const computeSubscriptionInfo = (
-  user: any,
-  organizationData?: any
-): SubscriptionInfo => {
-  if (!user) {
-    return {
-      hasValidSubscription: false,
-      subscriptionTier: null,
-      subscriptionStatus: null,
-    };
-  }
-
-  const userType = user.userType as UserType;
-  const userRole = user.role as UserRole;
-
-  // Individual users use their own billing
-  if (userType === "individual") {
-    const billing = user.billing;
-    return {
-      hasValidSubscription:
-        billing?.paymentStatus === "active" ||
-        billing?.paymentStatus === "trialing",
-      subscriptionTier: billing?.stripePlan || null,
-      subscriptionStatus: billing?.paymentStatus || null,
-    };
-  }
-
-  // Organization owners use their personal billing for all their organizations
-  if (userType === "organization" && userRole === "org_owner") {
-    const billing = user.billing;
-    return {
-      hasValidSubscription:
-        billing?.paymentStatus === "active" ||
-        billing?.paymentStatus === "trialing",
-      subscriptionTier: billing?.stripePlan || null,
-      subscriptionStatus: billing?.paymentStatus || null,
-    };
-  }
-
-  // Organization members inherit subscription from organization owner
-  if (userType === "organization" && userRole !== "org_owner") {
-    // This would need organization owner billing data from the backend
-    const orgOwnerBilling = organizationData?.ownerBilling;
-    if (orgOwnerBilling) {
-      return {
-        hasValidSubscription:
-          orgOwnerBilling.paymentStatus === "active" ||
-          orgOwnerBilling.paymentStatus === "trialing",
-        subscriptionTier: orgOwnerBilling.stripePlan || null,
-        subscriptionStatus: orgOwnerBilling.paymentStatus || null,
-        organizationOwnerBilling: orgOwnerBilling,
-      };
-    }
-  }
-
-  // Fallback
-  return {
-    hasValidSubscription: false,
-    subscriptionTier: null,
-    subscriptionStatus: null,
-  };
-};
+// DEPRECATED: Client-side permission computation removed
+// All permissions now come from backend computedPermissions
 
 export const logoutUser = async () => {
   try {
@@ -239,19 +134,16 @@ export const useAuthStore = create<AuthState>()(
 
           localStorage.setItem("auth_token", data.token);
 
-          // Compute enhanced authentication context
+          // Backend is now the single source of truth for permissions
           const userRole = data.user?.role as UserRole;
           const userType = data.user?.userType as UserType;
-          const subscriptionInfo = computeSubscriptionInfo(
-            data.user,
-            data.organization
-          );
-          const permissions = computePermissions(
-            data.user,
-            userRole,
-            userType,
-            subscriptionInfo
-          );
+
+          // Always require backend to provide computedPermissions and subscriptionInfo
+          if (!data.computedPermissions || !data.subscriptionInfo) {
+            throw new Error(
+              "Backend must provide computedPermissions and subscriptionInfo"
+            );
+          }
 
           set({
             token: data.token,
@@ -263,10 +155,10 @@ export const useAuthStore = create<AuthState>()(
             // Enhanced authentication context
             userRole,
             userType,
-            subscriptionInfo,
+            subscriptionInfo: data.subscriptionInfo,
 
-            // Computed permissions
-            ...permissions,
+            // Use backend-computed permissions directly (single source of truth)
+            ...data.computedPermissions,
           });
 
           // Store teams in auth state; components will sync with team store
@@ -294,19 +186,16 @@ export const useAuthStore = create<AuthState>()(
           const response = await authApi.registerUser(data);
           localStorage.setItem("auth_token", response.token);
 
-          // Compute enhanced authentication context
+          // Backend is now the single source of truth for permissions
           const userRole = response.user?.role as UserRole;
           const userType = response.user?.userType as UserType;
-          const subscriptionInfo = computeSubscriptionInfo(
-            response.user,
-            response.organization
-          );
-          const permissions = computePermissions(
-            response.user,
-            userRole,
-            userType,
-            subscriptionInfo
-          );
+
+          // Always require backend to provide computedPermissions and subscriptionInfo
+          if (!response.computedPermissions || !response.subscriptionInfo) {
+            throw new Error(
+              "Backend must provide computedPermissions and subscriptionInfo"
+            );
+          }
 
           set({
             token: response.token,
@@ -318,10 +207,10 @@ export const useAuthStore = create<AuthState>()(
             // Enhanced authentication context
             userRole,
             userType,
-            subscriptionInfo,
+            subscriptionInfo: response.subscriptionInfo,
 
-            // Computed permissions
-            ...permissions,
+            // Use backend-computed permissions directly (single source of truth)
+            ...response.computedPermissions,
           });
         } catch (error: any) {
           set({ error: error.message, isLoading: false });
@@ -336,19 +225,18 @@ export const useAuthStore = create<AuthState>()(
         try {
           const data = await authApi.getCurrentUser();
 
-          // Compute enhanced authentication context
+          // Backend is now the single source of truth for permissions
           const userRole = data.user?.role as UserRole;
           const userType = data.user?.userType as UserType;
-          const subscriptionInfo = computeSubscriptionInfo(
-            data.user,
-            data.organization
-          );
-          const permissions = computePermissions(
-            data.user,
-            userRole,
-            userType,
-            subscriptionInfo
-          );
+
+          // Always require backend to provide computedPermissions and subscriptionInfo
+          if (!data.computedPermissions || !data.subscriptionInfo) {
+            throw new Error(
+              "Backend must provide computedPermissions and subscriptionInfo"
+            );
+          }
+
+          console.log({ data });
 
           set({
             user: data.user,
@@ -359,10 +247,10 @@ export const useAuthStore = create<AuthState>()(
             // Enhanced authentication context
             userRole,
             userType,
-            subscriptionInfo,
+            subscriptionInfo: data.subscriptionInfo,
 
-            // Computed permissions
-            ...permissions,
+            // Use backend-computed permissions directly (single source of truth)
+            ...data.computedPermissions,
           });
         } catch (error: any) {
           set({ error: error.message, isLoading: false });
@@ -371,19 +259,35 @@ export const useAuthStore = create<AuthState>()(
 
       clearError: () => set({ error: null }),
 
-      updateSubscriptionInfo: (info: SubscriptionInfo) => {
-        const state = get();
-        const permissions = computePermissions(
-          state.user,
-          state.userRole,
-          state.userType,
-          info
-        );
+      updateSubscriptionInfo: async (info: SubscriptionInfo) => {
+        // Update subscription info and refresh permissions from backend
+        set({ subscriptionInfo: info });
 
-        set({
-          subscriptionInfo: info,
-          ...permissions,
-        });
+        // Trigger backend permission refresh since subscription affects permissions
+        try {
+          await get().refreshPermissions();
+        } catch (error) {
+          console.error(
+            "Failed to refresh permissions after subscription update:",
+            error
+          );
+        }
+      },
+
+      refreshPermissions: async (organizationId?: string) => {
+        try {
+          const response = await authApi.refreshPermissions(organizationId);
+
+          set({
+            userRole: response.userRole,
+            userType: response.userType,
+            subscriptionInfo: response.subscriptionInfo,
+            ...response.computedPermissions,
+          });
+        } catch (error: any) {
+          console.error("Failed to refresh permissions:", error);
+          set({ error: error.message });
+        }
       },
     }),
     {

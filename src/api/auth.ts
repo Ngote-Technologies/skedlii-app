@@ -5,7 +5,11 @@ export interface LoginResponse {
   token: string;
   user: any;
   organization?: any;
+  organizations?: any[];
   teams?: any[];
+  activeOrganizationId?: string;
+  computedPermissions?: any;
+  subscriptionInfo?: any;
 }
 
 export interface RegisterData {
@@ -32,8 +36,23 @@ export const authApi = {
     teams: Team[];
     user: User;
     organization?: any;
+    organizations?: any[];
+    activeOrganizationId?: string;
+    computedPermissions?: any;
+    subscriptionInfo?: any;
   }> => {
-    const response = await apiRequest("GET", "/users/me");
+    const response = await apiRequest("GET", "/auth/me");
+    return response;
+  },
+
+  refreshPermissions: async (organizationId?: string): Promise<{
+    organizationId: string | null;
+    computedPermissions: any;
+    subscriptionInfo: any;
+    userRole: string;
+    userType: string;
+  }> => {
+    const response = await apiRequest("POST", "/auth/refresh-permissions", { organizationId });
     return response;
   },
 

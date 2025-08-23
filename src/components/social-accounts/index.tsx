@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useToast } from "../../hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   formatDate,
   getClassName,
@@ -50,6 +51,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "../../store/hooks";
 import { useAccessControl } from "../../hooks/useAccessControl";
+import { useActiveOrganization } from "../organization";
+import { teamsApi } from "../../api/teams";
+import { Team } from "../../types";
 import { Skeleton } from "../ui/skeleton";
 import {
   Tooltip,
@@ -70,10 +74,11 @@ import {
   useRefreshYoutubeAccessToken,
   useRefreshTikTokAccessToken,
   useGetSocialAccounts,
+  useGetOrganizationSocialAccounts,
   useConnectMeta,
 } from "../../hooks/useSocialAccounts";
 import PlatformSelector from "./PlatformSelector";
-import { hasValidSubscription } from "../../lib/access";
+// import { hasValidSubscription } from "../../lib/access";
 import {
   Select,
   SelectContent,
@@ -99,10 +104,77 @@ const socialAccountSchema = z
 
 type SocialAccountFormData = z.infer<typeof socialAccountSchema>;
 
+// Team Assignment Dropdown Component
+interface TeamAssignmentDropdownProps {
+  currentTeamId?: string;
+  availableTeams: Team[];
+  onAssign: (teamId: string) => void;
+  onUnassign: () => void;
+  isLoading?: boolean;
+}
+
+function TeamAssignmentDropdown({
+  currentTeamId,
+  availableTeams,
+  onAssign,
+  onUnassign,
+  isLoading = false,
+}: TeamAssignmentDropdownProps) {
+  const currentTeam = availableTeams.find((team) => team._id === currentTeamId);
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <Users className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">Team:</span>
+      </div>
+      <Select
+        value={currentTeamId || "unassigned"}
+        onValueChange={(value) => {
+          if (value === "unassigned") {
+            onUnassign();
+          } else {
+            onAssign(value);
+          }
+        }}
+        disabled={isLoading}
+      >
+        <SelectTrigger className="w-[180px] h-8">
+          <SelectValue placeholder="Select team">
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span className="text-xs">Updating...</span>
+              </div>
+            ) : currentTeam ? (
+              <span className="text-xs">{currentTeam.name}</span>
+            ) : (
+              <span className="text-xs text-muted-foreground">Unassigned</span>
+            )}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="unassigned">
+            <span className="text-muted-foreground">Unassigned</span>
+          </SelectItem>
+          {availableTeams.map((team) => (
+            <SelectItem key={team._id} value={team._id}>
+              {team.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
 export default function SocialAccounts() {
   const { user } = useAuth();
-  const { billing } = user;
-  const { canConnectSocialAccounts } = useAccessControl();
+  const { canConnectSocialAccounts, hasValidSubscription, canCreateTeams } =
+    useAccessControl();
+  const activeOrganization = useActiveOrganization();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isAddingAccount, setIsAddingAccount] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [deleteConfig, setDeleteConfig] = useState({
@@ -110,7 +182,6 @@ export default function SocialAccounts() {
     isOpen: false,
     platform: "",
   });
-  const { toast } = useToast();
 
   const { mutate: connectLinkedIn, isPending: isConnectingLinkedInPending } =
     useConnectLinkedIn();
@@ -140,11 +211,125 @@ export default function SocialAccounts() {
     mutate: refreshTiktokAccessToken,
     isPending: isRefreshingTiktokPending,
   } = useRefreshTikTokAccessToken();
+  // Determine whether to use individual or organization accounts
+  const shouldUseOrganizationAccounts =
+    activeOrganization && user?.userType === "organization";
+
+  // Individual user accounts (only when not using organization accounts)
   const {
-    data: accounts = [],
-    isPending: isAccountsLoading,
-    refetch: refetchAccounts,
-  } = useGetSocialAccounts(user?._id);
+    data: individualAccounts = [],
+    isPending: isIndividualAccountsLoading,
+    refetch: refetchIndividualAccounts,
+  } = useGetSocialAccounts(shouldUseOrganizationAccounts ? "" : user?._id);
+
+  // Organization accounts (only when using organization accounts)
+  const {
+    data: organizationAccounts = [],
+    isPending: isOrganizationAccountsLoading,
+    refetch: refetchOrganizationAccounts,
+  } = useGetOrganizationSocialAccounts(
+    shouldUseOrganizationAccounts ? activeOrganization?._id || "" : ""
+  );
+
+  // Use the appropriate accounts and loading state
+  const accounts = shouldUseOrganizationAccounts
+    ? organizationAccounts
+    : individualAccounts;
+  const isAccountsLoading = shouldUseOrganizationAccounts
+    ? isOrganizationAccountsLoading
+    : isIndividualAccountsLoading;
+  const refetchAccounts = shouldUseOrganizationAccounts
+    ? refetchOrganizationAccounts
+    : refetchIndividualAccounts;
+
+  // Fetch organization teams for assignment functionality
+  const { data: organizationTeams = [] } = useQuery<Team[]>({
+    queryKey: ["/teams", activeOrganization?._id],
+    queryFn: () => {
+      if (!activeOrganization) return Promise.resolve([]);
+      return teamsApi.getTeams(activeOrganization._id);
+    },
+    enabled: Boolean(shouldUseOrganizationAccounts && activeOrganization),
+  });
+
+  // Team assignment mutations
+  const { mutate: assignToTeam, isPending: isAssigning } = useMutation({
+    mutationFn: async ({
+      teamId,
+      accountId,
+    }: {
+      teamId: string;
+      accountId: string;
+    }) => {
+      if (!activeOrganization) throw new Error("No active organization");
+      return await teamsApi.assignSocialAccountToTeam(
+        activeOrganization._id,
+        teamId,
+        accountId
+      );
+    },
+    onSuccess: () => {
+      // Invalidate both social accounts and teams queries to refresh data
+      if (shouldUseOrganizationAccounts) {
+        queryClient.invalidateQueries({ queryKey: ["/social-accounts/organization", activeOrganization?._id] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["/teams"] });
+      toast({
+        title: "Account assigned",
+        description:
+          "Social account has been successfully assigned to the team.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Assignment failed",
+        description:
+          error.response?.data?.message || "Failed to assign account to team.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { mutate: unassignFromTeam, isPending: isUnassigning } = useMutation({
+    mutationFn: async ({
+      teamId,
+      accountId,
+    }: {
+      teamId: string;
+      accountId: string;
+    }) => {
+      if (!activeOrganization) throw new Error("No active organization");
+      return await teamsApi.removeSocialAccountFromTeam(
+        activeOrganization._id,
+        teamId,
+        accountId
+      );
+    },
+    onSuccess: () => {
+      // Invalidate both social accounts and teams queries to refresh data
+      if (shouldUseOrganizationAccounts) {
+        queryClient.invalidateQueries({ queryKey: ["/social-accounts/organization", activeOrganization?._id] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["/teams"] });
+      toast({
+        title: "Account unassigned",
+        description: "Social account has been removed from the team.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Unassignment failed",
+        description:
+          error.response?.data?.message ||
+          "Failed to remove account from team.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Get unique platforms and their counts
   const platformStats = useMemo(() => {
@@ -201,10 +386,9 @@ export default function SocialAccounts() {
         connectYoutube();
         break;
       default:
-        toast({
-          title: "Connection failed",
-          description: "Failed to connect social account",
-          variant: "destructive",
+        toast.error({
+          title: "Connection Failed",
+          description: "Failed to connect social account.",
         });
         break;
     }
@@ -229,9 +413,9 @@ export default function SocialAccounts() {
 
       // Legacy: ?success=true
       if (searchParams.get("success") === "true") {
-        toast({
-          title: "Social account connected",
-          description: "Your social account has been connected successfully",
+        toast.success({
+          title: "Social Account Connected",
+          description: "Your social account has been connected successfully.",
         });
         window.history.replaceState({}, "", "/dashboard/accounts");
         return;
@@ -241,10 +425,9 @@ export default function SocialAccounts() {
       if (searchParams.get("error")) {
         const message = searchParams.get("message");
         // OAuth error will be displayed in the toast below
-        toast({
-          title: "Social account connection failed",
-          description: message ?? "Failed to connect social account",
-          variant: "destructive",
+        toast.error({
+          title: "Social Account Connection Failed",
+          description: message ?? "Failed to connect social account.",
         });
         window.history.replaceState({}, "", "/dashboard/accounts");
         return;
@@ -255,18 +438,17 @@ export default function SocialAccounts() {
         const decodedMessage = decodeURIComponent(
           searchParams.get("message") ?? ""
         );
-        toast({
-          title: "Social account connection failed",
-          description: decodedMessage ?? "Something went wrong",
-          variant: "destructive",
+        toast.error({
+          title: "Social Account Connection Failed",
+          description: decodedMessage ?? "Something went wrong.",
         });
         window.history.replaceState({}, "", "/dashboard/accounts");
       }
 
       if (searchParams.get("status") === "success") {
-        toast({
-          title: "Social account connected",
-          description: "Your social account has been connected successfully",
+        toast.success({
+          title: "Social Account Connected",
+          description: "Your social account has been connected successfully.",
         });
         window.history.replaceState({}, "", "/dashboard/accounts");
       }
@@ -324,10 +506,9 @@ export default function SocialAccounts() {
         connectMeta({ platform: "facebook" });
         break;
       default:
-        toast({
-          title: "Reauthorization failed",
-          description: "Failed to reauthorize social account",
-          variant: "destructive",
+        toast.error({
+          title: "Reauthorization Failed",
+          description: "Failed to reauthorize social account.",
         });
         break;
     }
@@ -695,96 +876,116 @@ export default function SocialAccounts() {
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter className="relative flex justify-between items-center pt-3 border-t border-border/50">
-                    {/* Quick Actions */}
-                    <div className="flex items-center gap-2">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 hover:bg-primary/10"
-                            >
-                              <BarChart3 className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>View Analytics</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                  <CardFooter className="relative flex flex-col gap-3 pt-3 border-t border-border/50">
+                    {/* Team Assignment (Organization Mode Only) */}
+                    {shouldUseOrganizationAccounts && canCreateTeams && (
+                      <TeamAssignmentDropdown
+                        currentTeamId={account.teamId}
+                        availableTeams={organizationTeams}
+                        onAssign={(teamId) =>
+                          assignToTeam({ teamId, accountId: account._id })
+                        }
+                        onUnassign={() =>
+                          unassignFromTeam({
+                            teamId: account.teamId,
+                            accountId: account._id,
+                          })
+                        }
+                        isLoading={isAssigning || isUnassigning}
+                      />
+                    )}
 
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 hover:bg-primary/10"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Open Platform</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
+                    <div className="flex justify-between items-center">
+                      {/* Quick Actions */}
+                      <div className="flex items-center gap-2">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-primary/10"
+                              >
+                                <BarChart3 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>View Analytics</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
 
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-2">
-                      {account.status === "expired" && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-primary/10"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Open Platform</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-2">
+                        {account.status === "expired" && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={isLoading}
+                                  onClick={() => handleReauthorize(account)}
+                                  className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/20 hover:border-orange-500/30 text-orange-600 hover:text-orange-700"
+                                >
+                                  <RefreshCw className="h-4 w-4 mr-2" />
+                                  Reauthorize
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>This account needs reauthorization</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                disabled={isLoading}
-                                onClick={() => handleReauthorize(account)}
-                                className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/20 hover:border-orange-500/30 text-orange-600 hover:text-orange-700"
+                                onClick={() =>
+                                  setDeleteConfig({
+                                    id: account._id,
+                                    isOpen: true,
+                                    platform: account.platform,
+                                  })
+                                }
+                                disabled={isDeletingPending}
+                                className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
                               >
-                                <RefreshCw className="h-4 w-4 mr-2" />
-                                Reauthorize
+                                {isDeletingPending ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>This account needs reauthorization</p>
+                              <p>Disconnect account</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                      )}
-
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                setDeleteConfig({
-                                  id: account._id,
-                                  isOpen: true,
-                                  platform: account.platform,
-                                })
-                              }
-                              disabled={isDeletingPending}
-                              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
-                            >
-                              {isDeletingPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Disconnect account</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      </div>
                     </div>
                   </CardFooter>
                 </Card>
@@ -819,7 +1020,7 @@ export default function SocialAccounts() {
           {canConnectSocialAccounts ? (
             <Button
               onClick={() => setIsAddingAccount(true)}
-              disabled={!hasValidSubscription(billing?.paymentStatus)}
+              disabled={!hasValidSubscription}
               className="bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <Plus size={16} className="mr-2" />
@@ -920,7 +1121,7 @@ export default function SocialAccounts() {
                 <Button
                   onClick={() => setIsAddingAccount(true)}
                   className="w-full sm:w-auto bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
-                  disabled={!hasValidSubscription(billing?.paymentStatus)}
+                  disabled={!hasValidSubscription}
                 >
                   <Plus size={16} className="mr-2" />
                   Connect Account
