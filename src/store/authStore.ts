@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { authApi } from "../api/auth";
-import { Organization, Team } from "../types";
+// import { Organization, Team } from "../types"; // COMMENTED: Not used after commenting out fields
 import { useTeamStore } from "./teamStore";
 import { useOrganizationStore } from "./organizationStore";
 
@@ -30,8 +30,8 @@ interface AuthState {
   // State
   user: any;
   token: string | null;
-  organization: Organization | null;
-  teams: Team[];
+  // organization: Organization | null; // COMMENTED: Use organization store instead
+  // teams: Team[]; // COMMENTED: Use organization-scoped queries instead  
   isLoading: boolean;
   error: string | null;
 
@@ -70,8 +70,8 @@ export const logoutUser = async () => {
     useAuthStore.setState({
       user: null,
       token: null,
-      organization: null,
-      teams: [],
+      // organization: null, // COMMENTED: Use organization store instead
+      // teams: [], // COMMENTED: Use organization-scoped queries instead
       userRole: null,
       userType: null,
       subscriptionInfo: {
@@ -106,8 +106,8 @@ export const useAuthStore = create<AuthState>()(
       // Initial state
       user: null,
       token: localStorage.getItem("auth_token"),
-      organization: null,
-      teams: [],
+      // organization: null, // COMMENTED: Use organization store instead
+      // teams: [], // COMMENTED: Use organization-scoped queries instead
       isLoading: false,
       error: null,
 
@@ -148,8 +148,8 @@ export const useAuthStore = create<AuthState>()(
           set({
             token: data.token,
             user: data.user,
-            organization: data.organization ?? null,
-            teams: data.teams ?? [],
+            // organization: data.organization ?? null, // COMMENTED: Use organization store instead
+            // teams: data.teams ?? [], // COMMENTED: Use organization-scoped queries instead
             isLoading: false,
 
             // Enhanced authentication context
@@ -162,7 +162,7 @@ export const useAuthStore = create<AuthState>()(
           });
 
           // Store teams in auth state; components will sync with team store
-          set({ teams: data.teams || [] });
+          // set({ teams: data.teams || [] }); // COMMENTED: Use organization-scoped queries instead
 
           return { success: true, data };
         } catch (error: any) {
@@ -200,8 +200,8 @@ export const useAuthStore = create<AuthState>()(
           set({
             token: response.token,
             user: response.user,
-            organization: response.organization ?? null,
-            teams: response.teams ?? [],
+            // organization: response.organization ?? null, // COMMENTED: Use organization store instead
+            // teams: response.teams ?? [], // COMMENTED: Use organization-scoped queries instead
             isLoading: false,
 
             // Enhanced authentication context
@@ -240,8 +240,8 @@ export const useAuthStore = create<AuthState>()(
 
           set({
             user: data.user,
-            organization: data.organization ?? null,
-            teams: data.teams ?? [],
+            // organization: data.organization ?? null, // COMMENTED: Use organization store instead
+            // teams: data.teams ?? [], // COMMENTED: Use organization-scoped queries instead
             isLoading: false,
 
             // Enhanced authentication context
@@ -295,8 +295,8 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         token: state.token,
         user: state.user,
-        organization: state.organization,
-        teams: state.teams,
+        // organization: state.organization, // COMMENTED: Use organization store instead
+        // teams: state.teams, // COMMENTED: Use organization-scoped queries instead
         userRole: state.userRole,
         userType: state.userType,
         subscriptionInfo: state.subscriptionInfo,

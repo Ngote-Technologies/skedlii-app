@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
 import { useToast } from "../../hooks/use-toast";
 import { useActiveOrganization } from "../organization";
+import { useOrganizationTeams } from "../../hooks/useOrganizationTeams";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -57,7 +58,7 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import { getInitials } from "../../lib/utils";
 import { Loader2, Plus, UserPlus, X } from "lucide-react";
 import { useAccessControl } from "../../hooks/useAccessControl";
-import { useAuth } from "../../store/hooks";
+// import { useAuth } from "../../store/hooks"; // COMMENTED: No longer need fetchUserData()
 import { teamsApi } from "../../api/teams";
 
 const teamSchema = z.object({
@@ -84,17 +85,10 @@ export default function TeamManagement() {
   const queryClient = useQueryClient();
   const activeOrganization = useActiveOrganization();
   const { canCreateTeams } = useAccessControl();
-  const { fetchUserData } = useAuth();
+  // const { fetchUserData } = useAuth(); // COMMENTED: No longer needed
 
-  // Get teams for active organization
-  const { data: teams = [], isLoading: isLoadingTeams } = useQuery({
-    queryKey: ["/teams", "organization", activeOrganization?._id],
-    queryFn: () =>
-      activeOrganization
-        ? apiRequest("GET", `/teams/organization/${activeOrganization._id}`)
-        : Promise.resolve([]),
-    enabled: !!activeOrganization,
-  }) as { data: any[]; isLoading: boolean };
+  // Get teams for active organization using the consistent hook
+  const { data: teams = [], isLoading: isLoadingTeams } = useOrganizationTeams();
 
   console.log({ teams });
 
@@ -174,13 +168,14 @@ export default function TeamManagement() {
         data
       );
     },
-    onSuccess: () => {
-      fetchUserData();
-      queryClient.invalidateQueries({
+    onSuccess: async () => {
+      // Force immediate refetch of team data from backend
+      await queryClient.refetchQueries({
         queryKey: ["/teams", "organization", activeOrganization?._id],
       });
+      
       toast.success({
-        title: "Team Created",
+        title: "Team Created", 
         description: "Your team has been created successfully.",
       });
       setIsCreatingTeam(false);
@@ -279,11 +274,12 @@ export default function TeamManagement() {
         `/teams/organization/${activeOrganization._id}/${teamId}`
       );
     },
-    onSuccess: () => {
-      fetchUserData();
-      queryClient.invalidateQueries({
+    onSuccess: async () => {
+      // Force immediate refetch of team data from backend
+      await queryClient.refetchQueries({
         queryKey: ["/teams", "organization", activeOrganization?._id],
       });
+      
       toast.success({
         title: "Team Deleted",
         description: "The team has been deleted successfully.",
@@ -543,7 +539,11 @@ export default function TeamManagement() {
         </TabsList>
 
         <TabsContent value="teams" className="space-y-4">
-          {teams.length > 0 ? (
+          {isLoadingTeams ? (
+            <div className="flex justify-center p-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : teams.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {teams.map((team: any) => {
                 return (

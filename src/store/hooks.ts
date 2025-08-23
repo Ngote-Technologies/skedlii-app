@@ -6,8 +6,8 @@ export const useAuth = () => {
   const {
     user,
     token,
-    organization,
-    teams,
+    // organization, // COMMENTED: Use organization store instead
+    // teams, // COMMENTED: Use organization-scoped queries instead
     isLoading: authLoading,
     error: authError,
     login,
@@ -48,7 +48,7 @@ export const useAuth = () => {
   return {
     // Auth state
     user,
-    organization,
+    // organization, // COMMENTED: Use organization store instead
     isAuthenticated,
     isOrganizationUser,
     isIndividualUser,
@@ -61,7 +61,7 @@ export const useAuth = () => {
     subscriptionInfo,
 
     // Team state
-    teams,
+    // teams, // COMMENTED: Use organization-scoped queries instead
     activeTeam,
     teamsLoading,
     teamsError,
