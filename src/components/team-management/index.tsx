@@ -372,18 +372,18 @@ export default function TeamManagement() {
     });
 
   // Filter out users who are already team members
-  // const availableUsers = useMemo(
-  //   () =>
-  //     users.filter(
-  //       (user: any) =>
-  //         !teamMembers.some(
-  //           (member: any) => member.userId?.toString() !== user._id?.toString()
-  //         )
-  //     ),
-  //   [users, teamMembers]
-  // );
+  const availableUsers = useMemo(
+    () =>
+      users.filter(
+        (user: any) =>
+          !teamMembers.some(
+            (member: any) => member.userId?.toString() === user._id?.toString()
+          )
+      ),
+    [users, teamMembers]
+  );
 
-  // console.log({ availableUsers });
+  console.log({ availableUsers });
 
   const teamForm = useForm<TeamFormData>({
     resolver: zodResolver(teamSchema),
@@ -1023,8 +1023,8 @@ export default function TeamManagement() {
                           <div className="flex items-center justify-center p-2">
                             <Loader2 className="h-4 w-4 animate-spin" />
                           </div>
-                        ) : users.length > 0 ? (
-                          users.map((user: any) => (
+                        ) : availableUsers.length > 0 ? (
+                          availableUsers.map((user: any) => (
                             <SelectItem
                               key={user._id}
                               value={user._id.toString()}

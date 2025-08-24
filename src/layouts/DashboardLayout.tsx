@@ -51,7 +51,7 @@ export default function DashboardLayout() {
         {/* Enhanced Header */}
         <DashboardHeader />
 
-        <div className="flex-1 flex overflow-hidden relative">
+        <div className="flex-1 flex overflow-hidden relative mb-20 lg:mb-0">
           {/* Enhanced Sidebar Container */}
           <div className="hidden lg:block relative">
             <DashboardSidebar
