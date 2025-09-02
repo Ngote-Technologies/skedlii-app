@@ -16,6 +16,20 @@ export function useAccessControl() {
     canManageBilling,
     canConnectSocialAccounts,
     canCreateTeams,
+    canManageTeams,
+    canDeleteTeams,
+    canInviteMembers,
+    canRemoveMembers,
+    canViewAnalytics,
+    canExportData,
+    canAccessAdvancedFeatures,
+    canSchedulePosts,
+    canBulkSchedule,
+    canUseAIFeatures,
+    canManageWebhooks,
+    canViewAuditLogs,
+    canManageApiKeys,
+    canAccessBetaFeatures,
     isAdmin,
   } = useAuth();
   
@@ -37,11 +51,26 @@ export function useAccessControl() {
     canManageBilling,
     canConnectSocialAccounts,
     canCreateTeams,
+    canManageTeams,
+    canDeleteTeams,
+    canInviteMembers,
+    canRemoveMembers,
+    canViewAnalytics,
+    canExportData,
+    canAccessAdvancedFeatures,
+    canSchedulePosts,
+    canBulkSchedule,
+    canUseAIFeatures,
+    canManageWebhooks,
+    canViewAuditLogs,
+    canManageApiKeys,
+    canAccessBetaFeatures,
     isAdmin,
     
     // Subscription info from backend
     hasValidSubscription: subscriptionInfo.hasValidSubscription,
     subscriptionTier: subscriptionInfo.subscriptionTier,
+    subscriptionInfo, // Full subscription object for advanced use cases
     
     // User context (for display purposes)
     userContext,
