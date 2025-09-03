@@ -113,7 +113,7 @@ export default function UserSettings() {
     {
       mutationFn: async (data: PasswordFormData) => {
         const { confirmPassword, ...passwordData } = data;
-        return await apiRequest("POST", "/users/change-password", passwordData);
+        return await apiRequest("POST", "/auth/change-password", passwordData);
       },
       onSuccess: () => {
         toast.success({
@@ -125,7 +125,8 @@ export default function UserSettings() {
       onError: () => {
         toast.error({
           title: "Password Change Failed",
-          description: "Failed to change your password. Current password may be incorrect.",
+          description:
+            "Failed to change your password. Current password may be incorrect.",
         });
       },
     }
