@@ -25,18 +25,17 @@ import {
   DropdownMenuTrigger,
 } from "../../ui/dropdown-menu";
 import { formatDate, getSocialIcon } from "../../../lib/utils";
-import { hasValidSubscription } from "../../../lib/access";
 import { toast } from "../../../hooks/use-toast";
+import { useAccessControl } from "../../../hooks/useAccessControl";
 
 export function getScheduledPostListView(
   isFetchingScheduledPosts: boolean,
   scheduledPosts: any,
   updatePostStatus: any,
   handleDeletePost: any,
-  navigate: any,
-  user: any
+  navigate: any
 ) {
-  const { billing } = user;
+  const { hasValidSubscription } = useAccessControl();
 
   if (isFetchingScheduledPosts) {
     return (
@@ -56,7 +55,7 @@ export function getScheduledPostListView(
           variant="link"
           className="mt-2"
           onClick={() => {
-            if (!hasValidSubscription(billing?.paymentStatus)) {
+            if (!hasValidSubscription) {
               toast({
                 variant: "destructive",
                 title: "Upgrade your plan to manage collections.",

@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { authApi, LoginResponse, LoginResponseV2, GetMeResponseV2, SubscriptionInfo as SubscriptionInfoV2 } from "../api/auth";
+import {
+  authApi,
+  LoginResponse,
+  LoginResponseV2,
+  GetMeResponseV2,
+} from "../api/auth";
 import { useV2Api } from "../api/axios";
 import { Organization, Team } from "../types";
 import { useTeamStore } from "./teamStore";
@@ -74,7 +79,10 @@ interface AuthState {
 }
 
 // Response format adapters for V1/V2 compatibility
-const adaptLoginResponse = (response: LoginResponse | LoginResponseV2, isV2: boolean) => {
+const adaptLoginResponse = (
+  response: LoginResponse | LoginResponseV2,
+  isV2: boolean
+) => {
   if (isV2) {
     const v2Response = response as LoginResponseV2;
     return {
@@ -82,10 +90,12 @@ const adaptLoginResponse = (response: LoginResponse | LoginResponseV2, isV2: boo
       refreshToken: v2Response.refreshToken,
       user: v2Response.user,
       // V2 now provides these in login response - use them if available, else defaults
-      organization: v2Response.organizationId ? {
-        _id: v2Response.organizationId,
-        role: v2Response.userRole,
-      } : null,
+      organization: v2Response.organizationId
+        ? {
+            _id: v2Response.organizationId,
+            role: v2Response.userRole,
+          }
+        : null,
       teams: [], // Teams still require separate call
       computedPermissions: v2Response.computedPermissions || {
         isAdmin: false,
@@ -141,22 +151,28 @@ const adaptLoginResponse = (response: LoginResponse | LoginResponseV2, isV2: boo
 const adaptGetMeResponse = (response: any, isV2: boolean) => {
   if (isV2) {
     const v2Response = response as GetMeResponseV2;
-    
+
     // For V2, we need to compute basic permissions from user role and organizations
-    const userRole = v2Response.organizations.length > 0 ? v2Response.organizations[0].role : 'member';
-    const isOwnerOrAdmin = userRole === 'owner' || userRole === 'admin';
-    
+    const userRole =
+      v2Response.organizations.length > 0
+        ? v2Response.organizations[0].role
+        : "member";
+    const isOwnerOrAdmin = userRole === "owner" || userRole === "admin";
+
     return {
       user: {
         ...v2Response.user,
         // Map V2 user format to V1 expected format for compatibility
         role: userRole,
-        userType: 'individual', // Default, can be enhanced later
+        userType: "individual", // Default, can be enhanced later
       },
-      organization: v2Response.organizations.length > 0 ? {
-        _id: v2Response.organizations[0].orgId,
-        role: v2Response.organizations[0].role,
-      } : null,
+      organization:
+        v2Response.organizations.length > 0
+          ? {
+              _id: v2Response.organizations[0].orgId,
+              role: v2Response.organizations[0].role,
+            }
+          : null,
       organizations: v2Response.organizations,
       // V2 doesn't provide these in /me response, will need separate calls
       teams: [],
@@ -164,7 +180,7 @@ const adaptGetMeResponse = (response: any, isV2: boolean) => {
         // Basic permissions based on role
         isAdmin: isOwnerOrAdmin,
         canManageOrganization: isOwnerOrAdmin,
-        canManageBilling: userRole === 'owner',
+        canManageBilling: userRole === "owner",
         canConnectSocialAccounts: true, // Most users can connect accounts
         canCreateTeams: isOwnerOrAdmin,
       },
@@ -285,7 +301,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const rawResponse = await authApi.loginUser({ email, password });
-          const isV2 = useV2Api('auth');
+          const isV2 = useV2Api("auth");
           const data = adaptLoginResponse(rawResponse, isV2);
 
           // Store tokens based on API version
@@ -346,7 +362,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const rawResponse = await authApi.registerUser(data);
-          const isV2 = useV2Api('auth');
+          const isV2 = useV2Api("auth");
           const response = adaptLoginResponse(rawResponse, isV2);
 
           // Store tokens based on API version
@@ -361,7 +377,10 @@ export const useAuthStore = create<AuthState>()(
 
           // For V1, always require backend to provide computedPermissions and subscriptionInfo
           // For V2, use defaults and fetch separately if needed
-          if (!isV2 && (!response.computedPermissions || !response.subscriptionInfo)) {
+          if (
+            !isV2 &&
+            (!response.computedPermissions || !response.subscriptionInfo)
+          ) {
             throw new Error(
               "V1 Backend must provide computedPermissions and subscriptionInfo"
             );
@@ -395,7 +414,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const rawData = await authApi.getCurrentUser();
-          const isV2 = useV2Api('auth');
+          const isV2 = useV2Api("auth");
           const data = adaptGetMeResponse(rawData, isV2);
 
           // Backend is now the single source of truth for permissions
