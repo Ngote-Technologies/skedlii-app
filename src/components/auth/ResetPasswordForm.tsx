@@ -38,12 +38,14 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 interface ResetPasswordFormProps {
   readonly token: string;
+  readonly email: string;
   readonly onBack?: () => void;
 }
 
 export default function ResetPasswordForm({
   onBack,
   token,
+  email,
 }: ResetPasswordFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -76,8 +78,13 @@ export default function ResetPasswordForm({
 
   const { mutate: resetPassword, isPending: isMutating } = useMutation({
     mutationFn: async (data: any) => {
-      console.log("Making API request with data:", data);
-      const result = await apiRequest("POST", "/auth/reset-password", data);
+      const body = {
+        token,
+        email,
+        newPassword: data.password,
+      };
+      console.log("Making API request with data:", body);
+      const result = await apiRequest("POST", "/auth/reset-password", body);
       console.log("API request successful:", result);
       return result;
     },
