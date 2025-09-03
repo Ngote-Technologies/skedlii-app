@@ -21,17 +21,22 @@ import {
 } from "../../ui/dialog";
 import { Calendar } from "../../ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
-import { Loader2, Calendar as CalendarIcon, Plus, List, Sparkles, Clock } from "lucide-react";
+import {
+  Loader2,
+  Calendar as CalendarIcon,
+  Plus,
+  List,
+  Sparkles,
+  Clock,
+} from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { getScheduledPostListView } from "./listView";
 import { getScheduledPostCalendarView } from "./calendarView";
-import { hasValidSubscription } from "../../../lib/access";
-import { useAuth } from "../../../store/hooks";
 import { useNavigate } from "react-router-dom";
+import { useAccessControl } from "../../../hooks/useAccessControl";
 
 export default function ScheduledPosts() {
-  const { user } = useAuth();
-  const { billing } = user;
+  const { hasValidSubscription } = useAccessControl();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
@@ -158,7 +163,7 @@ export default function ScheduledPosts() {
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
           {/* Stats Summary */}
           <div className="hidden sm:flex items-center gap-4 px-4 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
@@ -175,14 +180,17 @@ export default function ScheduledPosts() {
               <div className="text-xs text-gray-500">Today</div>
             </div>
           </div>
-          
+
           <Button
-            disabled={!hasValidSubscription(billing?.paymentStatus)}
+            disabled={!hasValidSubscription}
             onClick={() => navigate("/dashboard/post-flow")}
             variant="default"
             className="shadow-lg hover:shadow-xl transition-all duration-300 group"
           >
-            <Plus size={16} className="mr-2 group-hover:rotate-90 transition-transform duration-200" />
+            <Plus
+              size={16}
+              className="mr-2 group-hover:rotate-90 transition-transform duration-200"
+            />
             Create Post
           </Button>
         </div>
@@ -191,7 +199,7 @@ export default function ScheduledPosts() {
       <Tabs defaultValue="calendar" className="space-y-6">
         <div className="flex justify-center">
           <TabsList className="bg-gray-50 dark:bg-gray-800/50 p-1 rounded-xl">
-            <TabsTrigger 
+            <TabsTrigger
               value="calendar"
               className={cn(
                 "flex items-center gap-2 px-6 py-3 rounded-lg transition-all duration-300",
@@ -201,7 +209,7 @@ export default function ScheduledPosts() {
               <CalendarIcon className="h-4 w-4" />
               <span className="font-medium">Calendar View</span>
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="list"
               className={cn(
                 "flex items-center gap-2 px-6 py-3 rounded-lg transition-all duration-300",
@@ -238,12 +246,14 @@ export default function ScheduledPosts() {
                     selected={selectedDate}
                     onSelect={setSelectedDate}
                     modifiers={{
-                      hasPost: (date) => scheduleHasPostsForDate(new Date(date)),
+                      hasPost: (date) =>
+                        scheduleHasPostsForDate(new Date(date)),
                     }}
                     modifiersStyles={{
                       hasPost: {
                         fontWeight: "bold",
-                        background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                        background:
+                          "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
                         color: "white",
                         borderRadius: "0.5rem",
                       },
@@ -251,12 +261,14 @@ export default function ScheduledPosts() {
                     className="rounded-lg"
                   />
                 </div>
-                
+
                 {/* Calendar legend */}
                 <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                   <div className="flex items-center gap-2 text-sm">
                     <div className="w-3 h-3 rounded bg-gradient-to-r from-blue-500 to-purple-500"></div>
-                    <span className="text-blue-700 dark:text-blue-300">Days with scheduled posts</span>
+                    <span className="text-blue-700 dark:text-blue-300">
+                      Days with scheduled posts
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -274,17 +286,23 @@ export default function ScheduledPosts() {
                       <div>
                         <CardTitle className="text-xl">
                           Posts for{" "}
-                          {selectedDate ? formatDate(selectedDate, "PPP") : "today"}
+                          {selectedDate
+                            ? formatDate(selectedDate, "PPP")
+                            : "today"}
                         </CardTitle>
                         <CardDescription>
-                          {filterPostsByDate(selectedDate).length} posts scheduled for this date
+                          {filterPostsByDate(selectedDate).length} posts
+                          scheduled for this date
                         </CardDescription>
                       </div>
                     </div>
-                    
+
                     {filterPostsByDate(selectedDate).length > 0 && (
                       <div className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 px-3 py-1 rounded-full text-sm font-medium">
-                        {filterPostsByDate(selectedDate).length} post{filterPostsByDate(selectedDate).length !== 1 ? 's' : ''}
+                        {filterPostsByDate(selectedDate).length} post
+                        {filterPostsByDate(selectedDate).length !== 1
+                          ? "s"
+                          : ""}
                       </div>
                     )}
                   </div>
@@ -296,7 +314,6 @@ export default function ScheduledPosts() {
                     updatePostStatus,
                     handleDeletePost,
                     navigate,
-                    user,
                   })}
                 </CardContent>
               </Card>
@@ -313,17 +330,20 @@ export default function ScheduledPosts() {
                     <List className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-xl">All Scheduled Posts</CardTitle>
+                    <CardTitle className="text-xl">
+                      All Scheduled Posts
+                    </CardTitle>
                     <CardDescription>
                       Complete overview of your content pipeline
                     </CardDescription>
                   </div>
                 </div>
-                
+
                 {scheduledPosts.data.length > 0 && (
                   <div className="flex items-center gap-3">
                     <div className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 px-3 py-1 rounded-full text-sm font-medium">
-                      {scheduledPosts.data.length} total post{scheduledPosts.data.length !== 1 ? 's' : ''}
+                      {scheduledPosts.data.length} total post
+                      {scheduledPosts.data.length !== 1 ? "s" : ""}
                     </div>
                   </div>
                 )}
@@ -335,8 +355,7 @@ export default function ScheduledPosts() {
                 scheduledPosts,
                 updatePostStatus,
                 handleDeletePost,
-                navigate,
-                user
+                navigate
               )}
             </CardContent>
           </Card>
