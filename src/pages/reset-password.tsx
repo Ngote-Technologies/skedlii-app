@@ -10,6 +10,7 @@ export default function ResetPasswordPage() {
   const { isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
+  const email = searchParams.get("email");
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -17,7 +18,7 @@ export default function ResetPasswordPage() {
     }
   }, [isAuthenticated, navigate]);
 
-  if (!token) {
+  if (!token || !email) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md mx-4">
@@ -25,7 +26,7 @@ export default function ResetPasswordPage() {
             <div className="flex mb-4 gap-2">
               <AlertCircle className="h-8 w-8 text-red-500" />
               <h1 className="text-2xl font-bold text-gray-900">
-                Invalid or missing token.
+                Invalid or missing token/email.
               </h1>
             </div>
             <p className="mt-4 text-sm text-gray-600">
@@ -53,7 +54,11 @@ export default function ResetPasswordPage() {
       </div>
 
       <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-md p-8">
-        <ResetPasswordForm onBack={() => navigate("/login")} token={token} />
+        <ResetPasswordForm
+          onBack={() => navigate("/login")}
+          token={token}
+          email={email}
+        />
       </div>
 
       <p className="mt-6 text-center text-sm">
