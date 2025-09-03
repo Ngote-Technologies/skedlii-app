@@ -1,15 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
 import { useToast } from "../../hooks/use-toast";
-import {
-  useActiveOrganization,
-  useOrganizationPermissions,
-} from "../organization";
+import { useActiveOrganization } from "../organization";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Users } from "lucide-react";
+import { Users, Link2, Unlink } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -59,6 +56,9 @@ import { Alert, AlertDescription } from "../ui/alert";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { getInitials } from "../../lib/utils";
 import { Loader2, Plus, UserPlus, X } from "lucide-react";
+import { useAccessControl } from "../../hooks/useAccessControl";
+import { useAuth } from "../../store/hooks";
+import { teamsApi } from "../../api/teams";
 
 const teamSchema = z.object({
   name: z.string().min(1, "Team name is required"),
@@ -79,10 +79,12 @@ export default function TeamManagement() {
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
   const [teamToDelete, setTeamToDelete] = useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("teams");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const activeOrganization = useActiveOrganization();
-  const permissions = useOrganizationPermissions();
+  const { canCreateTeams } = useAccessControl();
+  const { fetchUserData } = useAuth();
 
   // Get teams for active organization
   const { data: teams = [], isLoading: isLoadingTeams } = useQuery({
@@ -93,6 +95,8 @@ export default function TeamManagement() {
         : Promise.resolve([]),
     enabled: !!activeOrganization,
   }) as { data: any[]; isLoading: boolean };
+
+  console.log({ teams });
 
   // Get organization members (for team member addition)
   const { data: organizationData, isLoading: isLoadingUsers } = useQuery({
@@ -126,6 +130,40 @@ export default function TeamManagement() {
     enabled: !!selectedTeam && !!activeOrganization,
   }) as { data: any[]; isLoading: boolean };
 
+  // Get organization social accounts (for assignment)
+  const { data: organizationSocialAccounts = [] } = useQuery({
+    queryKey: ["/social-accounts", activeOrganization?._id],
+    queryFn: () =>
+      activeOrganization
+        ? apiRequest(
+            "GET",
+            `/social-accounts/organization/${activeOrganization._id}`
+          )
+        : Promise.resolve([]),
+    enabled: !!activeOrganization,
+  }) as { data: any[]; isLoading: boolean };
+
+  // Get team's assigned social accounts
+  const {
+    data: teamSocialAccounts = [],
+    isLoading: isLoadingTeamSocialAccounts,
+  } = useQuery({
+    queryKey: [
+      "/teams",
+      activeOrganization?._id,
+      selectedTeam?._id,
+      "social-accounts",
+    ],
+    queryFn: () => {
+      if (!selectedTeam || !activeOrganization) return Promise.resolve([]);
+      return teamsApi.getTeamSocialAccounts(
+        activeOrganization._id,
+        selectedTeam._id
+      );
+    },
+    enabled: !!selectedTeam && !!activeOrganization,
+  }) as { data: any[]; isLoading: boolean };
+
   // Create team mutation
   const { mutate: createTeam, isPending: isCreatingTeamPending } = useMutation({
     mutationFn: async (data: TeamFormData) => {
@@ -137,21 +175,21 @@ export default function TeamManagement() {
       );
     },
     onSuccess: () => {
+      fetchUserData();
       queryClient.invalidateQueries({
         queryKey: ["/teams", "organization", activeOrganization?._id],
       });
-      toast({
-        title: "Team created",
-        description: "Your team has been created successfully",
+      toast.success({
+        title: "Team Created",
+        description: "Your team has been created successfully.",
       });
       setIsCreatingTeam(false);
       teamForm.reset();
     },
     onError: () => {
-      toast({
-        title: "Creation failed",
+      toast.error({
+        title: "Team Creation Failed",
         description: "Failed to create team. Please try again.",
-        variant: "destructive",
       });
     },
   });
@@ -177,19 +215,18 @@ export default function TeamManagement() {
             "members",
           ],
         });
-        toast({
-          title: "Member added",
-          description: "The team member has been added successfully",
+        toast.success({
+          title: "Member Added",
+          description: "The team member has been added successfully.",
         });
         setIsAddingMember(false);
         memberForm.reset();
       },
       onError: () => {
-        toast({
-          title: "Addition failed",
+        toast.error({
+          title: "Member Addition Failed",
           description:
             "Failed to add team member. User may already be part of the team.",
-          variant: "destructive",
         });
       },
     });
@@ -220,16 +257,15 @@ export default function TeamManagement() {
             "members",
           ],
         });
-        toast({
-          title: "Member removed",
-          description: "The team member has been removed from the team",
+        toast.success({
+          title: "Member Removed",
+          description: "The team member has been removed from the team.",
         });
       },
       onError: () => {
-        toast({
-          title: "Removal failed",
+        toast.error({
+          title: "Member Removal Failed",
           description: "Failed to remove team member. Please try again.",
-          variant: "destructive",
         });
       },
     });
@@ -244,12 +280,13 @@ export default function TeamManagement() {
       );
     },
     onSuccess: () => {
+      fetchUserData();
       queryClient.invalidateQueries({
         queryKey: ["/teams", "organization", activeOrganization?._id],
       });
-      toast({
-        title: "Team deleted",
-        description: "The team has been deleted successfully",
+      toast.success({
+        title: "Team Deleted",
+        description: "The team has been deleted successfully.",
       });
       setIsDeleteDialogOpen(false);
       setTeamToDelete(null);
@@ -259,13 +296,98 @@ export default function TeamManagement() {
       }
     },
     onError: () => {
-      toast({
-        title: "Deletion failed",
+      toast.error({
+        title: "Team Deletion Failed",
         description: "Failed to delete team. Please try again.",
-        variant: "destructive",
       });
     },
   });
+
+  // Assign social account to team mutation
+  const { mutate: assignSocialAccount, isPending: isAssigningSocialAccount } =
+    useMutation({
+      mutationFn: async ({ accountId }: { accountId: string }) => {
+        if (!activeOrganization || !selectedTeam)
+          throw new Error("Missing context");
+        return await teamsApi.assignSocialAccountToTeam(
+          activeOrganization._id,
+          selectedTeam._id,
+          accountId
+        );
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: [
+            "/teams",
+            activeOrganization?._id,
+            selectedTeam?._id,
+            "social-accounts",
+          ],
+        });
+        toast.success({
+          title: "Account Assigned",
+          description:
+            "Social account has been assigned to the team successfully.",
+        });
+      },
+      onError: () => {
+        toast.error({
+          title: "Assignment Failed",
+          description:
+            "Failed to assign social account to team. Please try again.",
+        });
+      },
+    });
+
+  // Remove social account from team mutation
+  const { mutate: removeSocialAccount, isPending: isRemovingSocialAccount } =
+    useMutation({
+      mutationFn: async ({ accountId }: { accountId: string }) => {
+        if (!activeOrganization || !selectedTeam)
+          throw new Error("Missing context");
+        return await teamsApi.removeSocialAccountFromTeam(
+          activeOrganization._id,
+          selectedTeam._id,
+          accountId
+        );
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: [
+            "/teams",
+            activeOrganization?._id,
+            selectedTeam?._id,
+            "social-accounts",
+          ],
+        });
+        toast.success({
+          title: "Account Removed",
+          description:
+            "Social account has been removed from the team successfully.",
+        });
+      },
+      onError: () => {
+        toast.error({
+          title: "Removal Failed",
+          description:
+            "Failed to remove social account from team. Please try again.",
+        });
+      },
+    });
+
+  // Filter out users who are already team members
+  // const availableUsers = useMemo(
+  //   () =>
+  //     users.filter(
+  //       (user: any) =>
+  //         !teamMembers.some(
+  //           (member: any) => member.userId?.toString() !== user._id?.toString()
+  //         )
+  //     ),
+  //   [users, teamMembers]
+  // );
+
+  // console.log({ availableUsers });
 
   const teamForm = useForm<TeamFormData>({
     resolver: zodResolver(teamSchema),
@@ -304,6 +426,11 @@ export default function TeamManagement() {
     setIsAddingMember(true);
   }
 
+  function viewTeamMembers(team: any) {
+    setSelectedTeam(team);
+    setActiveTab("members");
+  }
+
   function handleRemoveMember(userId: number) {
     if (selectedTeam) {
       removeTeamMember({
@@ -328,9 +455,44 @@ export default function TeamManagement() {
     }
   }
 
-  function canDeleteTeam() {
-    // Only organization owners/admins can delete teams (same permissions as creating teams)
-    return permissions.canCreateTeams;
+  function viewTeamSocialAccounts(team: any) {
+    setSelectedTeam(team);
+    setActiveTab("social-accounts");
+  }
+
+  function handleAssignSocialAccount(accountId: string) {
+    assignSocialAccount({ accountId });
+  }
+
+  function handleRemoveSocialAccount(accountId: string) {
+    removeSocialAccount({ accountId });
+  }
+
+  // Get available social accounts (not assigned to this team)
+  const availableSocialAccounts = useMemo(() => {
+    const assignedAccountIds = teamSocialAccounts.map(
+      (account: any) => account._id
+    );
+    return organizationSocialAccounts.filter(
+      (account: any) => !assignedAccountIds.includes(account._id)
+    );
+  }, [organizationSocialAccounts, teamSocialAccounts]);
+
+  // Get platform icon/color for display
+  function getPlatformDetails(platform: string) {
+    const platforms: Record<string, { color: string; name: string }> = {
+      twitter: { color: "bg-blue-500", name: "Twitter" },
+      linkedin: { color: "bg-blue-700", name: "LinkedIn" },
+      facebook: { color: "bg-blue-600", name: "Facebook" },
+      instagram: {
+        color: "bg-gradient-to-r from-purple-500 to-pink-500",
+        name: "Instagram",
+      },
+      tiktok: { color: "bg-black", name: "TikTok" },
+      youtube: { color: "bg-red-600", name: "YouTube" },
+      threads: { color: "bg-gray-800", name: "Threads" },
+    };
+    return platforms[platform] || { color: "bg-gray-500", name: platform };
   }
 
   // Show message if no organization is selected
@@ -356,10 +518,12 @@ export default function TeamManagement() {
         <div>
           <h2 className="text-2xl font-bold">Team Management</h2>
           <p className="text-muted-foreground">
-            Create and manage teams in {activeOrganization.name}
+            {canCreateTeams
+              ? `Create and manage teams in ${activeOrganization.name}`
+              : `View teams in ${activeOrganization.name}`}
           </p>
         </div>
-        {permissions.canCreateTeams && (
+        {canCreateTeams && (
           <Button onClick={() => setIsCreatingTeam(true)}>
             <Plus size={16} className="mr-2" />
             Create Team
@@ -367,20 +531,19 @@ export default function TeamManagement() {
         )}
       </div>
 
-      <Tabs defaultValue="teams">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="teams">Teams</TabsTrigger>
           <TabsTrigger value="members" disabled={!selectedTeam}>
             Members
           </TabsTrigger>
+          <TabsTrigger value="social-accounts" disabled={!selectedTeam}>
+            Social Accounts
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="teams" className="space-y-4">
-          {isLoadingTeams ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : teams.length > 0 ? (
+          {teams.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {teams.map((team: any) => {
                 return (
@@ -403,22 +566,32 @@ export default function TeamManagement() {
                       )}
                     </CardContent>
                     <CardFooter className="flex flex-col gap-2 border-t pt-4 bg-muted/40">
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => openAddMemberDialog(team)}
-                      >
-                        <UserPlus size={16} className="mr-2" />
-                        Add Member
-                      </Button>
+                      {canCreateTeams && (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => openAddMemberDialog(team)}
+                        >
+                          <UserPlus size={16} className="mr-2" />
+                          Add Member
+                        </Button>
+                      )}
                       <Button
                         variant="default"
                         className="w-full"
-                        onClick={() => setSelectedTeam(team)}
+                        onClick={() => viewTeamMembers(team)}
                       >
                         View Members
                       </Button>
-                      {canDeleteTeam() && (
+                      <Button
+                        variant="secondary"
+                        className="w-full"
+                        onClick={() => viewTeamSocialAccounts(team)}
+                      >
+                        <Link2 size={16} className="mr-2" />
+                        Social Accounts
+                      </Button>
+                      {canCreateTeams && (
                         <Button
                           variant="destructive"
                           className="w-full"
@@ -438,15 +611,18 @@ export default function TeamManagement() {
               <CardHeader>
                 <CardTitle>No teams yet</CardTitle>
                 <CardDescription>
-                  Create a team to collaborate with others on your social media
-                  content
+                  {canCreateTeams
+                    ? "Create a team to collaborate with others on your social media content"
+                    : "No teams have been created in this organization yet. Organization owners and admins can create teams for collaboration."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex justify-center pb-6">
-                <Button onClick={() => setIsCreatingTeam(true)}>
-                  <Plus size={16} className="mr-2" />
-                  Create Your First Team
-                </Button>
+                {canCreateTeams && (
+                  <Button onClick={() => setIsCreatingTeam(true)}>
+                    <Plus size={16} className="mr-2" />
+                    Create Your First Team
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )}
@@ -462,14 +638,16 @@ export default function TeamManagement() {
                       <CardTitle>{selectedTeam.name}</CardTitle>
                       <CardDescription>Team Members</CardDescription>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openAddMemberDialog(selectedTeam)}
-                    >
-                      <UserPlus size={16} className="mr-2" />
-                      Add Member
-                    </Button>
+                    {canCreateTeams && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openAddMemberDialog(selectedTeam)}
+                      >
+                        <UserPlus size={16} className="mr-2" />
+                        Add Member
+                      </Button>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -495,17 +673,18 @@ export default function TeamManagement() {
                                 <div className="flex items-center gap-2">
                                   <Avatar className="h-8 w-8">
                                     <AvatarFallback>
-                                      {user?.name
-                                        ? getInitials(user.name)
-                                        : user?.username
+                                      {user?.firstName
+                                        ? getInitials(
+                                            user.firstName + " " + user.lastName
+                                          )
+                                        : user?.email
                                             ?.substring(0, 2)
                                             .toUpperCase() || "U"}
                                     </AvatarFallback>
                                   </Avatar>
                                   <div>
                                     <p className="font-medium">
-                                      {user?.name ||
-                                        user?.username ||
+                                      {user?.firstName + " " + user?.lastName ||
                                         "Unknown"}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
@@ -526,22 +705,24 @@ export default function TeamManagement() {
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-right">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-destructive hover:text-destructive"
-                                  onClick={() =>
-                                    handleRemoveMember(member.userId)
-                                  }
-                                  disabled={isRemovingMemberPending}
-                                >
-                                  {isRemovingMemberPending ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <X size={16} />
-                                  )}
-                                  <span className="sr-only">Remove</span>
-                                </Button>
+                                {canCreateTeams && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-destructive hover:text-destructive"
+                                    onClick={() =>
+                                      handleRemoveMember(member.userId)
+                                    }
+                                    disabled={isRemovingMemberPending}
+                                  >
+                                    {isRemovingMemberPending ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <X size={16} />
+                                    )}
+                                    <span className="sr-only">Remove</span>
+                                  </Button>
+                                )}
                               </TableCell>
                             </TableRow>
                           );
@@ -558,6 +739,184 @@ export default function TeamManagement() {
                   )}
                 </CardContent>
               </Card>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="social-accounts">
+          {selectedTeam && (
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>{selectedTeam.name}</CardTitle>
+                      <CardDescription>
+                        Assigned Social Accounts
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingTeamSocialAccounts ? (
+                    <div className="flex justify-center p-4">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : teamSocialAccounts.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {teamSocialAccounts.map((account: any) => {
+                        const platformDetails = getPlatformDetails(
+                          account.platform
+                        );
+                        return (
+                          <Card key={account._id} className="overflow-hidden">
+                            <CardHeader className="pb-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <div
+                                    className={`w-10 h-10 rounded-full ${platformDetails.color} flex items-center justify-center text-white font-bold text-sm`}
+                                  >
+                                    {platformDetails.name.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <CardTitle className="text-sm">
+                                      {account.accountName || account.username}
+                                    </CardTitle>
+                                    <CardDescription className="text-xs">
+                                      {platformDetails.name}
+                                    </CardDescription>
+                                  </div>
+                                </div>
+                                <Badge
+                                  variant={
+                                    account.isActive ? "default" : "secondary"
+                                  }
+                                >
+                                  {account.isActive ? "Active" : "Inactive"}
+                                </Badge>
+                              </div>
+                            </CardHeader>
+                            <CardFooter className="pt-0">
+                              {canCreateTeams && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full text-destructive hover:text-destructive"
+                                  onClick={() =>
+                                    handleRemoveSocialAccount(account._id)
+                                  }
+                                  disabled={isRemovingSocialAccount}
+                                >
+                                  {isRemovingSocialAccount ? (
+                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  ) : (
+                                    <Unlink size={16} className="mr-2" />
+                                  )}
+                                  Remove
+                                </Button>
+                              )}
+                            </CardFooter>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <Alert>
+                      <AlertDescription>
+                        No social accounts assigned to this team yet.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Available Social Accounts to Assign */}
+              {canCreateTeams && availableSocialAccounts.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Available Social Accounts</CardTitle>
+                    <CardDescription>
+                      Click to assign these accounts to the team
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {availableSocialAccounts.map((account: any) => {
+                        const platformDetails = getPlatformDetails(
+                          account.platform
+                        );
+                        return (
+                          <Card
+                            key={account._id}
+                            className="overflow-hidden border-dashed hover:border-solid transition-colors cursor-pointer"
+                            onClick={() =>
+                              handleAssignSocialAccount(account._id)
+                            }
+                          >
+                            <CardHeader className="pb-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <div
+                                    className={`w-10 h-10 rounded-full ${platformDetails.color} flex items-center justify-center text-white font-bold text-sm`}
+                                  >
+                                    {platformDetails.name.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <CardTitle className="text-sm">
+                                      {account.accountName || account.username}
+                                    </CardTitle>
+                                    <CardDescription className="text-xs">
+                                      {platformDetails.name}
+                                    </CardDescription>
+                                  </div>
+                                </div>
+                                <Badge
+                                  variant={
+                                    account.isActive ? "default" : "secondary"
+                                  }
+                                >
+                                  {account.isActive ? "Active" : "Inactive"}
+                                </Badge>
+                              </div>
+                            </CardHeader>
+                            <CardFooter className="pt-0">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAssignSocialAccount(account._id);
+                                }}
+                                disabled={isAssigningSocialAccount}
+                              >
+                                {isAssigningSocialAccount ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                  <Link2 size={16} className="mr-2" />
+                                )}
+                                Assign
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* No available accounts message */}
+              {canCreateTeams &&
+                availableSocialAccounts.length === 0 &&
+                teamSocialAccounts.length === 0 && (
+                  <Alert>
+                    <AlertDescription>
+                      No social accounts available in this organization. Connect
+                      social accounts first to assign them to teams.
+                    </AlertDescription>
+                  </Alert>
+                )}
             </div>
           )}
         </TabsContent>
@@ -670,7 +1029,8 @@ export default function TeamManagement() {
                               key={user._id}
                               value={user._id.toString()}
                             >
-                              {user.name || user.username} ({user.email})
+                              {user.firstName + " " + user.lastName} (
+                              {user.email})
                             </SelectItem>
                           ))
                         ) : (

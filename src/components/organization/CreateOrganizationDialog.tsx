@@ -71,17 +71,16 @@ export default function CreateOrganizationDialog({
     setIsLoading(true);
     try {
       await createOrganization(data as CreateOrganizationData);
-      toast({
-        title: 'Organization created',
+      toast.success({
+        title: 'Organization Created',
         description: 'Your organization has been created successfully.',
       });
       onOpenChange(false);
       form.reset();
     } catch (error: any) {
-      toast({
-        title: 'Creation failed',
+      toast.error({
+        title: 'Organization Creation Failed',
         description: error.message || 'Failed to create organization.',
-        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);

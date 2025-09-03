@@ -50,10 +50,9 @@ export default function ForgotPasswordForm({
         setIsSubmitted(true);
       },
       onError: () => {
-        toast({
-          title: "Something went wrong",
-          description: "Failed to send reset link. Please try again.",
-          variant: "destructive",
+        toast.error({
+          title: "Reset Link Failed",
+          description: "Failed to send password reset link. Please try again.",
         });
       },
     });
@@ -66,10 +65,9 @@ export default function ForgotPasswordForm({
       }
     } catch (error) {
       console.error(error);
-      toast({
-        title: "Something went wrong",
-        description: "Failed to send reset link. Please try again.",
-        variant: "destructive",
+      toast.error({
+        title: "Reset Link Failed",
+        description: "Failed to send password reset link. Please try again.",
       });
     }
   };

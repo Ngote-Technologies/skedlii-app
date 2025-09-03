@@ -74,17 +74,16 @@ export default function UserSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/auth/me"] });
-      toast({
-        title: "Account deleted",
-        description: "Your account has been deleted successfully",
+      toast.success({
+        title: "Account Deleted",
+        description: "Your account has been deleted successfully.",
       });
       logout();
     },
     onError: () => {
-      toast({
-        title: "Deletion failed",
+      toast.error({
+        title: "Account Deletion Failed",
         description: "Failed to delete your account. Please try again.",
-        variant: "destructive",
       });
     },
   });
@@ -95,17 +94,16 @@ export default function UserSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/users/me"] });
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully",
+      toast.success({
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully.",
       });
       fetchUserData();
     },
     onError: () => {
-      toast({
-        title: "Update failed",
+      toast.error({
+        title: "Profile Update Failed",
         description: "Failed to update your profile. Please try again.",
-        variant: "destructive",
       });
     },
   });
@@ -118,18 +116,16 @@ export default function UserSettings() {
         return await apiRequest("POST", "/users/change-password", passwordData);
       },
       onSuccess: () => {
-        toast({
-          title: "Password changed",
-          description: "Your password has been changed successfully",
+        toast.success({
+          title: "Password Changed",
+          description: "Your password has been changed successfully.",
         });
         passwordForm.reset();
       },
       onError: () => {
-        toast({
-          title: "Password change failed",
-          description:
-            "Failed to change your password. Current password may be incorrect.",
-          variant: "destructive",
+        toast.error({
+          title: "Password Change Failed",
+          description: "Failed to change your password. Current password may be incorrect.",
         });
       },
     }

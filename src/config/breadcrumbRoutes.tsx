@@ -10,6 +10,7 @@ import {
   BarChart3,
   CreditCard,
   FileText,
+  Building,
 } from "lucide-react";
 
 export interface BreadcrumbSegment {
@@ -28,6 +29,48 @@ export interface BreadcrumbRoute {
 }
 
 export const breadcrumbRoutes: BreadcrumbRoute[] = [
+  // Organization Settings route: /dashboard/organizations/settings
+  {
+    pattern: /^\/dashboard\/organizations\/settings$/,
+    segments: [
+      {
+        label: "Dashboard",
+        href: "/dashboard",
+        icon: <Home className="w-4 h-4" />,
+      },
+      {
+        label: "Organization",
+        href: "/dashboard/organizations",
+        icon: <Building className="w-4 h-4" />,
+      },
+      {
+        label: "Settings",
+        icon: <Settings className="w-4 h-4" />,
+      },
+    ],
+  },
+
+  // Organization Members route: /dashboard/organizations/members
+  {
+    pattern: /^\/dashboard\/organizations\/members$/,
+    segments: [
+      {
+        label: "Dashboard",
+        href: "/dashboard",
+        icon: <Home className="w-4 h-4" />,
+      },
+      {
+        label: "Organization",
+        href: "/dashboard/organizations",
+        icon: <Building className="w-4 h-4" />,
+      },
+      {
+        label: "Members",
+        icon: <Users className="w-4 h-4" />,
+      },
+    ],
+  },
+
   // Collections detail route: /dashboard/collections/:collectionId
   {
     pattern: /^\/dashboard\/collections\/([^\/]+)$/,
@@ -103,9 +146,30 @@ export const breadcrumbRoutes: BreadcrumbRoute[] = [
 
   // Future route examples (commented for now, easy to enable later):
 
-  // Teams detail route: /dashboard/teams/:teamId
+  // Teams route: /dashboard/organizations/teams
+  {
+    pattern: /^\/dashboard\/organizations\/teams$/,
+    segments: [
+      {
+        label: "Dashboard",
+        href: "/dashboard",
+        icon: <Home className="w-4 h-4" />,
+      },
+      {
+        label: "Organization",
+        href: "/dashboard/organizations",
+        icon: <Building className="w-4 h-4" />,
+      },
+      {
+        label: "Teams",
+        icon: <Users className="w-4 h-4" />,
+      },
+    ],
+  },
+
+  // Teams detail route: /dashboard/organizations/teams/:teamId (future)
   // {
-  //   pattern: /^\/dashboard\/teams\/([^\/]+)$/,
+  //   pattern: /^\/dashboard\/organizations\/teams\/([^\/]+)$/,
   //   segments: [
   //     {
   //       label: 'Dashboard',
@@ -113,8 +177,13 @@ export const breadcrumbRoutes: BreadcrumbRoute[] = [
   //       icon: <Home className="w-4 h-4" />,
   //     },
   //     {
+  //       label: 'Organization',
+  //       href: '/dashboard/organizations',
+  //       icon: <Building className="w-4 h-4" />,
+  //     },
+  //     {
   //       label: 'Teams',
-  //       href: '/dashboard/teams',
+  //       href: '/dashboard/organizations/teams',
   //       icon: <Users className="w-4 h-4" />,
   //     },
   //     {
@@ -157,10 +226,10 @@ export const staticBreadcrumbMap: Record<
     label: "Collections",
     icon: <FolderOpen className="w-4 h-4" />,
   },
-  teams: {
-    label: "Team Management",
-    icon: <Users className="w-4 h-4" />,
-  },
+  // teams: {
+  //   label: "Team Management", 
+  //   icon: <Users className="w-4 h-4" />,
+  // }, // Moved to organizations/teams
   analytics: {
     label: "Analytics",
     icon: <BarChart3 className="w-4 h-4" />,
@@ -178,7 +247,19 @@ export const staticBreadcrumbMap: Record<
     icon: <HelpCircle className="w-4 h-4" />,
   },
   organizations: {
-    label: "Organizations",
+    label: "Organization",
+    icon: <Building className="w-4 h-4" />,
+  },
+  "organizations/settings": {
+    label: "Organization Settings", 
+    icon: <Settings className="w-4 h-4" />,
+  },
+  "organizations/members": {
+    label: "Organization Members",
+    icon: <Users className="w-4 h-4" />,
+  },
+  "organizations/teams": {
+    label: "Organization Teams",
     icon: <Users className="w-4 h-4" />,
   },
 };

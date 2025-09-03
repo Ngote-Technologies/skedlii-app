@@ -43,4 +43,32 @@ export const teamsApi = {
   removeTeamMember: async (teamId: string, userId: string): Promise<void> => {
     await axiosInstance.delete(`/teams/${teamId}/members/${userId}`);
   },
+
+  // Social Account Assignment Methods
+  getTeamSocialAccounts: async (organizationId: string, teamId: string): Promise<any[]> => {
+    const response = await axiosInstance.get(
+      `/teams/organization/${organizationId}/${teamId}/social-accounts`
+    );
+    return response.data;
+  },
+
+  assignSocialAccountToTeam: async (
+    organizationId: string,
+    teamId: string,
+    accountId: string
+  ): Promise<void> => {
+    await axiosInstance.post(
+      `/teams/organization/${organizationId}/${teamId}/social-accounts/${accountId}`
+    );
+  },
+
+  removeSocialAccountFromTeam: async (
+    organizationId: string,
+    teamId: string,
+    accountId: string
+  ): Promise<void> => {
+    await axiosInstance.delete(
+      `/teams/organization/${organizationId}/${teamId}/social-accounts/${accountId}`
+    );
+  },
 };

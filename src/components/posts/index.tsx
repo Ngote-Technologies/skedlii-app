@@ -56,7 +56,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { hasValidSubscription } from "../../lib/access";
+import { useAccessControl } from "../../hooks/useAccessControl";
 
 // Media Carousel Component
 const MediaCarousel = ({ mediaUrls, mediaType }: { mediaUrls: string[]; mediaType: string }) => {
@@ -156,8 +156,8 @@ const Posts = () => {
   });
 
   const { user, isAuthenticated } = useAuth();
-  const { billing } = user;
   const navigate = useNavigate();
+  const { hasValidSubscription } = useAccessControl();
 
   const {
     data: collections = [],
@@ -198,18 +198,17 @@ const Posts = () => {
       },
       onSuccess: () => {
         setDeleteConfig({ id: "", isOpen: false, postAccountId: "" });
-        toast({
-          title: "Post deleted",
+        toast.success({
+          title: "Post Deleted",
           description: "The post has been removed successfully.",
         });
         refetchPosts();
       },
       onError: () => {
         setDeleteConfig({ id: "", isOpen: false, postAccountId: "" });
-        toast({
-          title: "Something went wrong",
-          description: "Please try again!",
-          variant: "destructive",
+        toast.error({
+          title: "Post Deletion Failed",
+          description: "Failed to delete post. Please try again.",
         });
       },
     });
@@ -237,19 +236,17 @@ const Posts = () => {
       },
       onSuccess: () => {
         setCollectionConfig({ collectionId: "", postId: "", isOpen: false });
-        toast({
-          title: "Post added to collection",
-          description: "The post has been added to the collection",
+        toast.success({
+          title: "Post Added to Collection",
+          description: "The post has been added to the collection.",
         });
         refetchCollections();
         refetchPosts();
       },
       onError: () => {
-        toast({
-          title: "Addition failed",
-          description:
-            "Failed to add the post to the collection. Please try again.",
-          variant: "destructive",
+        toast.error({
+          title: "Collection Addition Failed",
+          description: "Failed to add the post to the collection. Please try again.",
         });
       },
     });
@@ -347,27 +344,20 @@ const Posts = () => {
             You haven't created any posts yet. Create your first post to get started with your social media journey.
           </p>
         </div>
-        <Button
-          onClick={() => {
-            if (!hasValidSubscription(billing?.paymentStatus)) {
-              toast({
-                variant: "destructive",
-                title: "Upgrade your plan to manage collections.",
-              });
-            } else {
-              navigate("/dashboard/post-flow");
-            }
-          }}
-        >
-          <Plus size={16} className="mr-2" />
-          Create Post
-        </Button>
+        {hasValidSubscription && (
+          <Button
+            onClick={() => navigate("/dashboard/post-flow")}
+          >
+            <Plus size={16} className="mr-2" />
+            Create Post
+          </Button>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+      <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Posts</h2>
@@ -387,22 +377,15 @@ const Posts = () => {
             />
             Refresh
           </Button>
-          <Button
-            onClick={() => {
-              if (!hasValidSubscription(billing?.paymentStatus)) {
-                toast({
-                  variant: "destructive",
-                  title: "Upgrade your plan to manage collections.",
-                });
-              } else {
-                navigate("/dashboard/post-flow");
-              }
-            }}
-            className="gap-2"
-          >
-            <Plus size={16} />
-            New Post
-          </Button>
+          {hasValidSubscription && (
+            <Button
+              onClick={() => navigate("/dashboard/post-flow")}
+              className="gap-2"
+            >
+              <Plus size={16} />
+              New Post
+            </Button>
+          )}
         </div>
       </div>
 
@@ -497,55 +480,63 @@ const Posts = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem
-                            onClick={() => handleEditPost(post._id)}
-                            disabled={["published", "posted"].includes(
-                              post.status
-                            )}
-                            className="text-xs"
-                          >
-                            <Edit2 className="mr-2 h-3.5 w-3.5" />
-                            <span>Edit</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              setCollectionConfig({
-                                ...collectionConfig,
-                                postId: post._id,
-                                isOpen: true,
-                              })
-                            }
-                            disabled={
-                              !["posted", "published"].includes(post.status)
-                            }
-                            className="text-xs"
-                          >
-                            <Folder className="mr-2 h-3.5 w-3.5" />
-                            <span>Add to Collection</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleViewAnalytics(post._id)}
-                            disabled={
-                              !["posted", "published"].includes(post.status)
-                            }
-                            className="text-xs"
-                          >
-                            <BarChart2 className="mr-2 h-3.5 w-3.5" />
-                            <span>View Analytics</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-xs text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-                            onClick={() =>
-                              setDeleteConfig({
-                                id: post._id,
-                                isOpen: true,
-                                postAccountId: post.socialAccountId,
-                              })
-                            }
-                          >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" />
-                            <span>Delete</span>
-                          </DropdownMenuItem>
+                          {hasValidSubscription && (
+                            <DropdownMenuItem
+                              onClick={() => handleEditPost(post._id)}
+                              disabled={["published", "posted"].includes(
+                                post.status
+                              )}
+                              className="text-xs"
+                            >
+                              <Edit2 className="mr-2 h-3.5 w-3.5" />
+                              <span>Edit</span>
+                            </DropdownMenuItem>
+                          )}
+                          {hasValidSubscription && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                setCollectionConfig({
+                                  ...collectionConfig,
+                                  postId: post._id,
+                                  isOpen: true,
+                                })
+                              }
+                              disabled={
+                                !["posted", "published"].includes(post.status)
+                              }
+                              className="text-xs"
+                            >
+                              <Folder className="mr-2 h-3.5 w-3.5" />
+                              <span>Add to Collection</span>
+                            </DropdownMenuItem>
+                          )}
+                          {hasValidSubscription && (
+                            <DropdownMenuItem
+                              onClick={() => handleViewAnalytics(post._id)}
+                              disabled={
+                                !["posted", "published"].includes(post.status)
+                              }
+                              className="text-xs"
+                            >
+                              <BarChart2 className="mr-2 h-3.5 w-3.5" />
+                              <span>View Analytics</span>
+                            </DropdownMenuItem>
+                          )}
+                          {hasValidSubscription && (
+                            <DropdownMenuItem
+                              className="text-xs text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                              onClick={() =>
+                                setDeleteConfig({
+                                  id: post._id,
+                                  isOpen: true,
+                                  postAccountId: post.socialAccountId,
+                                })
+                              }
+                            >
+                              <Trash2 className="mr-2 h-3.5 w-3.5" />
+                              <span>Delete</span>
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -592,26 +583,30 @@ const Posts = () => {
                       )}
                     </div>
                     <div className="flex space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-green-50 dark:hover:bg-green-900/20"
-                        onClick={() => handleViewAnalytics(post._id)}
-                        disabled={!["posted", "published"].includes(post.status)}
-                        title="View Analytics"
-                      >
-                        <BarChart2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                        onClick={() => handleEditPost(post._id)}
-                        disabled={["published", "posted"].includes(post.status)}
-                        title="Edit Post"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
+                      {hasValidSubscription && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-green-50 dark:hover:bg-green-900/20"
+                          onClick={() => handleViewAnalytics(post._id)}
+                          disabled={!["posted", "published"].includes(post.status)}
+                          title="View Analytics"
+                        >
+                          <BarChart2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {hasValidSubscription && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                          onClick={() => handleEditPost(post._id)}
+                          disabled={["published", "posted"].includes(post.status)}
+                          title="Edit Post"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                   {/* {post.mediaUrls?.length > 1 && (

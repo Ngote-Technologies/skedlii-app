@@ -70,7 +70,6 @@ import {
   MoreHorizontal,
   Mail,
   Shield,
-  AlertTriangle,
   Loader2,
 } from "lucide-react";
 import {
@@ -82,6 +81,7 @@ import { organizationsApi, OrganizationMember } from "../../api/organizations";
 import { useToast } from "../../hooks/use-toast";
 import { getInitials } from "../../lib/utils";
 import { invitationsApi } from "../../api/invitations";
+import { useAccessControl } from "../../hooks/useAccessControl";
 
 const inviteMemberSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -100,6 +100,28 @@ export default function OrganizationMembers() {
   const activeOrganization = useActiveOrganization();
   const permissions = useOrganizationPermissions();
   const { removeMember } = useOrganizationStore();
+  const { userContext } = useAccessControl();
+
+  // Function to check if current user can manage a specific role
+  const canManageRole = (targetRole: string) => {
+    const currentRole = userContext.userRole;
+
+    // Role hierarchy levels
+    const roleHierarchy = {
+      owner: 5,
+      org_owner: 5, // Same as owner
+      admin: 4,
+      member: 3,
+      viewer: 2,
+    };
+
+    const currentLevel =
+      roleHierarchy[currentRole as keyof typeof roleHierarchy] || 0;
+    const targetLevel =
+      roleHierarchy[targetRole as keyof typeof roleHierarchy] || 0;
+
+    return currentLevel > targetLevel;
+  };
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -126,7 +148,7 @@ export default function OrganizationMembers() {
   const inviteMutation = useMutation({
     mutationFn: async (data: InviteMemberFormData) => {
       if (!activeOrganization) throw new Error("No active organization");
-      
+
       // Use the real invitation API
       return await invitationsApi.sendInvitation({
         email: data.email,
@@ -138,9 +160,9 @@ export default function OrganizationMembers() {
     },
     onSuccess: (result) => {
       const userExists = result.userExists;
-      toast({
-        title: "Invitation sent",
-        description: userExists 
+      toast.success({
+        title: "Invitation Sent",
+        description: userExists
           ? "Invitation sent to existing user. They can join this organization through their email."
           : "Invitation sent to new user. They will receive an email to create their account and join the organization.",
       });
@@ -151,10 +173,12 @@ export default function OrganizationMembers() {
       });
     },
     onError: (error: any) => {
-      toast({
-        title: "Invitation failed",
-        description: error.response?.data?.error || error.message || "Failed to send invitation.",
-        variant: "destructive",
+      toast.error({
+        title: "Invitation Failed",
+        description:
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to send invitation.",
       });
     },
   });
@@ -165,8 +189,8 @@ export default function OrganizationMembers() {
       await removeMember(activeOrganization._id, memberId);
     },
     onSuccess: () => {
-      toast({
-        title: "Member removed",
+      toast.success({
+        title: "Member Removed",
         description: "Member has been removed from the organization.",
       });
       setMemberToRemove(null);
@@ -175,10 +199,9 @@ export default function OrganizationMembers() {
       });
     },
     onError: (error: any) => {
-      toast({
-        title: "Removal failed",
+      toast.error({
+        title: "Member Removal Failed",
         description: error.message || "Failed to remove member.",
-        variant: "destructive",
       });
     },
   });
@@ -197,13 +220,13 @@ export default function OrganizationMembers() {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case "owner":
-        return "default";
+        return "default"; // Blue badge - highest authority
       case "admin":
-        return "secondary";
+        return "success"; // Green badge - management role
       case "member":
-        return "outline";
+        return "warning"; // Yellow badge - active contributor
       case "viewer":
-        return "outline";
+        return "outline"; // Subtle badge - read-only access
       default:
         return "outline";
     }
@@ -211,6 +234,26 @@ export default function OrganizationMembers() {
 
   const getRoleDisplayName = (role: string) => {
     return role.charAt(0).toUpperCase() + role.slice(1);
+  };
+
+  // Determine which roles the current user can assign
+  const getAssignableRoles = () => {
+    const allRoles = [
+      { value: "viewer", label: "Viewer - Can view content", level: 1 },
+      {
+        value: "member",
+        label: "Member - Can create and manage content",
+        level: 2,
+      },
+      {
+        value: "admin",
+        label: "Admin - Can manage teams and members",
+        level: 3,
+      },
+    ];
+
+    // Only show roles that are lower in hierarchy than current user
+    return allRoles.filter((role) => canManageRole(role.value as any));
   };
 
   if (!activeOrganization) {
@@ -229,23 +272,12 @@ export default function OrganizationMembers() {
     );
   }
 
-  if (!permissions.canManageMembers) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <AlertTriangle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-            Access Restricted
-          </h3>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
-            You don't have permission to manage organization members
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Note: All organization members can now view the member list
+  // Management actions (invite, remove, edit roles) are still restricted by canManageMembers
 
   const members = organizationDetails?.members || [];
+
+  console.log({ organizationDetails });
 
   return (
     <div className="space-y-6">
@@ -255,122 +287,128 @@ export default function OrganizationMembers() {
             Organization Members
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Manage members and their roles in {activeOrganization.name}
+            {permissions.canManageMembers
+              ? `Manage members and their roles in ${activeOrganization.name}`
+              : `Members of ${activeOrganization.name}`}
           </p>
         </div>
-        <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Invite Member
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Invite Team Member</DialogTitle>
-              <DialogDescription>
-                Send an invitation to join {activeOrganization.name}
-              </DialogDescription>
-            </DialogHeader>
+        {permissions.canManageMembers && (
+          <Dialog
+            open={isInviteDialogOpen}
+            onOpenChange={setIsInviteDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Invite Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Invite Team Member</DialogTitle>
+                <DialogDescription>
+                  Send an invitation to join {activeOrganization.name}
+                </DialogDescription>
+              </DialogHeader>
 
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onInviteSubmit)}
-                className="space-y-4"
-              >
-                <div className="grid grid-cols-2 gap-4">
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onInviteSubmit)}
+                  className="space-y-4"
+                >
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>First Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="John" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Last Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <FormField
                     control={form.control}
-                    name="firstName"
+                    name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>First Name</FormLabel>
+                        <FormLabel>Email Address</FormLabel>
                         <FormControl>
-                          <Input placeholder="John" {...field} />
+                          <Input
+                            placeholder="colleague@example.com"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
-                    name="lastName"
+                    name="role"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Last Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Doe" {...field} />
-                        </FormControl>
+                        <FormLabel>Role</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a role" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {getAssignableRoles().map((role) => (
+                              <SelectItem key={role.value} value={role.value}>
+                                {role.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <Input placeholder="colleague@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Role</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a role" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="viewer">
-                            Viewer - Can view content
-                          </SelectItem>
-                          <SelectItem value="member">
-                            Member - Can create and manage content
-                          </SelectItem>
-                          <SelectItem value="admin">
-                            Admin - Can manage teams and members
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsInviteDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={inviteMutation.isPending}>
-                    {inviteMutation.isPending && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    Send Invitation
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsInviteDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={inviteMutation.isPending}>
+                      {inviteMutation.isPending && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Send Invitation
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <Card>
@@ -442,15 +480,20 @@ export default function OrganizationMembers() {
                             <Mail className="h-4 w-4 mr-2" />
                             Send Message
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Shield className="h-4 w-4 mr-2" />
-                            Change Role
-                          </DropdownMenuItem>
+                          {canManageRole(member.role as any) && (
+                            <DropdownMenuItem>
+                              <Shield className="h-4 w-4 mr-2" />
+                              Change Role
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-600 dark:text-red-400"
                             onClick={() => setMemberToRemove(member)}
-                            disabled={member.role === "owner"}
+                            disabled={
+                              member.role === "owner" ||
+                              !canManageRole(member.role as any)
+                            }
                           >
                             Remove Member
                           </DropdownMenuItem>
