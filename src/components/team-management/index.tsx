@@ -87,7 +87,7 @@ export default function TeamManagement() {
   const { fetchUserData } = useAuth();
 
   // Get teams for active organization
-  const { data: teams = [], isLoading: isLoadingTeams } = useQuery({
+  const { data: teams = [] } = useQuery({
     queryKey: ["/teams", "organization", activeOrganization?._id],
     queryFn: () =>
       activeOrganization
