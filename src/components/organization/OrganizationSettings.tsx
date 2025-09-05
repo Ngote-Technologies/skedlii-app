@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+// import { useState } from "react";
+// import { useForm } from "react-hook-form";
+// import { zodResolver } from "@hookform/resolvers/zod";
+// import { z } from "zod";
+// import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -11,28 +11,28 @@ import {
   CardTitle,
 } from "../ui/card";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
-import { Label } from "../ui/label";
-import { Switch } from "../ui/switch";
+// import { Input } from "../ui/input";
+// import { Textarea } from "../ui/textarea";
+// import { Label } from "../ui/label";
+// import { Switch } from "../ui/switch";
 import { Badge } from "../ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+// import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+// import {
+//   Form,
+//   FormControl,
+//   FormDescription,
+//   FormField,
+//   FormItem,
+//   FormLabel,
+//   FormMessage,
+// } from "../ui/form";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "../ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,161 +44,164 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
-import { Building, Save, Trash2, Upload, AlertTriangle } from "lucide-react";
-import {
-  useActiveOrganization,
-  useOrganizationPermissions,
-  useOrganizationStore,
-} from "../../store/organizationStore";
-import { UpdateOrganizationData } from "../../api/organizations";
-import { useToast } from "../../hooks/use-toast";
-import { getInitials } from "../../lib/utils";
+import { Trash2 } from "lucide-react";
+// import { Building, Save, Trash2, Upload, AlertTriangle } from "lucide-react";
+// import {
+//   useActiveOrganization,
+//   useOrganizationPermissions,
+//   useOrganizationStore,
+// } from "../../store/organizationStore";
+// import { UpdateOrganizationData } from "../../api/organizations";
+// import { useToast } from "../../hooks/use-toast";
+// import { getInitials } from "../../lib/utils";
 import { useAccessControl } from "../../hooks/useAccessControl";
 
-const organizationSettingsSchema = z.object({
-  name: z.string().min(1, "Organization name is required"),
-  description: z.string().optional(),
-  website: z.string().url().optional().or(z.literal("")),
-  industry: z.string().optional(),
-  size: z.enum(["1-10", "11-50", "51-200", "201-500", "500+"]).optional(),
-  country: z.string().optional(),
-  timezone: z.string().optional(),
-  settings: z
-    .object({
-      allowMemberInvitations: z.boolean().optional(),
-      requireEmailVerification: z.boolean().optional(),
-      defaultUserRole: z.enum(["admin", "member", "viewer"]).optional(),
-      brandColors: z
-        .object({
-          primary: z.string().optional(),
-          secondary: z.string().optional(),
-        })
-        .optional(),
-    })
-    .optional(),
-});
+// const organizationSettingsSchema = z.object({
+//   name: z.string().min(1, "Organization name is required"),
+//   description: z.string().optional(),
+//   website: z.string().url().optional().or(z.literal("")),
+//   industry: z.string().optional(),
+//   size: z.enum(["1-10", "11-50", "51-200", "201-500", "500+"]).optional(),
+//   country: z.string().optional(),
+//   timezone: z.string().optional(),
+//   settings: z
+//     .object({
+//       allowMemberInvitations: z.boolean().optional(),
+//       requireEmailVerification: z.boolean().optional(),
+//       defaultUserRole: z.enum(["admin", "member", "viewer"]).optional(),
+//       brandColors: z
+//         .object({
+//           primary: z.string().optional(),
+//           secondary: z.string().optional(),
+//         })
+//         .optional(),
+//     })
+//     .optional(),
+// });
 
-type OrganizationSettingsFormData = z.infer<typeof organizationSettingsSchema>;
+// type OrganizationSettingsFormData = z.infer<typeof organizationSettingsSchema>;
 
 export default function OrganizationSettings() {
-  const [isLoading, setIsLoading] = useState(false);
-  const activeOrganization = useActiveOrganization();
-  const permissions = useOrganizationPermissions();
-  const { updateOrganization, deleteOrganization } = useOrganizationStore();
+  // const [isLoading, setIsLoading] = useState(false);
+  // const activeOrganization = useActiveOrganization();
+  // const permissions = useOrganizationPermissions();
+  // const { updateOrganization, deleteOrganization } = useOrganizationStore();
   const { userContext } = useAccessControl();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  // const { toast } = useToast();
+  // const queryClient = useQueryClient();
 
-  const form = useForm<OrganizationSettingsFormData>({
-    resolver: zodResolver(organizationSettingsSchema),
-    defaultValues: {
-      name: activeOrganization?.name || "",
-      description: activeOrganization?.description || "",
-      website: (activeOrganization as any)?.website || "",
-      industry: (activeOrganization as any)?.industry || "",
-      size: (activeOrganization as any)?.size || undefined,
-      country: (activeOrganization as any)?.country || "",
-      timezone: (activeOrganization as any)?.timezone || "",
-      settings: {
-        allowMemberInvitations:
-          activeOrganization?.settings?.allowMemberInvitations ?? true,
-        requireEmailVerification:
-          activeOrganization?.settings?.requireEmailVerification ?? false,
-        defaultUserRole:
-          (activeOrganization?.settings?.defaultUserRole as any) || "member",
-        brandColors: {
-          primary: activeOrganization?.settings?.brandColors?.primary || "",
-          secondary: activeOrganization?.settings?.brandColors?.secondary || "",
-        },
-      },
-    },
-  });
+  // const form = useForm<OrganizationSettingsFormData>({
+  //   resolver: zodResolver(organizationSettingsSchema),
+  //   defaultValues: {
+  //     name: activeOrganization?.name || "",
+  //     description: activeOrganization?.description || "",
+  //     website: (activeOrganization as any)?.website || "",
+  //     industry: (activeOrganization as any)?.industry || "",
+  //     size: (activeOrganization as any)?.size || undefined,
+  //     country: (activeOrganization as any)?.country || "",
+  //     timezone: (activeOrganization as any)?.timezone || "",
+  //     settings: {
+  //       allowMemberInvitations:
+  //         activeOrganization?.settings?.allowMemberInvitations ?? true,
+  //       requireEmailVerification:
+  //         activeOrganization?.settings?.requireEmailVerification ?? false,
+  //       defaultUserRole:
+  //         (activeOrganization?.settings?.defaultUserRole as any) || "member",
+  //       brandColors: {
+  //         primary: activeOrganization?.settings?.brandColors?.primary || "",
+  //         secondary: activeOrganization?.settings?.brandColors?.secondary || "",
+  //       },
+  //     },
+  //   },
+  // });
 
-  const updateMutation = useMutation({
-    mutationFn: async (data: UpdateOrganizationData) => {
-      if (!activeOrganization) throw new Error("No active organization");
-      return await updateOrganization(activeOrganization._id, data);
-    },
-    onSuccess: () => {
-      toast.success({
-        title: "Settings Updated",
-        description: "Organization settings have been saved successfully.",
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["organization", activeOrganization?._id],
-      });
-    },
-    onError: (error: any) => {
-      toast.error({
-        title: "Settings Update Failed",
-        description: error.message || "Failed to update organization settings.",
-      });
-    },
-  });
+  // const updateMutation = useMutation({
+  //   mutationFn: async (data: UpdateOrganizationData) => {
+  //     if (!activeOrganization) throw new Error("No active organization");
+  //     return await updateOrganization(activeOrganization._id, data);
+  //   },
+  //   onSuccess: () => {
+  //     toast.success({
+  //       title: "Settings Updated",
+  //       description: "Organization settings have been saved successfully.",
+  //     });
+  //     queryClient.invalidateQueries({
+  //       queryKey: ["organization", activeOrganization?._id],
+  //     });
+  //   },
+  //   onError: (error: any) => {
+  //     toast.error({
+  //       title: "Settings Update Failed",
+  //       description: error.message || "Failed to update organization settings.",
+  //     });
+  //   },
+  // });
 
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      if (!activeOrganization) throw new Error("No active organization");
-      return await deleteOrganization(activeOrganization._id);
-    },
-    onSuccess: () => {
-      toast.success({
-        title: "Organization Deleted",
-        description: "Organization has been permanently deleted.",
-      });
-    },
-    onError: (error: any) => {
-      toast.error({
-        title: "Organization Deletion Failed",
-        description: error.message || "Failed to delete organization.",
-      });
-    },
-  });
+  // const deleteMutation = useMutation({
+  //   mutationFn: async () => {
+  //     if (!activeOrganization) throw new Error("No active organization");
+  //     return await deleteOrganization(activeOrganization._id);
+  //   },
+  //   onSuccess: () => {
+  //     toast.success({
+  //       title: "Organization Deleted",
+  //       description: "Organization has been permanently deleted.",
+  //     });
+  //   },
+  //   onError: (error: any) => {
+  //     toast.error({
+  //       title: "Organization Deletion Failed",
+  //       description: error.message || "Failed to delete organization.",
+  //     });
+  //   },
+  // });
 
-  const onSubmit = async (data: OrganizationSettingsFormData) => {
-    setIsLoading(true);
-    try {
-      await updateMutation.mutateAsync(data);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const onSubmit = async (data: OrganizationSettingsFormData) => {
+  //   setIsLoading(true);
+  //   try {
+  //     // await updateMutation.mutateAsync(data);
+  //     console.log(data);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const handleDeleteOrganization = async () => {
-    await deleteMutation.mutateAsync();
+    // await deleteMutation.mutateAsync();
+    console.log("Delete organization");
   };
 
-  if (!activeOrganization) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <Building className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-            No Organization Selected
-          </h3>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
-            Please select an organization to manage settings
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // if (!activeOrganization) {
+  //   return (
+  //     <div className="flex items-center justify-center h-64">
+  //       <div className="text-center">
+  //         <Building className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+  //         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+  //           No Organization Selected
+  //         </h3>
+  //         <p className="text-gray-500 dark:text-gray-400 mt-2">
+  //           Please select an organization to manage settings
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
-  if (!permissions.canManageOrganization) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <AlertTriangle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-            Access Restricted
-          </h3>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
-            You don't have permission to manage organization settings
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // if (!permissions.canManageOrganization) {
+  //   return (
+  //     <div className="flex items-center justify-center h-64">
+  //       <div className="text-center">
+  //         <AlertTriangle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+  //         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+  //           Access Restricted
+  //         </h3>
+  //         <p className="text-gray-500 dark:text-gray-400 mt-2">
+  //           You don't have permission to manage organization settings
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="space-y-6">
@@ -212,14 +215,14 @@ export default function OrganizationSettings() {
           </p>
         </div>
         <Badge variant="outline">
-          {activeOrganization.userRole.charAt(0).toUpperCase() +
-            activeOrganization.userRole.slice(1)}
+          {/* {activeOrganization.userRole.charAt(0).toUpperCase() +
+            activeOrganization.userRole.slice(1)} */}
         </Badge>
       </div>
 
-      <Form {...form}>
+      {/* <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Information */}
+          Basic Information
           <Card>
             <CardHeader>
               <CardTitle>Basic Information</CardTitle>
@@ -362,7 +365,7 @@ export default function OrganizationSettings() {
             </CardContent>
           </Card>
 
-          {/* Organization Preferences */}
+          Organization Preferences
           <Card>
             <CardHeader>
               <CardTitle>Organization Preferences</CardTitle>
@@ -448,7 +451,7 @@ export default function OrganizationSettings() {
             </CardContent>
           </Card>
 
-          {/* Brand Colors */}
+          Brand Colors
           <Card>
             <CardHeader>
               <CardTitle>Brand Colors</CardTitle>
@@ -505,7 +508,7 @@ export default function OrganizationSettings() {
             </CardContent>
           </Card>
 
-          {/* Actions */}
+          Actions
           <div className="flex items-center justify-between">
             <Button
               type="submit"
@@ -517,7 +520,7 @@ export default function OrganizationSettings() {
             </Button>
           </div>
         </form>
-      </Form>
+      </Form> */}
 
       {/* Danger Zone - Only for org owners */}
       {userContext.userRole === "org_owner" && (
@@ -542,8 +545,8 @@ export default function OrganizationSettings() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the
-                    organization "{activeOrganization.name}" and remove all
+                    This action cannot be undone. This will permanently delete
+                    the organization "Organization Name" and remove all
                     associated data including teams, members, and content.
                   </AlertDialogDescription>
                 </AlertDialogHeader>

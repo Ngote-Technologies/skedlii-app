@@ -127,11 +127,11 @@ export function UpgradeConfirmationDialog({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="max-w-2xl max-h-[80vh] border-border/50 bg-gradient-to-br from-background to-muted/20">
+      <AlertDialogContent className="max-w-2xl max-h-[85vh] border-border/50 bg-gradient-to-br from-background to-muted/20 flex flex-col">
         {/* Background gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-lg" />
 
-        <AlertDialogHeader className="relative">
+        <AlertDialogHeader className="relative flex-shrink-0">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10">
               <Crown className="h-5 w-5 text-primary" />
@@ -162,7 +162,7 @@ export function UpgradeConfirmationDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="relative space-y-4">
+        <div className="relative space-y-4 flex-1 overflow-y-auto pr-2 mr-2">
           {/* Plan Comparison */}
           {previewData.billingInfo && (
             <Card className="border-border/50 bg-gradient-to-br from-background to-muted/30">
@@ -361,7 +361,7 @@ export function UpgradeConfirmationDialog({
           </div>
         </div>
 
-        <AlertDialogFooter className="relative">
+        <AlertDialogFooter className="relative flex-shrink-0 border-t border-border/50 pt-4">
           <AlertDialogCancel
             onClick={onClose}
             className="border-border/50 hover:bg-muted/80"

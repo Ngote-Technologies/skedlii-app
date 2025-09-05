@@ -51,7 +51,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "../../store/hooks";
 import { useAccessControl } from "../../hooks/useAccessControl";
-import { useActiveOrganization } from "../organization";
+// Organization context now handled through useAuth hook
 import { teamsApi } from "../../api/teams";
 import { Team } from "../../types";
 import { Skeleton } from "../ui/skeleton";
@@ -169,10 +169,9 @@ function TeamAssignmentDropdown({
 }
 
 export default function SocialAccounts() {
-  const { user } = useAuth();
+  const { user, organization } = useAuth();
   const { canConnectSocialAccounts, hasValidSubscription, canCreateTeams } =
     useAccessControl();
-  const activeOrganization = useActiveOrganization();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isAddingAccount, setIsAddingAccount] = useState(false);
@@ -213,7 +212,7 @@ export default function SocialAccounts() {
   } = useRefreshTikTokAccessToken();
   // Determine whether to use individual or organization accounts
   const shouldUseOrganizationAccounts =
-    activeOrganization && user?.userType === "organization";
+    organization && user?.userType === "organization";
 
   // Individual user accounts (only when not using organization accounts)
   const {
@@ -228,7 +227,7 @@ export default function SocialAccounts() {
     isPending: isOrganizationAccountsLoading,
     refetch: refetchOrganizationAccounts,
   } = useGetOrganizationSocialAccounts(
-    shouldUseOrganizationAccounts ? activeOrganization?._id || "" : ""
+    shouldUseOrganizationAccounts ? organization?._id || "" : ""
   );
 
   // Use the appropriate accounts and loading state
@@ -244,12 +243,12 @@ export default function SocialAccounts() {
 
   // Fetch organization teams for assignment functionality
   const { data: organizationTeams = [] } = useQuery<Team[]>({
-    queryKey: ["/teams", activeOrganization?._id],
+    queryKey: ["/teams", organization?._id],
     queryFn: () => {
-      if (!activeOrganization) return Promise.resolve([]);
-      return teamsApi.getTeams(activeOrganization._id);
+      if (!organization) return Promise.resolve([]);
+      return teamsApi.getTeams(organization._id);
     },
-    enabled: Boolean(shouldUseOrganizationAccounts && activeOrganization),
+    enabled: Boolean(shouldUseOrganizationAccounts && organization),
   });
 
   // Team assignment mutations
@@ -261,9 +260,9 @@ export default function SocialAccounts() {
       teamId: string;
       accountId: string;
     }) => {
-      if (!activeOrganization) throw new Error("No active organization");
+      if (!organization) throw new Error("No active organization");
       return await teamsApi.assignSocialAccountToTeam(
-        activeOrganization._id,
+        organization._id,
         teamId,
         accountId
       );
@@ -271,7 +270,7 @@ export default function SocialAccounts() {
     onSuccess: () => {
       // Invalidate both social accounts and teams queries to refresh data
       if (shouldUseOrganizationAccounts) {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts/organization", activeOrganization?._id] });
+        queryClient.invalidateQueries({ queryKey: ["/social-accounts/organization", organization?._id] });
       } else {
         queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
       }
@@ -300,9 +299,9 @@ export default function SocialAccounts() {
       teamId: string;
       accountId: string;
     }) => {
-      if (!activeOrganization) throw new Error("No active organization");
+      if (!organization) throw new Error("No active organization");
       return await teamsApi.removeSocialAccountFromTeam(
-        activeOrganization._id,
+        organization._id,
         teamId,
         accountId
       );
@@ -310,7 +309,7 @@ export default function SocialAccounts() {
     onSuccess: () => {
       // Invalidate both social accounts and teams queries to refresh data
       if (shouldUseOrganizationAccounts) {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts/organization", activeOrganization?._id] });
+        queryClient.invalidateQueries({ queryKey: ["/social-accounts/organization", organization?._id] });
       } else {
         queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
       }

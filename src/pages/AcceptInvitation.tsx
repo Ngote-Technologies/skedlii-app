@@ -17,7 +17,6 @@ import { invitationsApi, VerifyInvitationResponse } from "../api/invitations";
 import { useToast } from "../hooks/use-toast";
 import { useAuth } from "../store/hooks";
 import { useQueryClient } from '@tanstack/react-query';
-import { useOrganizationStore } from '../store/organizationStore';
 
 const AcceptInvitation: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -25,7 +24,6 @@ const AcceptInvitation: React.FC = () => {
   const { toast } = useToast();
   const { user, authLoading, fetchUserData } = useAuth();
   const queryClient = useQueryClient();
-  const { fetchUserOrganizations } = useOrganizationStore();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
@@ -54,11 +52,8 @@ const AcceptInvitation: React.FC = () => {
       if (isLoggedIn) {
         // User is already logged in - they're joining a new organization
         try {
-          // Refresh user data and organizations to get updated lists
-          await Promise.all([
-            fetchUserData(),
-            fetchUserOrganizations()
-          ]);
+          // Refresh user data to get updated organization context
+          await fetchUserData();
           
           // Invalidate React Query caches that might depend on user organizations
           queryClient.invalidateQueries({ queryKey: ['organizations'] });
@@ -68,7 +63,7 @@ const AcceptInvitation: React.FC = () => {
           
           toast.success({
             title: "Successfully Joined Organization!",
-            description: `You've been added to ${invitation?.organizationName}. You can now switch to this organization from your dashboard.`,
+            description: `You've been added to ${invitation?.organizationName}. You can now access this organization from your dashboard.`,
           });
 
           // Redirect to dashboard with a short delay
