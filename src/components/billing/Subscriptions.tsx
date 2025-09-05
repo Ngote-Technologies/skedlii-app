@@ -45,30 +45,41 @@ const Subscriptions = ({
       case "active":
         return (
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Next billing date: {formatDate(billing?.renewalDate, "PPP pp")}
+            Next billing date:{" "}
+            {billing?.currentPeriodEnd
+              ? formatDate(billing.currentPeriodEnd, "PPP pp")
+              : "N/A"}
           </p>
         );
       case "trialing":
         return (
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Trial ends at: {formatDate(billing?.trialEndsAt, "PPP pp")}
+            Trial subscription -{" "}
+            {billing?.trialEnd
+              ? `ends ${formatDate(billing.trialEnd, "PPP pp")}`
+              : "no end date set"}
           </p>
         );
-      case "cancelled":
+      case "canceled":
         return (
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Cancelled at: {formatDate(billing?.cancelAt, "PPP pp")}
+            Subscription canceled -{" "}
+            {billing?.cancelAtPeriodEnd
+              ? "active until period end"
+              : "cancelled"}
           </p>
         );
       case "inactive":
       default:
         return (
-          <p className="text-sm text-gray-500 dark:text-gray-400">Inactive</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {billing?.hasValidSubscription ? "Active" : "Inactive"}
+          </p>
         );
     }
   };
 
-  if (!billing?.stripeCustomerId || !billing?.renewalDate) {
+  if (!billing?.hasValidSubscription || billing?.subscriptionTier === "free") {
     return (
       <div className="space-y-4">
         <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-background to-muted/30 border border-border/50 p-6">
@@ -80,29 +91,49 @@ const Subscriptions = ({
               <Users className="h-6 w-6 text-gray-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">Free Plan</h3>
+              <h3 className="text-lg font-semibold">
+                {billing?.subscriptionTier === "trial"
+                  ? "Trial Plan"
+                  : "Free Plan"}
+              </h3>
               <p className="text-sm text-muted-foreground">
-                Basic features included
+                {billing?.subscriptionTier === "trial"
+                  ? "Free trial - full features included"
+                  : "Basic features included"}
               </p>
             </div>
           </div>
 
-          {/* Free Plan Usage */}
+          {/* Usage Display */}
           <div className="relative space-y-4 mb-6">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Posts this month</span>
-                <span className="font-medium">5 / 10</span>
+                <span className="font-medium">
+                  0 / {billing?.planLimits?.maxPostsPerMonth || "50"}
+                </span>
               </div>
-              <Progress value={50} className="h-2" />
+              <Progress value={0} className="h-2" />
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Social accounts</span>
-                <span className="font-medium">2 / 3</span>
+                <span className="font-medium">
+                  0 / {billing?.planLimits?.maxSocialAccounts || "5"}
+                </span>
               </div>
-              <Progress value={66} className="h-2" />
+              <Progress value={0} className="h-2" />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Team members</span>
+                <span className="font-medium">
+                  1 / {billing?.planLimits?.maxTeamMembers || "3"}
+                </span>
+              </div>
+              <Progress value={33} className="h-2" />
             </div>
           </div>
 
@@ -142,10 +173,17 @@ const Subscriptions = ({
                 <Crown className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-                  {billing?.paymentDescription || "Premium Plan"}
+                <h3 className="text-xl font-bold bg-gradient-to-r capitalize from-primary to-purple-500 bg-clip-text text-transparent">
+                  {billing?.subscriptionTier} Plan
                 </h3>
-                <StatusBadge status={billing?.paymentStatus} size="sm" />
+                <StatusBadge
+                  status={
+                    billing?.subscriptionStatus === "trialing"
+                      ? "trialing"
+                      : billing?.subscriptionStatus
+                  }
+                  size="sm"
+                />
               </div>
             </div>
             <Badge
@@ -166,11 +204,27 @@ const Subscriptions = ({
               </div>
               {renderBillingStatus()}
 
-              <div className="flex items-center gap-2 text-sm">
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Payment Method:</span>
-                <span className="font-medium">•••• •••• •••• 4242</span>
-              </div>
+              {billing?.subscriptionId && (
+                <div className="flex items-center gap-2 text-sm">
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    Subscription ID:
+                  </span>
+                  <span className="font-medium font-mono text-xs">
+                    {billing.subscriptionId}
+                  </span>
+                </div>
+              )}
+
+              {billing?.customerId && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Customer ID:</span>
+                  <span className="font-medium font-mono text-xs">
+                    {billing.customerId}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -186,9 +240,11 @@ const Subscriptions = ({
                     <span className="text-muted-foreground">
                       Posts this month
                     </span>
-                    <span className="font-medium">156 / Unlimited</span>
+                    <span className="font-medium">
+                      0 / {billing?.planLimits?.maxPostsPerMonth || "Unlimited"}
+                    </span>
                   </div>
-                  <Progress value={100} className="h-2" />
+                  <Progress value={0} className="h-2" />
                 </div>
 
                 <div className="space-y-1">
@@ -196,17 +252,29 @@ const Subscriptions = ({
                     <span className="text-muted-foreground">
                       Social accounts
                     </span>
-                    <span className="font-medium">9 / Unlimited</span>
+                    <span className="font-medium">
+                      0 /{" "}
+                      {billing?.planLimits?.maxSocialAccounts || "Unlimited"}
+                    </span>
                   </div>
-                  <Progress value={100} className="h-2" />
+                  <Progress value={0} className="h-2" />
                 </div>
 
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Team members</span>
-                    <span className="font-medium">3 / 10</span>
+                    <span className="font-medium">
+                      1 / {billing?.planLimits?.maxTeamMembers || "Unlimited"}
+                    </span>
                   </div>
-                  <Progress value={30} className="h-2" />
+                  <Progress
+                    value={
+                      billing?.planLimits?.maxTeamMembers
+                        ? (1 / billing.planLimits.maxTeamMembers) * 100
+                        : 10
+                    }
+                    className="h-2"
+                  />
                 </div>
               </div>
             </div>

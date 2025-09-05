@@ -16,7 +16,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 // import { Badge } from "../ui/badge";
 import { Avatar } from "../ui/avatar";
 // import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-// import { useOrganizationStore } from '../../store/organizationStore';
 // import { getInitials } from "../../lib/utils";
 import { useAuth } from "../../store/hooks";
 

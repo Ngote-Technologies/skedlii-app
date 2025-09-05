@@ -1,5 +1,5 @@
 import { apiRequest } from "../lib/queryClient";
-import type { OrganizationRole } from "../store/organizationStore";
+export type OrganizationRole = "owner" | "admin" | "member" | "viewer";
 
 export interface Organization {
   _id: string;

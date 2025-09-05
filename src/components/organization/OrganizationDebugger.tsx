@@ -1,8 +1,7 @@
-import { useOrganizationStore } from "../../store/organizationStore";
+import { useAuth } from "../../store/hooks";
 
 export default function OrganizationDebugger() {
-  const { organizations, activeOrganization, isLoading, error } =
-    useOrganizationStore();
+  const { user, organization, authLoading: isLoading, authError: error } = useAuth();
 
   if (process.env.NODE_ENV !== "development") {
     return null;
@@ -22,20 +21,16 @@ export default function OrganizationDebugger() {
         </div>
 
         <div>
-          <strong>Organizations Count:</strong> {organizations.length}
-        </div>
-
-        <div>
-          <strong>Active Organization:</strong>
+          <strong>User:</strong>
           <pre className="mt-1 text-xs overflow-auto max-h-24">
-            {JSON.stringify(activeOrganization, null, 2)}
+            {JSON.stringify(user, null, 2)}
           </pre>
         </div>
 
         <div>
-          <strong>All Organizations:</strong>
-          <pre className="mt-1 text-xs overflow-auto max-h-32">
-            {JSON.stringify(organizations, null, 2)}
+          <strong>Organization Context:</strong>
+          <pre className="mt-1 text-xs overflow-auto max-h-24">
+            {JSON.stringify(organization, null, 2)}
           </pre>
         </div>
       </div>

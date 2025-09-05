@@ -32,8 +32,8 @@ const TAB_ITEMS = [
 type TabValue = "subscription" | "plans" | "invoices";
 
 const Billing = () => {
-  const { user, fetchUserData } = useAuth();
-  const { billing } = user;
+  const { user, fetchUserData, subscriptionInfo, updateSubscriptionInfo } =
+    useAuth();
   const { toast } = useToast();
   const { canManageBilling } = useAccessControl();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -57,7 +57,13 @@ const Billing = () => {
     cancelSubscription,
     previewSubscriptionChange,
     performUpgrade,
-  } = useBillingQueries(user, billing, billingInterval, fetchUserData, toast);
+  } = useBillingQueries(
+    user,
+    subscriptionInfo,
+    billingInterval,
+    fetchUserData,
+    toast
+  );
 
   useEffect(() => {
     const {
@@ -84,7 +90,10 @@ const Billing = () => {
         try {
           const activeOrgId = user?.defaultOrganizationId;
           const { authApi } = await import("../../api/auth");
-          await authApi.refreshPermissions(activeOrgId);
+          const { subscriptionInfo } = await authApi.refreshPermissions(
+            activeOrgId
+          );
+          updateSubscriptionInfo(subscriptionInfo);
         } catch (e) {
           /* ignore */
         }
@@ -132,11 +141,11 @@ const Billing = () => {
   }, [urlParams, fetchUserData, toast]);
 
   const determineSubscriptionAction = (
-    billing: any | undefined,
+    subscriptionInfo: any | undefined,
     currentPlanId: string | undefined,
     targetPlanId: string
   ): string => {
-    if (!billing || !billing.lastInvoiceStatus) {
+    if (!subscriptionInfo || !subscriptionInfo.hasValidSubscription) {
       return "new_subscription";
     }
 
@@ -178,19 +187,42 @@ const Billing = () => {
 
   const handlePreviewSuccess = useCallback(
     (data: any) => {
-      if (data.data?.error) {
+      // Handle direct error response
+      if (data?.error) {
         toast.error({
           title: "Preview Error",
-          description: data.data.error,
+          description: data.error,
         });
         return;
       }
 
-      if (data.success && data.data) {
-        setUpgradePreviewData(data.data);
+      // Check if this is preview data (has amountDue, billingInfo, etc.)
+      if (data && (data.amountDue !== undefined || data.billingInfo)) {
+        console.log("Setting preview data:", data);
+        setUpgradePreviewData(data);
         setShowUpgradeDialog(true);
       } else {
-        fetchUserData();
+        // This might be a direct subscription update response
+        console.log("Direct subscription update:", data);
+
+        // Refresh subscription data without full user fetch
+        const refreshData = async () => {
+          try {
+            const activeOrgId = user?.defaultOrganizationId;
+            const { authApi } = await import("../../api/auth");
+            const response = await authApi.refreshPermissions(activeOrgId);
+            if (response.subscriptionInfo) {
+              updateSubscriptionInfo(response.subscriptionInfo);
+            }
+          } catch (error) {
+            console.error("Failed to refresh subscription:", error);
+            // Fallback to full user fetch only if needed
+            await fetchUserData();
+          }
+        };
+
+        refreshData();
+
         toast.success({
           title: "Subscription Updated",
           description:
@@ -198,7 +230,7 @@ const Billing = () => {
         });
       }
     },
-    [fetchUserData, toast]
+    [user, updateSubscriptionInfo, fetchUserData, toast]
   );
 
   const handlePreviewError = useCallback(
@@ -216,10 +248,12 @@ const Billing = () => {
   const handleUpgradeDowngrade = useCallback(
     (plan: any, interval: PlanInterval) => {
       const action = determineSubscriptionAction(
-        billing,
-        billing?.planId,
+        subscriptionInfo,
+        subscriptionInfo?.subscriptionTier || undefined,
         plan.id
       );
+
+      console.log({ action });
 
       if (action === "upgrade") {
         setPendingUpgrade({
@@ -239,7 +273,7 @@ const Billing = () => {
       }
     },
     [
-      billing,
+      subscriptionInfo,
       billingInterval,
       createCheckoutSession,
       previewSubscriptionChange,
@@ -300,15 +334,13 @@ const Billing = () => {
           <div className="hidden md:flex items-center gap-4">
             <div className="text-center">
               <div className="text-sm font-bold text-foreground">
-                {billing?.paymentStatus === "active" ? "Active" : "Inactive"}
+                {subscriptionInfo?.hasValidSubscription ? "Active" : "Inactive"}
               </div>
               <div className="text-xs text-muted-foreground">Status</div>
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="text-center">
-              <div className="text-sm font-bold text-foreground">
-                ${billing?.amountPaid || "0"}
-              </div>
+              <div className="text-sm font-bold text-foreground">$0</div>
               <div className="text-xs text-muted-foreground">Last Payment</div>
             </div>
           </div>
@@ -357,7 +389,7 @@ const Billing = () => {
             </CardHeader>
             <CardContent>
               <Subscriptions
-                billing={billing || {}}
+                billing={subscriptionInfo || {}}
                 showCancelDialog={showCancelDialog}
                 setShowCancelDialog={setShowCancelDialog}
                 cancelSubscription={handleCancelSubscription}
@@ -424,7 +456,7 @@ const Billing = () => {
               <Plans
                 displayedPlans={plans}
                 isYearly={billingInterval === "yearly"}
-                billing={billing}
+                billing={subscriptionInfo}
                 handleUpgradeDowngrade={handleUpgradeDowngrade}
                 canManageBilling={canManageBilling}
               />

@@ -25,14 +25,14 @@ const Plans = ({
   canManageBilling?: boolean;
 }) => {
   const getPlanActionText = (planId: string) => {
-    if (!billing?.planId) {
+    if (!billing?.subscriptionTier) {
       return "Choose Plan";
     }
 
-    if (billing.planId === planId) return "Current Plan";
+    if (billing.subscriptionTier === planId) return "Current Plan";
 
     const tiers = ["test", "creator", "pro", "enterprise"];
-    const currentIndex = tiers.indexOf(billing.planId);
+    const currentIndex = tiers.indexOf(billing.subscriptionTier);
     const targetIndex = tiers.indexOf(planId);
 
     if (targetIndex > currentIndex) return "Upgrade";
@@ -127,7 +127,7 @@ const Plans = ({
         const formatted = currencyFormatter(interval?.amount, interval?.currency);
         const displayPrice = formatted ?? (isYearly ? plan.priceYearly : plan.priceMonthly) ?? '—';
         const displayPeriod = cycle;
-        const isCurrentPlan: boolean = (billing?.planId && billing.planId === plan.id) || false;
+        const isCurrentPlan: boolean = (billing?.subscriptionTier && billing.subscriptionTier === plan.id) || false;
         const PlanIcon = getPlanIcon(plan.id);
         const theme = getPlanTheme(plan.id, plan.isPopular);
 
