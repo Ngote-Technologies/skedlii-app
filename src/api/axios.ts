@@ -49,20 +49,23 @@ const createRequestInterceptor = (version: "v1" | "v2") => {
       method: config.method?.toUpperCase(),
       url: config.url,
       baseURL: config.baseURL,
-      fullURL: (config.baseURL || '') + (config.url || ''),
+      fullURL: (config.baseURL || "") + (config.url || ""),
     });
 
     // Get tokens from localStorage
     const accessToken = localStorage.getItem("auth_token");
     const refreshToken = localStorage.getItem("refresh_token");
 
-    // Don't add auth header for login/register endpoints (they don't require auth)
-    const isAuthEndpoint =
-      config.url?.includes("/auth/login") ||
-      config.url?.includes("/auth/register") ||
-      config.url?.includes("/auth/refresh") ||
-      config.url?.includes("/auth/forgot-password") ||
-      config.url?.includes("/auth/reset-password");
+    // Don't add auth header for specific auth endpoints (exact match, not substring)
+    const path = config.url || '';
+    const matches = (ep: string) => path === ep || path.endsWith(ep);
+    const isAuthEndpoint = [
+      '/auth/login',
+      '/auth/register',
+      '/auth/refresh',
+      '/auth/forgot-password',
+      '/auth/reset-password',
+    ].some(matches);
 
     if (accessToken && !isAuthEndpoint) {
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -81,12 +84,8 @@ const createRequestInterceptor = (version: "v1" | "v2") => {
     // Note: Removed X-API-Version header to avoid CORS preflight issues
     // Version information is implicit based on the baseURL being used
 
-    // V2 specific: Add refresh token for refresh endpoint
-    if (
-      version === "v2" &&
-      config.url?.includes("/auth/refresh") &&
-      refreshToken
-    ) {
+    // V2 specific: Add refresh token ONLY for the exact refresh endpoint
+    if (version === 'v2' && refreshToken && (matches('/auth/refresh'))) {
       config.data = { ...config.data, refreshToken };
     }
 
@@ -226,6 +225,27 @@ axiosV2Instance.interceptors.response.use(
   v2Interceptors.success,
   v2Interceptors.error
 );
+
+// Inject active organization context header for v2 requests
+axiosV2Instance.interceptors.request.use((config) => {
+  try {
+    // Lazy import to avoid circular deps
+    const store = require("../store/authStore");
+    const state =
+      store.useAuthStore?.getState?.() || store.default?.getState?.() || {};
+    const activeOrgId =
+      state.user?.defaultOrganizationId || state.organization?._id;
+    if (activeOrgId) {
+      config.headers = {
+        ...(config.headers || {}),
+        "x-organization-id": activeOrgId,
+      } as any;
+    }
+  } catch (_) {
+    /* ignore */
+  }
+  return config;
+});
 
 // Apply interceptors to default instance
 const defaultInterceptors = createResponseInterceptor(

@@ -10,18 +10,15 @@ export const useBillingQueries = (
   fetchUserData: () => void,
   toast: ReturnType<typeof useToast>["toast"]
 ) => {
+  type PlanInterval = 'monthly' | 'yearly';
+  type CreateSessionInput = { plan: string; interval: PlanInterval; action: string };
   const createCheckoutSession = useMutation({
-    mutationFn: async ({
-      priceId,
-      action,
-    }: {
-      priceId: string;
-      action: string;
-    }) => {
+    mutationFn: async ({ plan, interval, action }: CreateSessionInput) => {
       const billingData: any = {
         userId: user!._id,
         email: user!.email,
-        priceId,
+        plan,
+        interval,
         action,
         usedTrial:
           billing?.hasUsedTrial ||
@@ -72,15 +69,10 @@ export const useBillingQueries = (
   });
 
   const previewSubscriptionChange = useMutation({
-    mutationFn: async ({
-      priceId,
-      action,
-    }: {
-      priceId: string;
-      action: string;
-    }) => {
-      return await apiRequest("POST", "/subscriptions/preview", {
-        priceId,
+    mutationFn: async ({ plan, interval, action }: { plan: string; interval: PlanInterval; action: string }) => {
+      return await apiRequest("POST", "/checkout/preview", {
+        plan,
+        interval,
         action,
       });
     },
@@ -88,17 +80,12 @@ export const useBillingQueries = (
 
   // New implementation using hosted checkout
   const performUpgrade = useMutation({
-    mutationFn: async ({
-      priceId,
-      action,
-    }: {
-      priceId: string;
-      action: string;
-    }) => {
+    mutationFn: async ({ plan, interval, action }: { plan: string; interval: PlanInterval; action: string }) => {
       const billingData: any = {
         userId: user!._id,
         email: user!.email,
-        priceId,
+        plan,
+        interval,
         action,
         usedTrial:
           billing?.hasUsedTrial ||

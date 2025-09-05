@@ -158,8 +158,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="text-center sm:text-left">
                         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent leading-tight">
-                          Welcome back
-                          {user?.firstName ? `, ${user.firstName}` : ""}!
+                          Welcome Back {user?.name || ""}!
                         </h1>
                         <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg mt-1">
                           Ready to create amazing content today? ✨
@@ -194,7 +193,10 @@ export default function DashboardPage() {
           </div>
 
           {/* Enhanced Analytics Cards with Micro-interactions */}
-          {postsLoading || scheduledPostsLoading || socialAccountsLoading || collectionsLoading ? (
+          {postsLoading ||
+          scheduledPostsLoading ||
+          socialAccountsLoading ||
+          collectionsLoading ? (
             <DashboardStatsSkeleton />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -359,7 +361,8 @@ export default function DashboardPage() {
                         if (!hasValidSubscription) {
                           toast.warning({
                             title: "Upgrade Required",
-                            description: "Upgrade your plan to start creating and scheduling content.",
+                            description:
+                              "Upgrade your plan to start creating and scheduling content.",
                           });
                         } else {
                           navigate("/dashboard/post-flow");
