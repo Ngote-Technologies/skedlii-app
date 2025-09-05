@@ -8,7 +8,7 @@ export const useUrlParams = () => {
 
   return {
     subscribed: searchParams.get("subscribed") === "true",
-    canceled: searchParams.get("canceled") === "true",
+    canceled: searchParams.get("subscribed") === "false",
     error: searchParams.get("error"),
     message: searchParams.get("message"),
     // New parameters for hosted checkout redirects

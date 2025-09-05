@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
+} from "../ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,27 +17,27 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../ui/form';
+} from "../ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../ui/select';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { Loader2, Building } from 'lucide-react';
-import { useOrganizationStore } from '../../store/organizationStore';
-import { CreateOrganizationData } from '../../api/organizations';
-import { useToast } from '../../hooks/use-toast';
+} from "../ui/select";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { Loader2, Building } from "lucide-react";
+// import { useOrganizationStore } from '../../store/organizationStore';
+// import { CreateOrganizationData } from "../../api/organizations";
+import { useToast } from "../../hooks/use-toast";
 
 const createOrganizationSchema = z.object({
-  name: z.string().min(1, 'Organization name is required'),
+  name: z.string().min(1, "Organization name is required"),
   description: z.string().optional(),
   industry: z.string().optional(),
-  size: z.enum(['1-10', '11-50', '51-200', '201-500', '500+']).optional(),
+  size: z.enum(["1-10", "11-50", "51-200", "201-500", "500+"]).optional(),
   country: z.string().optional(),
 });
 
@@ -48,39 +48,40 @@ interface CreateOrganizationDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function CreateOrganizationDialog({ 
-  open, 
-  onOpenChange 
+export default function CreateOrganizationDialog({
+  open,
+  onOpenChange,
 }: CreateOrganizationDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const { createOrganization } = useOrganizationStore();
+  // const { createOrganization } = useOrganizationStore();
   const { toast } = useToast();
 
   const form = useForm<CreateOrganizationFormData>({
     resolver: zodResolver(createOrganizationSchema),
     defaultValues: {
-      name: '',
-      description: '',
-      industry: '',
+      name: "",
+      description: "",
+      industry: "",
       size: undefined,
-      country: '',
+      country: "",
     },
   });
 
   const onSubmit = async (data: CreateOrganizationFormData) => {
+    console.log(data);
     setIsLoading(true);
     try {
-      await createOrganization(data as CreateOrganizationData);
+      // await createOrganization(data as CreateOrganizationData);
       toast.success({
-        title: 'Organization Created',
-        description: 'Your organization has been created successfully.',
+        title: "Organization Created",
+        description: "Your organization has been created successfully.",
       });
       onOpenChange(false);
       form.reset();
     } catch (error: any) {
       toast.error({
-        title: 'Organization Creation Failed',
-        description: error.message || 'Failed to create organization.',
+        title: "Organization Creation Failed",
+        description: error.message || "Failed to create organization.",
       });
     } finally {
       setIsLoading(false);
@@ -96,7 +97,8 @@ export default function CreateOrganizationDialog({
             <span>Create Organization</span>
           </DialogTitle>
           <DialogDescription>
-            Set up a new organization to collaborate with your team on social media management.
+            Set up a new organization to collaborate with your team on social
+            media management.
           </DialogDescription>
         </DialogHeader>
 
@@ -123,7 +125,7 @@ export default function CreateOrganizationDialog({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Tell us about your organization"
                       className="resize-none"
                       rows={3}
@@ -156,7 +158,10 @@ export default function CreateOrganizationDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Company Size</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select size" />
@@ -166,7 +171,9 @@ export default function CreateOrganizationDialog({
                         <SelectItem value="1-10">1-10 employees</SelectItem>
                         <SelectItem value="11-50">11-50 employees</SelectItem>
                         <SelectItem value="51-200">51-200 employees</SelectItem>
-                        <SelectItem value="201-500">201-500 employees</SelectItem>
+                        <SelectItem value="201-500">
+                          201-500 employees
+                        </SelectItem>
                         <SelectItem value="500+">500+ employees</SelectItem>
                       </SelectContent>
                     </Select>

@@ -5,13 +5,13 @@ export { default as OrganizationMembers } from './OrganizationMembers';
 export { default as CreateOrganizationDialog } from './CreateOrganizationDialog';
 
 // Re-export organization-related types and hooks
-export {
-  useOrganizationStore,
-  useActiveOrganization,
-  useOrganizationRole,
-  useOrganizationPermissions,
-  type OrganizationRole
-} from '../../store/organizationStore';
+// export {
+//   useOrganizationStore,
+//   useActiveOrganization,
+//   useOrganizationRole,
+//   useOrganizationPermissions,
+//   type OrganizationRole
+// } from '../../store/organizationStore';
 
 export {
   organizationsApi,

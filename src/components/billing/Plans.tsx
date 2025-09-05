@@ -21,7 +21,7 @@ const Plans = ({
   displayedPlans: any[];
   isYearly: boolean;
   billing: any;
-  handleUpgradeDowngrade: (plan: any) => void;
+  handleUpgradeDowngrade: (plan: any, interval: 'monthly' | 'yearly') => void;
   canManageBilling?: boolean;
 }) => {
   const getPlanActionText = (planId: string) => {
@@ -106,12 +106,28 @@ const Plans = ({
     }
   };
 
+  const currencyFormatter = (amountCents?: number | null, currency?: string | null) => {
+    if (amountCents == null) return null;
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: (currency || 'USD').toUpperCase(),
+        maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2,
+      }).format(amountCents / 100);
+    } catch {
+      return `$${(amountCents / 100).toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
+    }
+  };
+
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {displayedPlans.map((plan) => {
-        const displayPrice = isYearly ? plan.priceYearly : plan.priceMonthly;
-        const displayPeriod = isYearly ? "yearly" : "monthly";
-        const isCurrentPlan: boolean = billing?.productId === plan.productId;
+        const cycle: 'monthly' | 'yearly' = isYearly ? 'yearly' : 'monthly';
+        const interval = (plan.intervals || []).find((i: any) => i.cycle === cycle);
+        const formatted = currencyFormatter(interval?.amount, interval?.currency);
+        const displayPrice = formatted ?? (isYearly ? plan.priceYearly : plan.priceMonthly) ?? '—';
+        const displayPeriod = cycle;
+        const isCurrentPlan: boolean = (billing?.planId && billing.planId === plan.id) || false;
         const PlanIcon = getPlanIcon(plan.id);
         const theme = getPlanTheme(plan.id, plan.isPopular);
 
@@ -179,7 +195,7 @@ const Plans = ({
                 <div className="text-center py-4">
                   <div className="flex items-baseline justify-center">
                     <span className="text-4xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-                      ${displayPrice}
+                      {typeof displayPrice === 'string' && displayPrice.startsWith('$') ? displayPrice : `$${displayPrice}`}
                     </span>
                     <span className="ml-2 text-sm text-muted-foreground font-medium">
                       /{displayPeriod}
@@ -232,7 +248,7 @@ const Plans = ({
                       ? "default"
                       : "outline"
                   }
-                  onClick={() => handleUpgradeDowngrade(plan)}
+                  onClick={() => handleUpgradeDowngrade(plan, cycle)}
                   disabled={isCurrentPlan || !canManageBilling}
                   title={
                     !canManageBilling

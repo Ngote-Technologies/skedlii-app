@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useAuth } from "../store/hooks";
-import { useOrganizationRole } from "../store/organizationStore";
+// import { useOrganizationRole } from "../store/organizationStore";
 import { UserRole, UserType } from "../store/authStore";
 
 /**
@@ -33,7 +33,7 @@ export function useAccessControl() {
     isAdmin,
   } = useAuth();
   
-  const organizationRole = useOrganizationRole();
+  // const organizationRole = useOrganizationRole();
 
   // Simple user context (no computation - just data)
   const userContext = useMemo(() => ({
@@ -41,8 +41,8 @@ export function useAccessControl() {
     userRole: userRole as UserRole | null,
     hasValidSubscription: subscriptionInfo.hasValidSubscription,
     subscriptionTier: subscriptionInfo.subscriptionTier,
-    organizationRole,
-  }), [userType, userRole, subscriptionInfo, organizationRole]);
+    // organizationRole,
+  }), [userType, userRole, subscriptionInfo]);
 
 
   return {

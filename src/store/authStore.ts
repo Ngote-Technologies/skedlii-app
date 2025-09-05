@@ -9,7 +9,7 @@ import {
 import { useV2Api } from "../api/axios";
 import { Organization, Team } from "../types";
 import { useTeamStore } from "./teamStore";
-import { useOrganizationStore } from "./organizationStore";
+// import { useOrganizationStore } from "./organizationStore";
 
 export type UserRole =
   | "owner" // Database stores this format
@@ -245,7 +245,7 @@ export const logoutUser = async () => {
     useTeamStore.getState().clearTeams();
 
     // Clear organization store explicitly
-    useOrganizationStore.getState().clearOrganizations();
+    // useOrganizationStore.getState().clearOrganizations();
 
     // Clear all app storage
     localStorage.removeItem("skedlii-storage");
