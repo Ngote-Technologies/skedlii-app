@@ -105,7 +105,7 @@ export function useSubscriptionGate(requiredTier?: string) {
     let hasAccess = hasValidSubscription;
     
     if (requiredTier && hasValidSubscription) {
-      const tierHierarchy = { free: 1, creator: 2, pro: 3, enterprise: 4 };
+      const tierHierarchy = { free: 1, creator: 2, team: 3, enterprise: 4 };
       const userTier = subscriptionTier?.toLowerCase() || "free";
       const requiredTierLevel = tierHierarchy[requiredTier.toLowerCase() as keyof typeof tierHierarchy] || 1;
       const userTierLevel = tierHierarchy[userTier as keyof typeof tierHierarchy] || 1;

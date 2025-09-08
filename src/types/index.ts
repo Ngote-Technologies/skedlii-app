@@ -52,7 +52,7 @@ export interface User {
   stripeCustomerId?: string;
   subscriptionId?: string;
   subscriptionStatus?: "paid" | "trialing" | "cancelled" | "inactive";
-  subscriptionTier?: "free" | "basic" | "pro" | "business";
+  subscriptionTier?: "free" | "creator" | "team" | "enterprise" | "trial" | "basic" | "business";
   subscriptionRenewalDate?: string;
   invoices?: any[];
   renewalDate?: string;

@@ -73,7 +73,10 @@ interface AuthState {
   register: (data: any) => Promise<void>;
   fetchUserData: () => Promise<void>;
   clearError: () => void;
-  updateSubscriptionInfo: (info: SubscriptionInfo) => Promise<void>;
+  updateSubscriptionInfo: (
+    info: SubscriptionInfo,
+    options?: { skipRefresh?: boolean }
+  ) => Promise<void>;
   refreshPermissions: (organizationId?: string) => Promise<void>;
 }
 
@@ -448,18 +451,24 @@ export const useAuthStore = create<AuthState>()(
 
       clearError: () => set({ error: null }),
 
-      updateSubscriptionInfo: async (info: SubscriptionInfo) => {
-        // Update subscription info and refresh permissions from backend
+      updateSubscriptionInfo: async (
+        info: SubscriptionInfo,
+        options?: { skipRefresh?: boolean }
+      ) => {
+        // Update subscription info
         set({ subscriptionInfo: info });
 
-        // Trigger backend permission refresh since subscription affects permissions
-        try {
-          await get().refreshPermissions();
-        } catch (error) {
-          console.error(
-            "Failed to refresh permissions after subscription update:",
-            error
-          );
+        // Optionally refresh permissions from backend (default true)
+        const shouldRefresh = options?.skipRefresh ? false : true;
+        if (shouldRefresh) {
+          try {
+            await get().refreshPermissions();
+          } catch (error) {
+            console.error(
+              "Failed to refresh permissions after subscription update:",
+              error
+            );
+          }
         }
       },
 

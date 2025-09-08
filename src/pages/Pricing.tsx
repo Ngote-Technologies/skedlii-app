@@ -89,26 +89,26 @@ export default function Pricing() {
       productId: "prod_creator",
     },
     {
-      id: "pro",
-      name: "Pro Influencer",
-      description: "Advanced features for growing creators and small teams",
-      badge: "Power Up Your Social Growth",
+      id: "team",
+      name: "Team",
+      description: "Collaboration for small teams in one workspace",
+      badge: "Most Popular",
       badgeColor: "purple",
       isPopular: false,
       features: [
         "Up to 10 social accounts",
         "Unlimited posts",
+        "Approvals workflow + content calendar",
         "Advanced analytics & insights",
-        "Team collaboration (3 members)",
-        "Content planning tools",
-        "Custom branding",
+        "Team collaboration (5 members)",
+        "25 GB content library",
         "Priority support",
       ],
       priceMonthly: 25,
       priceYearly: 250,
-      priceMonthlyId: "price_pro_monthly",
-      priceYearlyId: "price_pro_yearly",
-      productId: "prod_pro",
+      priceMonthlyId: "price_team_monthly",
+      priceYearlyId: "price_team_yearly",
+      productId: "prod_team",
     },
     {
       id: "enterprise",
@@ -160,19 +160,19 @@ export default function Pricing() {
   const transformPlan = (backendPlan: BackendPlan): PricingPlan => {
     const planIcons: Record<string, React.ReactNode> = {
       creator: <User className="h-6 w-6" />,
-      pro: <Crown className="h-6 w-6" />,
+      team: <Crown className="h-6 w-6" />,
       enterprise: <Building className="h-6 w-6" />,
     };
 
     const planColors: Record<string, string> = {
       creator: "from-blue-500 to-blue-600",
-      pro: "from-purple-500 to-purple-600",
+      team: "from-purple-500 to-purple-600",
       enterprise: "from-amber-500 to-amber-600",
     };
 
     const planHighlights: Record<string, string[]> = {
       creator: ["7-day free trial", "Most popular", "Best for solo creators"],
-      pro: [
+      team: [
         "Power up social growth",
         "Advanced features",
         "Team collaboration",
@@ -361,7 +361,7 @@ export default function Pricing() {
                           className={`flex items-center gap-1 px-4 py-1 text-xs font-medium rounded-full text-white shadow-lg ${
                             plan.popular
                               ? "bg-gradient-to-r from-purple-500 to-purple-600"
-                              : plan.id === "pro"
+                              : plan.id === "team"
                               ? "bg-gradient-to-r from-purple-500 to-purple-600"
                               : "bg-gradient-to-r from-primary-500 to-primary-600"
                           }`}
