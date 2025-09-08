@@ -5,11 +5,15 @@ import { ArrowDownToLine, FileText, Calendar, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 
 interface Invoice {
-  _id: string;
-  createdAt: string;
-  amountPaid: number;
+  id?: string;
+  number?: string;
+  created?: string; // ISO
+  created_epoch?: number;
+  amount_paid?: number;
+  currency?: string;
   status: string;
-  invoicePdf: string;
+  hosted_invoice_url?: string | null;
+  invoice_pdf?: string | null;
 }
 
 interface InvoiceTableFallbackProps {
@@ -37,7 +41,7 @@ export function InvoiceTableFallback({ invoices }: InvoiceTableFallbackProps) {
   // Define columns for the enhanced DataTable
   const columns: Column<Invoice>[] = [
     {
-      key: "_id",
+      key: "number",
       header: "Invoice ID",
       sortable: false,
       width: "30%",
@@ -48,24 +52,37 @@ export function InvoiceTableFallback({ invoices }: InvoiceTableFallbackProps) {
       ),
     },
     {
-      key: "createdAt",
+      key: "created",
       header: "Date",
       sortable: true,
       align: "left",
       render: (value) => (
         <div className="text-sm font-medium text-foreground">
-          {format(new Date(String(value)), "MMM dd, yyyy")}
+          {value ? format(new Date(String(value)), "MMM dd, yyyy") : "—"}
         </div>
       ),
     },
     {
-      key: "amountPaid",
+      key: "amount_paid",
       header: "Amount",
       sortable: true,
       align: "right",
-      render: (value) => (
+      render: (value, row) => (
         <span className="text-sm font-semibold text-foreground">
-          ${Number(value).toFixed(2)}
+          {(() => {
+            const cents = typeof value === "number" ? value : 0;
+            const currency = (row.currency || "usd").toUpperCase();
+            const dollars = cents / 100;
+            try {
+              return new Intl.NumberFormat(undefined, {
+                style: "currency",
+                currency,
+                maximumFractionDigits: 2,
+              }).format(dollars);
+            } catch {
+              return `$${dollars.toFixed(2)}`;
+            }
+          })()}
         </span>
       ),
     },
@@ -88,11 +105,11 @@ export function InvoiceTableFallback({ invoices }: InvoiceTableFallbackProps) {
       ),
     },
     {
-      key: "invoicePdf",
+      key: "invoice_pdf",
       header: "Action",
       sortable: false,
       align: "right",
-      render: (value) => (
+      render: (value, row) => (
         <Button
           asChild
           variant="ghost"
@@ -100,7 +117,7 @@ export function InvoiceTableFallback({ invoices }: InvoiceTableFallbackProps) {
           className="hover:bg-primary/10 hover:text-primary transition-colors group/btn"
         >
           <a
-            href={String(value)}
+            href={String(value || row.hosted_invoice_url || "#")}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2"
@@ -133,7 +150,7 @@ export function InvoiceTableFallback({ invoices }: InvoiceTableFallbackProps) {
       <div className="md:hidden space-y-4">
         {invoices.map((invoice, index) => (
           <div
-            key={invoice._id}
+            key={invoice.id || invoice.number || index}
             className="bg-background rounded-xl border border-border shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
             style={{ animationDelay: `${index * 50}ms` }}
           >
@@ -146,7 +163,7 @@ export function InvoiceTableFallback({ invoices }: InvoiceTableFallbackProps) {
                 </span>
               </div>
               <div className="font-mono text-sm font-semibold text-primary break-all bg-primary/5 px-3 py-2 rounded-lg border border-primary/10">
-                {invoice._id}
+                {invoice.number || invoice.id}
               </div>
             </div>
 
@@ -164,7 +181,9 @@ export function InvoiceTableFallback({ invoices }: InvoiceTableFallbackProps) {
                       Date
                     </div>
                     <div className="font-semibold text-foreground text-sm">
-                      {format(new Date(invoice.createdAt), "MMM dd, yyyy")}
+                      {invoice.created
+                        ? format(new Date(invoice.created), "MMM dd, yyyy")
+                        : "—"}
                     </div>
                   </div>
                 </div>
@@ -179,7 +198,23 @@ export function InvoiceTableFallback({ invoices }: InvoiceTableFallbackProps) {
                       Amount
                     </div>
                     <div className="font-bold text-foreground text-sm">
-                      ${invoice.amountPaid.toFixed(2)}
+                      {(() => {
+                        const cents =
+                          typeof invoice.amount_paid === "number"
+                            ? invoice.amount_paid
+                            : 0;
+                        const currency = (invoice.currency || "usd").toUpperCase();
+                        const dollars = cents / 100;
+                        try {
+                          return new Intl.NumberFormat(undefined, {
+                            style: "currency",
+                            currency,
+                            maximumFractionDigits: 2,
+                          }).format(dollars);
+                        } catch {
+                          return `$${dollars.toFixed(2)}`;
+                        }
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -207,7 +242,7 @@ export function InvoiceTableFallback({ invoices }: InvoiceTableFallbackProps) {
                   className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all duration-200 group/btn"
                 >
                   <a
-                    href={invoice.invoicePdf}
+                    href={invoice.invoice_pdf || invoice.hosted_invoice_url || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2"

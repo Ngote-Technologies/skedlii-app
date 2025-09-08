@@ -11,11 +11,16 @@ import {
 import { format } from "date-fns";
 
 interface Invoice {
-  _id: string;
-  createdAt: string;
-  amountPaid: number;
+  id?: string;
+  number?: string;
+  created?: string; // ISO string from API
+  created_epoch?: number; // seconds (optional)
+  amount_paid?: number;
+  amount_due?: number;
+  currency?: string;
   status: string;
-  invoicePdf: string;
+  hosted_invoice_url?: string | null;
+  invoice_pdf?: string | null;
 }
 
 interface InvoiceTableProps {
@@ -56,7 +61,7 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
     <div className="space-y-3">
       {invoices.map((invoice, index) => (
         <div
-          key={invoice._id}
+          key={invoice.id || invoice.number || index}
           className="group relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-r from-background to-background/50 shadow-sm hover:shadow-lg hover:border-border transition-all duration-300 hover:-translate-y-0.5"
           style={{ animationDelay: `${index * 50}ms` }}
         >
@@ -75,7 +80,7 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
                   </span>
                 </div>
                 <div className="font-mono text-sm lg:text-base font-semibold text-primary break-all bg-primary/5 px-3 py-2 rounded-lg border border-primary/10">
-                  {invoice._id}
+                  {invoice.number || invoice.id}
                 </div>
               </div>
 
@@ -91,7 +96,9 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
                       Date
                     </div>
                     <div className="font-semibold text-foreground text-sm">
-                      {format(new Date(invoice.createdAt), "MMM dd, yyyy")}
+                      {invoice.created
+                        ? format(new Date(invoice.created), "MMM dd, yyyy")
+                        : "—"}
                     </div>
                   </div>
                 </div>
@@ -106,7 +113,23 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
                       Amount
                     </div>
                     <div className="font-bold text-foreground text-sm">
-                      ${invoice.amountPaid.toFixed(2)}
+                      {(() => {
+                        const cents =
+                          typeof invoice.amount_paid === "number"
+                            ? invoice.amount_paid
+                            : 0;
+                        const currency = (invoice.currency || "usd").toUpperCase();
+                        const dollars = cents / 100;
+                        try {
+                          return new Intl.NumberFormat(undefined, {
+                            style: "currency",
+                            currency,
+                            maximumFractionDigits: 2,
+                          }).format(dollars);
+                        } catch {
+                          return `$${dollars.toFixed(2)}`;
+                        }
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -174,7 +197,7 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
                   size="sm"
                 >
                   <a
-                    href={invoice.invoicePdf}
+                    href={invoice.invoice_pdf || invoice.hosted_invoice_url || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2"
