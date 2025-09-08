@@ -21,7 +21,7 @@ const Plans = ({
   displayedPlans: any[];
   isYearly: boolean;
   billing: any;
-  handleUpgradeDowngrade: (plan: any, interval: 'monthly' | 'yearly') => void;
+  handleUpgradeDowngrade: (plan: any, interval: "monthly" | "yearly") => void;
   canManageBilling?: boolean;
 }) => {
   const getPlanActionText = (planId: string) => {
@@ -31,7 +31,7 @@ const Plans = ({
 
     if (billing.subscriptionTier === planId) return "Current Plan";
 
-    const tiers = ["test", "creator", "pro", "enterprise"];
+    const tiers = ["test", "creator", "team", "enterprise"];
     const currentIndex = tiers.indexOf(billing.subscriptionTier);
     const targetIndex = tiers.indexOf(planId);
 
@@ -48,7 +48,7 @@ const Plans = ({
         return Users;
       case "creator":
         return Star;
-      case "pro":
+      case "team":
         return Crown;
       case "enterprise":
         return Rocket;
@@ -82,7 +82,7 @@ const Plans = ({
           iconBg: "bg-blue-500/10 text-blue-600",
           badge: "bg-blue-500/10 text-blue-600",
         };
-      case "pro":
+      case "team":
         return {
           gradient: "from-purple-500 to-pink-500",
           ring: "ring-purple-300",
@@ -106,12 +106,15 @@ const Plans = ({
     }
   };
 
-  const currencyFormatter = (amountCents?: number | null, currency?: string | null) => {
+  const currencyFormatter = (
+    amountCents?: number | null,
+    currency?: string | null
+  ) => {
     if (amountCents == null) return null;
     try {
       return new Intl.NumberFormat(undefined, {
-        style: 'currency',
-        currency: (currency || 'USD').toUpperCase(),
+        style: "currency",
+        currency: (currency || "USD").toUpperCase(),
         maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2,
       }).format(amountCents / 100);
     } catch {
@@ -120,66 +123,61 @@ const Plans = ({
   };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-stretch">
       {displayedPlans.map((plan) => {
-        const cycle: 'monthly' | 'yearly' = isYearly ? 'yearly' : 'monthly';
-        const interval = (plan.intervals || []).find((i: any) => i.cycle === cycle);
-        const formatted = currencyFormatter(interval?.amount, interval?.currency);
-        const displayPrice = formatted ?? (isYearly ? plan.priceYearly : plan.priceMonthly) ?? '—';
+        const cycle: "monthly" | "yearly" = isYearly ? "yearly" : "monthly";
+        const interval = (plan.intervals || []).find(
+          (i: any) => i.cycle === cycle
+        );
+        const formatted = currencyFormatter(
+          interval?.amount,
+          interval?.currency
+        );
+        const displayPrice =
+          formatted ?? (isYearly ? plan.priceYearly : plan.priceMonthly) ?? "—";
         const displayPeriod = cycle;
-        const isCurrentPlan: boolean = (billing?.subscriptionTier && billing.subscriptionTier === plan.id) || false;
+        const isCurrentPlan: boolean =
+          (billing?.subscriptionTier && billing.subscriptionTier === plan.id) ||
+          false;
         const PlanIcon = getPlanIcon(plan.id);
         const theme = getPlanTheme(plan.id, plan.isPopular);
 
         return (
           <div
             key={plan.id}
-            className={`group relative overflow-hidden transition-all duration-300 hover:scale-105 hover:-translate-y-1 ${
-              plan.isPopular
-                ? "ring-2 ring-offset-2 ring-offset-background " + theme.ring
-                : "hover:shadow-lg hover:shadow-primary/10"
-            }`}
+            className={`group relative overflow-hidden transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 h-full`}
           >
             {/* Background Card */}
-            <div className="relative h-full rounded-xl border border-border/50 bg-gradient-to-br from-background to-muted/30 p-6 backdrop-blur-sm">
+            <div
+              className={`relative h-full rounded-xl border bg-gradient-to-br from-background to-muted/30 p-6 backdrop-blur-sm flex flex-col ${
+                isCurrentPlan ? "border-green-300" : "border-border/50"
+              }`}
+            >
               {/* Background gradient */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-              {/* Popular badge */}
-              {plan.isPopular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge
-                    className={`bg-gradient-to-r ${theme.gradient} text-white shadow-lg animate-pulse`}
-                  >
-                    <Crown className="h-3 w-3 mr-1" />
-                    Most Popular
-                  </Badge>
-                </div>
-              )}
-
-              {/* Current plan indicator */}
-              {isCurrentPlan && (
-                <div className="absolute -top-3 right-4">
-                  <Badge
-                    variant="outline"
-                    className="bg-green-500/10 border-green-500/20 text-green-600"
-                  >
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                    Current
-                  </Badge>
-                </div>
-              )}
+              {/* Top badges moved inline; removed ring/shiny badges */}
 
               {/* Plan Header */}
-              <div className="relative space-y-4">
+              <div className="relative space-y-4 flex-1 flex flex-col">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg ${theme.iconBg}`}>
                     <PlanIcon className="h-6 w-6" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-lg capitalize bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
-                      {plan.name}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-lg capitalize bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+                        {plan.name}
+                      </h3>
+                      {isCurrentPlan && (
+                        <Badge
+                          icon={<CheckCircle2 className="h-3 w-3" />}
+                          className="h-5 px-2 bg-green-500/10 text-green-700 border border-green-500/20"
+                        >
+                          Current
+                        </Badge>
+                      )}
+                    </div>
                     {plan.badge && (
                       <Badge
                         variant="secondary"
@@ -195,7 +193,10 @@ const Plans = ({
                 <div className="text-center py-4">
                   <div className="flex items-baseline justify-center">
                     <span className="text-4xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-                      {typeof displayPrice === 'string' && displayPrice.startsWith('$') ? displayPrice : `$${displayPrice}`}
+                      {typeof displayPrice === "string" &&
+                      displayPrice.startsWith("$")
+                        ? displayPrice
+                        : `$${displayPrice}`}
                     </span>
                     <span className="ml-2 text-sm text-muted-foreground font-medium">
                       /{displayPeriod}
@@ -212,7 +213,7 @@ const Plans = ({
                 </div>
 
                 {/* Features */}
-                <div className="space-y-3">
+                <div className="space-y-3 flex-1">
                   <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
                     What's included:
                   </h4>
@@ -230,12 +231,12 @@ const Plans = ({
 
                 {/* Action Button */}
                 <Button
-                  className={`w-full mt-6 transition-all duration-200 ${
+                  className={`w-full mt-auto transition-all duration-200 h-10 font-semibold tracking-tight ${
                     isCurrentPlan
-                      ? "bg-green-500/10 border-green-500/20 text-green-600 hover:bg-green-500/20"
+                      ? "bg-green-500/10 border-green-500/30 text-green-700 hover:bg-green-500/15"
                       : plan.isPopular
                       ? `bg-gradient-to-r ${theme.gradient} hover:shadow-lg hover:shadow-primary/25 text-white border-0`
-                      : "hover:bg-primary/5 border-border/50"
+                      : "bg-primary/10 text-primary border border-primary/30 hover:bg-primary/15"
                   } ${
                     !canManageBilling
                       ? "disabled:opacity-50 disabled:cursor-not-allowed"
@@ -246,7 +247,7 @@ const Plans = ({
                       ? "outline"
                       : plan.isPopular
                       ? "default"
-                      : "outline"
+                      : "secondary"
                   }
                   onClick={() => handleUpgradeDowngrade(plan, cycle)}
                   disabled={isCurrentPlan || !canManageBilling}

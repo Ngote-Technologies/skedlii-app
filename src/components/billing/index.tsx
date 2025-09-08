@@ -23,7 +23,7 @@ import { UpgradeConfirmationDialog } from "./UpgradeConfirmationDialog";
 import { useBillingQueries } from "../../api/queryFn/billingQuery";
 import { useUrlParams } from "../../hooks/useUrlParams";
 
-const PLAN_TIERS = ["test", "creator", "pro", "enterprise"] as const;
+const PLAN_TIERS = ["test", "creator", "team", "enterprise"] as const;
 type PlanTier = (typeof PLAN_TIERS)[number];
 const TAB_ITEMS = [
   { value: "subscription" as const, label: "Subscription", icon: CreditCard },

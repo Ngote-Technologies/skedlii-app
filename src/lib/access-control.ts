@@ -282,16 +282,17 @@ export function hasSubscriptionAccess(
   const tierHierarchy = {
     free: 1,
     creator: 2,
-    pro: 3,
+    team: 3,
     enterprise: 4,
-  };
+  } as const;
 
-  const userTier = userContext.subscriptionTier?.toLowerCase() || "free";
+  const userTierRaw = userContext.subscriptionTier?.toLowerCase() || "free";
+  const userTier = (userTierRaw === 'pro' ? 'team' : userTierRaw) as keyof typeof tierHierarchy;
   const requiredTierLevel =
     tierHierarchy[requiredTier.toLowerCase() as keyof typeof tierHierarchy] ||
     1;
   const userTierLevel =
-    tierHierarchy[userTier as keyof typeof tierHierarchy] || 1;
+    tierHierarchy[userTier] || 1;
 
   return userTierLevel >= requiredTierLevel;
 }
@@ -394,7 +395,7 @@ export const FEATURES = {
   },
   TEAM_MANAGEMENT: {
     permissions: [Permission.TEAMS_CREATE, Permission.TEAMS_MANAGE],
-    subscriptionTier: "pro",
+    subscriptionTier: "team",
   },
   ORGANIZATION_BILLING: {
     permission: Permission.BILLING_MANAGE,
@@ -403,7 +404,7 @@ export const FEATURES = {
   },
   ANALYTICS_EXPORT: {
     permission: Permission.ANALYTICS_EXPORT,
-    subscriptionTier: "pro",
+    subscriptionTier: "team",
   },
   ADVANCED_CONTENT_FEATURES: {
     permissions: [Permission.CONTENT_CREATE, Permission.CONTENT_PUBLISH],

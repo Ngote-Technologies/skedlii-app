@@ -106,7 +106,7 @@ export default function DashboardSidebar({
         label: "Create Post",
         href: "/dashboard/post-flow",
         disabled: !hasValidSub,
-        badge: !hasValidSub ? "Pro" : null,
+        badge: !hasValidSub ? "Team" : null,
         premium: true,
         show: true, // Show but may be disabled
       },
@@ -115,7 +115,7 @@ export default function DashboardSidebar({
         label: "Collections",
         href: "/dashboard/collections",
         disabled: !hasValidSub,
-        badge: !hasValidSub ? "Pro" : null,
+        badge: !hasValidSub ? "Team" : null,
         show: true, // Show but may be disabled
       },
       {
@@ -131,7 +131,7 @@ export default function DashboardSidebar({
         label: "Analytics",
         href: "/dashboard/analytics",
         disabled: !hasValidSub,
-        badge: !hasValidSub ? "Pro" : null,
+        badge: !hasValidSub ? "Team" : null,
         show: true, // Show but may be disabled
       },
     ];
@@ -263,7 +263,7 @@ export default function DashboardSidebar({
               Create Post
               {!hasValidSub && (
                 <Badge variant="secondary" className="ml-2 text-xs">
-                  Pro
+                  Team
                 </Badge>
               )}
             </Button>

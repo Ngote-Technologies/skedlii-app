@@ -39,7 +39,7 @@ export interface ComputedPermissions {
 
 export interface SubscriptionInfo {
   hasValidSubscription: boolean;
-  subscriptionTier: "free" | "pro" | "enterprise" | null;
+  subscriptionTier: "free" | "team" | "enterprise" | null;
   subscriptionStatus: "active" | "canceled" | "past_due" | "trialing" | "incomplete" | "unpaid" | "inactive" | null;
   billingCycle: "monthly" | "yearly" | null;
   subscriptionId: string | null;

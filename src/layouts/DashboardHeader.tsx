@@ -214,7 +214,7 @@ export default function DashboardHeader() {
                   {user?.billing?.paymentStatus && (
                     <Badge variant="outline" className="text-xs w-fit">
                       {user.billing.paymentStatus === "active"
-                        ? "Pro Plan"
+                        ? "Team Plan"
                         : "Free Plan"}
                     </Badge>
                   )}
