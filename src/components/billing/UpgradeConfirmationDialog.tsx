@@ -17,6 +17,14 @@ import {
   CardTitle,
 } from "../ui/card";
 import { Separator } from "../ui/separator";
+import {
+  ArrowRight,
+  CreditCard,
+  Crown,
+  Shield,
+  Zap,
+  Clock,
+} from "lucide-react";
 
 interface PreviewData {
   amountDue: number;
@@ -119,71 +127,127 @@ export function UpgradeConfirmationDialog({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            Confirm Subscription Upgrade
-            <Badge variant="secondary">
-              {previewData.billingInfo?.newPlan || planName}
-            </Badge>
-          </AlertDialogTitle>
+      <AlertDialogContent className="max-w-2xl max-h-[85vh] border-border/50 bg-gradient-to-br from-background to-muted/20 flex flex-col">
+        {/* Background gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-lg" />
+
+        <AlertDialogHeader className="relative flex-shrink-0">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10">
+              <Crown className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <AlertDialogTitle className="text-xl bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                Confirm Subscription Upgrade
+              </AlertDialogTitle>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge
+                  className="from-primary to-purple-500 text-white"
+                  variant="premium"
+                >
+                  {previewData.billingInfo?.newPlan || planName}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="bg-green-500/10 border-green-500/20 text-green-600"
+                  icon={<Shield className="h-3 w-3 mr-1" />}
+                >
+                  Secure
+                </Badge>
+              </div>
+            </div>
+          </div>
           <AlertDialogDescription>
             Review the details of your subscription upgrade before confirming.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="space-y-4">
+        <div className="relative space-y-4 flex-1 overflow-y-auto pr-2 mr-2">
           {/* Plan Comparison */}
           {previewData.billingInfo && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Plan Change Summary</CardTitle>
+            <Card className="border-border/50 bg-gradient-to-br from-background to-muted/30">
+              <CardHeader className="relative overflow-hidden pb-3">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
+                <div className="relative flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-lg">Plan Change Summary</CardTitle>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-sm text-muted-foreground">
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground mb-1">
                       Current Plan
                     </div>
-                    <div className="font-medium">
+                    <div className="font-bold text-lg">
                       {previewData.billingInfo.currentPlan}
                     </div>
-                    <div className="text-sm">
+                    <div className="text-sm text-muted-foreground">
                       ${previewData.billingInfo.currentPrice}/month
                     </div>
                   </div>
-                  <div className="text-2xl text-muted-foreground">→</div>
-                  <div className="text-right">
-                    <div className="text-sm text-muted-foreground">
+
+                  <div className="flex flex-col items-center">
+                    <ArrowRight className="h-6 w-6 text-primary animate-pulse" />
+                    <span className="text-xs text-muted-foreground mt-1">
+                      Upgrade
+                    </span>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground mb-1">
                       New Plan
                     </div>
-                    <div className="font-medium">
+                    <div className="font-bold text-lg bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
                       {previewData.billingInfo.newPlan}
                     </div>
-                    <div className="text-sm">
+                    <div className="text-sm text-primary font-medium">
                       ${previewData.billingInfo.newPrice}/month
                     </div>
                   </div>
                 </div>
-                <div className="mt-3 text-xs text-muted-foreground">
-                  {previewData.billingInfo.remainingDays} days remaining in
-                  current billing period
+
+                <div className="mt-4 p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">
+                      {previewData.billingInfo.remainingDays} days remaining in
+                      current billing period
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           )}
 
           {/* Amount Due Summary */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Amount Due Today</CardTitle>
-              <CardDescription>
-                This amount will be charged immediately upon confirmation
-              </CardDescription>
+          <Card className="border-border/50 bg-gradient-to-br from-background to-muted/30">
+            <CardHeader className="relative overflow-hidden pb-3">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
+              <div className="relative flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-primary" />
+                <div>
+                  <CardTitle className="text-lg">Amount Due Today</CardTitle>
+                  <CardDescription>
+                    This amount will be charged immediately upon confirmation
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-primary">
-                {formatCurrency(previewData.amountDue, previewData.currency)}
+              <div className="flex items-center justify-between">
+                <div className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                  {formatCurrency(previewData.amountDue, previewData.currency)}
+                </div>
+                <Badge
+                  variant="outline"
+                  className="bg-primary/10 border-primary/20 text-primary"
+                >
+                  Prorated
+                </Badge>
+              </div>
+              <div className="mt-2 text-sm text-muted-foreground">
+                💳 Secure payment processing via Stripe
               </div>
             </CardContent>
           </Card>
@@ -297,14 +361,29 @@ export function UpgradeConfirmationDialog({
           </div>
         </div>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+        <AlertDialogFooter className="relative flex-shrink-0 border-t border-border/50 pt-4">
+          <AlertDialogCancel
+            onClick={onClose}
+            className="border-border/50 hover:bg-muted/80"
+          >
+            Cancel
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isLoading}
-            className="min-w-[140px]"
+            className="min-w-[160px] bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
           >
-            {isLoading ? "Redirecting..." : "Continue to Checkout"}
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Redirecting...
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Continue to Checkout
+              </div>
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

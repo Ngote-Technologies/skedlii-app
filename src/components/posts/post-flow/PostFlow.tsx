@@ -7,8 +7,20 @@ import {
   CardHeader,
   CardTitle,
 } from "../../ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
-import { Loader2, Save, Clock, Send } from "lucide-react";
+import { Tabs, TabsContent } from "../../ui/tabs";
+import {
+  Loader2,
+  Save,
+  Clock,
+  Send,
+  Users,
+  Type,
+  Image,
+  Calendar,
+  Check,
+  ChevronRight,
+} from "lucide-react";
+import { cn } from "../../../lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../store/hooks";
 import { MediaItem } from "./MediaUpload";
@@ -71,28 +83,13 @@ export default function PostFlow() {
   const canProceedToMedia =
     canProceedToCaption && globalCaption.trim().length > 0;
 
-  const tabItems = [
-    {
-      value: "accounts",
-      label: "Accounts",
-      disabled: false,
-    },
-    {
-      value: "caption",
-      label: "Caption",
-      disabled: isSubmitting || !canProceedToCaption,
-    },
-    {
-      value: "media",
-      label: "Media",
-      disabled: isSubmitting || !canProceedToMedia,
-    },
-    {
-      value: "schedule",
-      label: "Schedule",
-      disabled: isSubmitting || !canProceedToMedia,
-    },
-  ];
+  // Set up swipe navigation for mobile
+  // const swipeRef = useSwipeNavigation({
+  //   onSwipeLeft: navigateToNextTab,
+  //   onSwipeRight: navigateToPreviousTab,
+  //   minSwipeDistance: 50,
+  //   maxVerticalDistance: 100,
+  // });
 
   const { handleSubmit } = usePostSubmission({
     selectedAccounts,
@@ -152,15 +149,176 @@ export default function PostFlow() {
     }
   }, [accountsData]);
 
+  const steps = [
+    {
+      id: "accounts",
+      label: "Select Accounts",
+      icon: Users,
+      description: "Choose your social platforms",
+      completed: selectedAccounts.length > 0,
+      active: activeTab === "accounts",
+      disabled: false,
+    },
+    {
+      id: "caption",
+      label: "Write Caption",
+      icon: Type,
+      description: "Create your content",
+      completed: globalCaption.trim().length > 0,
+      active: activeTab === "caption",
+      disabled: isSubmitting || !canProceedToCaption,
+    },
+    {
+      id: "media",
+      label: "Add Media",
+      icon: Image,
+      description: "Upload images or videos",
+      completed: true, // Media is optional
+      active: activeTab === "media",
+      disabled: isSubmitting || !canProceedToMedia,
+    },
+    {
+      id: "schedule",
+      label: "Schedule & Post",
+      icon: Calendar,
+      description: "Choose when to publish",
+      completed: false,
+      active: activeTab === "schedule",
+      disabled: isSubmitting || !canProceedToMedia,
+    },
+  ];
+
+  // Navigation functions for step clicking and mobile swipe
+  const navigateToStep = (stepId: string) => {
+    const step = steps.find((s) => s.id === stepId);
+    if (step && !step.disabled) {
+      setActiveTab(stepId);
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create Post</h1>
-          <p className="text-muted-foreground">
-            Compose and schedule your content across multiple platforms
-          </p>
+    <div className="space-y-8 touch-pan-y">
+      {/* Enhanced Header with Step Progress */}
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+              Create Post
+            </h1>
+            <p className="text-muted-foreground">
+              Compose and schedule your content across multiple platforms
+            </p>
+          </div>
         </div>
+
+        {/* Interactive Step Progress Navigation */}
+        <Card className="border-0 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              {steps.map((step, index) => {
+                const StepIcon = step.icon;
+                const isLast = index === steps.length - 1;
+
+                return (
+                  <div key={step.id} className="flex items-center flex-1">
+                    <div className="flex flex-col items-center relative">
+                      {/* Interactive Step Circle */}
+                      <button
+                        onClick={() => navigateToStep(step.id)}
+                        disabled={step.disabled}
+                        className={cn(
+                          "w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-300 group relative",
+                          // Base styles
+                          "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2",
+                          // Active state
+                          step.active && [
+                            "border-primary bg-primary text-white shadow-lg scale-110",
+                            "hover:shadow-xl hover:scale-105",
+                          ],
+                          // Completed state
+                          step.completed &&
+                            !step.active && [
+                              "border-green-500 bg-green-500 text-white",
+                              !step.disabled &&
+                                "hover:border-green-600 hover:bg-green-600 hover:scale-105 cursor-pointer",
+                            ],
+                          // Default/incomplete state
+                          !step.active &&
+                            !step.completed && [
+                              "border-gray-300 bg-white dark:bg-gray-800 text-gray-400",
+                              !step.disabled &&
+                                "hover:border-primary/50 hover:bg-primary/5 hover:scale-105 cursor-pointer",
+                              !step.disabled && "hover:text-primary",
+                            ],
+                          // Disabled state
+                          step.disabled && ["opacity-50 cursor-not-allowed"]
+                        )}
+                        title={
+                          step.disabled
+                            ? "Complete previous steps first"
+                            : `Go to ${step.label}`
+                        }
+                      >
+                        {step.completed && !step.active ? (
+                          <Check className="h-5 w-5" />
+                        ) : (
+                          <StepIcon className="h-5 w-5" />
+                        )}
+
+                        {/* Hover tooltip */}
+                        {!step.disabled && (
+                          <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-700 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                            {step.active ? step.label : `Go to ${step.label}`}
+                          </div>
+                        )}
+                      </button>
+
+                      {/* Step Label */}
+                      <div className="mt-3 text-center min-w-0">
+                        <button
+                          onClick={() => navigateToStep(step.id)}
+                          disabled={step.disabled}
+                          className={cn(
+                            "text-sm font-medium transition-colors text-center",
+                            step.active
+                              ? "text-primary"
+                              : step.completed
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-gray-500",
+                            !step.disabled &&
+                              "hover:text-primary cursor-pointer",
+                            step.disabled && "cursor-not-allowed opacity-50"
+                          )}
+                        >
+                          {step.label}
+                        </button>
+                        <div className="text-xs text-gray-400 mt-1 hidden sm:block">
+                          {step.description}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Connector Line */}
+                    {!isLast && (
+                      <div className="flex-1 mx-4">
+                        <div
+                          className={cn(
+                            "h-0.5 w-full transition-colors duration-300",
+                            step.completed && steps[index + 1].active
+                              ? "bg-primary"
+                              : step.completed
+                              ? "bg-green-500"
+                              : "bg-gray-300"
+                          )}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {isLoading ? (
@@ -177,18 +335,6 @@ export default function PostFlow() {
             value={activeTab}
             onValueChange={(value) => setActiveTab(value)}
           >
-            <TabsList className="w-full mb-8">
-              {tabItems.map((item) => (
-                <TabsTrigger
-                  key={item.value}
-                  value={item.value}
-                  disabled={item.disabled}
-                >
-                  {item.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
             <TabsContent value="accounts" className="space-y-6">
               <AccountSelection
                 accounts={socialAccounts}
@@ -202,8 +348,11 @@ export default function PostFlow() {
                 <Button
                   onClick={() => setActiveTab("caption")}
                   disabled={!canProceedToCaption}
+                  variant="gradient"
+                  className="shadow-lg hover:shadow-xl transition-all duration-300 group"
                 >
                   Continue to Caption
+                  <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
             </TabsContent>
@@ -229,14 +378,18 @@ export default function PostFlow() {
                 <Button
                   variant="outline"
                   onClick={() => setActiveTab("accounts")}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   Back to Accounts
                 </Button>
                 <Button
                   onClick={() => setActiveTab("media")}
                   disabled={!canProceedToMedia}
+                  variant="gradient"
+                  className="shadow-lg hover:shadow-xl transition-all duration-300 group"
                 >
                   Continue to Media
+                  <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
             </TabsContent>
@@ -257,11 +410,17 @@ export default function PostFlow() {
                 <Button
                   variant="outline"
                   onClick={() => setActiveTab("caption")}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   Back to Caption
                 </Button>
-                <Button onClick={() => setActiveTab("schedule")}>
+                <Button
+                  onClick={() => setActiveTab("schedule")}
+                  variant="gradient"
+                  className="shadow-lg hover:shadow-xl transition-all duration-300 group"
+                >
                   Continue to Schedule
+                  <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
             </TabsContent>
@@ -280,13 +439,20 @@ export default function PostFlow() {
                 }
               />
 
-              {/* Post preview */}
-              <Card>
+              {/* Enhanced Post Preview */}
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
                 <CardHeader>
-                  <CardTitle>Post Preview</CardTitle>
-                  <CardDescription>
-                    Here's how your post will look
-                  </CardDescription>
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                      <Send className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl">Post Preview</CardTitle>
+                      <CardDescription>
+                        Here's how your content will appear across platforms
+                      </CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center space-x-3">
@@ -376,42 +542,42 @@ export default function PostFlow() {
                   variant="outline"
                   onClick={() => setActiveTab("media")}
                   disabled={isSubmitting}
-                  className="w-full md:w-auto"
+                  className="w-full md:w-auto hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   Back to Media
                 </Button>
 
                 <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                   <Button
-                    variant={isScheduled ? "outline" : "default"}
+                    variant={isScheduled ? "outline" : "gradient"}
                     onClick={handleSubmit}
                     disabled={isSubmitting || isScheduled}
-                    className="min-w-[120px] w-full md:w-auto"
+                    className="min-w-[140px] w-full md:w-auto shadow-lg hover:shadow-xl transition-all duration-300"
                   >
                     {isSubmitting && !isScheduled ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     ) : (
-                      <>
-                        <Send className="h-4 w-4 mr-2" />
-                        Post Now
-                      </>
+                      <Send className="h-4 w-4 mr-2" />
                     )}
+                    {isSubmitting && !isScheduled
+                      ? "Publishing..."
+                      : "Post Now"}
                   </Button>
 
                   <Button
-                    variant={isScheduled ? "default" : "outline"}
+                    variant={isScheduled ? "gradient" : "outline"}
                     onClick={handleSubmit}
                     disabled={isSubmitting || !isScheduled || !scheduledDate}
-                    className="min-w-[120px] w-full md:w-auto"
+                    className="min-w-[140px] w-full md:w-auto shadow-lg hover:shadow-xl transition-all duration-300"
                   >
                     {isSubmitting && isScheduled ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     ) : (
-                      <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Schedule
-                      </>
+                      <Save className="h-4 w-4 mr-2" />
                     )}
+                    {isSubmitting && isScheduled
+                      ? "Scheduling..."
+                      : "Schedule Post"}
                   </Button>
                 </div>
               </div>

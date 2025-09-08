@@ -14,6 +14,15 @@ import {
   FolderPlus,
   Plus,
   Activity,
+  TrendingUp,
+  TrendingDown,
+  Eye,
+  Clock,
+  CheckCircle2,
+  Sparkles,
+  Calendar,
+  Zap,
+  Target,
 } from "lucide-react";
 import {
   formatDate,
@@ -25,21 +34,15 @@ import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "../../store/hooks";
 import { useQuery } from "@tanstack/react-query";
-import { Badge } from "../ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
-import { getStatusBadge } from "../posts/scheduled-posts/listView";
-import { hasValidSubscription } from "../../lib/access";
+import { Badge, StatusBadge, BadgeGroup } from "../ui/badge";
+import { DashboardStatsSkeleton } from "../ui/skeleton";
+import { useAccessControl } from "../../hooks/useAccessControl";
 import { toast } from "../../hooks/use-toast";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, authLoading } = useAuth();
-  const { billing } = user;
+  const { hasValidSubscription } = useAccessControl();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -88,12 +91,9 @@ export default function DashboardPage() {
 
   function getPostStatus(post: any) {
     if (post.status === "published" || post.status === "posted") {
-      return `Published • ${formatDate(
-        post.publishedDate ?? post.postedAt,
-        "PPPpp"
-      )}`;
+      return `${formatDate(post.publishedDate ?? post.postedAt, "PPPpp")}`;
     } else if (post.status === "scheduled") {
-      return `Scheduled • ${formatDate(post.scheduleTime, "PPPpp")}`;
+      return `${formatDate(post.scheduleTime, "PPPpp")}`;
     } else {
       return `Draft • Created on ${formatDate(
         post.createdAt ?? new Date(),
@@ -101,57 +101,6 @@ export default function DashboardPage() {
       )}`;
     }
   }
-
-  function getStatusColor(status: string) {
-    switch (status) {
-      case "completed":
-      case "published":
-      case "posted":
-        return "bg-green-500";
-      case "scheduled":
-        return "bg-amber-500";
-      case "failed":
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
-    }
-  }
-
-  const renderSocialAccountIconArea = (account: any) => {
-    return (
-      <div className="flex items-center gap-3" key={account._id}>
-        {account.metadata?.profileImageUrl ||
-        account.metadata?.picture ||
-        account.metadata?.profile?.threads_profile_picture_url ? (
-          <img
-            src={
-              account.metadata.profileImageUrl ??
-              account.metadata.picture ??
-              account.metadata.profile.threads_profile_picture_url
-            }
-            alt={`${account.accountName} profile`}
-            className="h-10 w-10 rounded-full object-cover"
-          />
-        ) : (
-          <div className={`p-2 rounded-lg ${getClassName(account.platform)}`}>
-            <i
-              className={`${getSocialIcon(
-                account.platform
-              )} text-xl ${getTextColor(account.platform)}`}
-            />
-          </div>
-        )}
-        <div className="flex flex-col">
-          <CardTitle className="text-base font-medium">
-            {account.accountName ?? "Unknown Account"}
-          </CardTitle>
-          <CardDescription className="capitalize">
-            {account.platform}
-          </CardDescription>
-        </div>
-      </div>
-    );
-  };
 
   const getFooter = (loading: boolean, count: number, status: string) => {
     if (loading) return "Loading...";
@@ -161,119 +110,366 @@ export default function DashboardPage() {
 
   return (
     <main className="flex-1 overflow-auto">
-      <div className="max-w-6xl mx-auto">
-        {!hasValidSubscription(billing?.paymentStatus) && (
-          <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 p-3 text-sm text-center rounded-md mb-4">
-            You're currently on a limited plan.{" "}
-            <Link to="/dashboard/billing" className="underline font-semibold">
-              Upgrade now to unlock full features.
-            </Link>
-          </div>
+      <div className="max-w-7xl mx-auto">
+        {/* Enhanced Upgrade Banner */}
+        {!hasValidSubscription && (
+          <Card className="mb-6 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50">
+            <CardContent className="flex items-center justify-between p-4">
+              <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
+                  <Sparkles className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-amber-900 dark:text-amber-100">
+                    Unlock Your Creative Potential
+                  </h3>
+                  <p className="text-sm text-amber-700 dark:text-amber-300">
+                    You're on the free plan. Upgrade to access advanced
+                    scheduling, analytics, and team features.
+                  </p>
+                </div>
+              </div>
+              <Button
+                asChild
+                variant="gradient"
+                className="shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <Link to="/dashboard/billing">
+                  <Zap className="mr-2 h-4 w-4" />
+                  Upgrade Now
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
         )}
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-              <p className="text-muted-foreground text-sm">
-                Welcome back{user?.firstName ? `, ${user.firstName}` : ""} 👋
-              </p>
-            </div>
-            <Button
-              onClick={() => navigate("/dashboard/post-flow")}
-              className="w-full sm:w-auto"
-              disabled={!hasValidSubscription(billing?.paymentStatus)}
-            >
-              <Plus size={16} className="mr-2" />
-              Create Post
-            </Button>
+
+        <div className="space-y-8">
+          {/* Enhanced Welcome Section */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 to-purple-500/10 rounded-3xl blur-3xl"></div>
+            <Card className="relative border-0 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-900/80 dark:to-gray-800/80 backdrop-blur-sm shadow-sm">
+              <CardContent className="p-8">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                  <div className="space-y-4">
+                    {/* Mobile: Centered layout, Desktop: Horizontal layout */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0">
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-r from-primary-500 to-purple-500 flex items-center justify-center mx-auto sm:mx-0 flex-shrink-0">
+                        <Sparkles className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="text-center sm:text-left">
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent leading-tight">
+                          Welcome Back {user?.name || ""}!
+                        </h1>
+                        <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg mt-1">
+                          Ready to create amazing content today? ✨
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
+                    <Button
+                      onClick={() => navigate("/dashboard/post-flow")}
+                      variant="default"
+                      size="lg"
+                      className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300 group"
+                      disabled={!hasValidSubscription}
+                    >
+                      <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
+                      Create Post
+                    </Button>
+                    <Button
+                      onClick={() => navigate("/dashboard/scheduled")}
+                      variant="outline"
+                      size="lg"
+                      className="w-full sm:w-auto"
+                    >
+                      <Calendar className="mr-2 h-5 w-5" />
+                      View Schedule
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              {
-                label: "Total Posts",
-                value: posts?.data?.length ?? 0,
-                icon: <Activity size={20} className="text-primary" />,
-                footer: getFooter(
-                  postsLoading,
-                  posts?.data?.length ?? 0,
-                  "Active"
-                ),
-                to: "/dashboard/posts",
-              },
-              {
-                label: "Scheduled Posts",
-                value: scheduledPosts?.data?.length ?? 0,
-                icon: <CalendarClock size={20} className="text-primary" />,
-                footer: getFooter(
-                  scheduledPostsLoading,
-                  scheduledPosts?.data?.length ?? 0,
-                  "Upcoming posts"
-                ),
-                to: "/dashboard/scheduled",
-              },
-              {
-                label: "Connected Accounts",
-                value: socialAccounts?.length ?? 0,
-                icon: <Users size={20} className="text-primary" />,
-                footer: getFooter(
-                  socialAccountsLoading,
-                  socialAccounts?.length ?? 0,
-                  "Social profiles"
-                ),
-                to: "/dashboard/accounts",
-              },
-              {
-                label: "Collections",
-                value: collections?.count ?? 0,
-                icon: <FolderPlus size={20} className="text-primary" />,
-                footer: getFooter(
-                  collectionsLoading,
-                  collections?.count ?? 0,
-                  "Content organization"
-                ),
-                to: "/dashboard/collections",
-              },
-            ].map(({ label, value, icon, footer, to }) => {
-              if (!hasValidSubscription(billing?.paymentStatus)) {
-                return null;
-              }
-              return (
-                <Link to={to} key={label}>
-                  <Card className="hover:shadow-md cursor-pointer transition-shadow duration-200 rounded-xl">
-                    <CardHeader className="pb-1 flex flex-row items-center justify-between space-y-0">
-                      <CardDescription className="text-sm font-medium">
-                        {label}
-                      </CardDescription>
+          {/* Enhanced Analytics Cards with Micro-interactions */}
+          {postsLoading ||
+          scheduledPostsLoading ||
+          socialAccountsLoading ||
+          collectionsLoading ? (
+            <DashboardStatsSkeleton />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {[
+                {
+                  label: "Total Posts",
+                  value: posts?.data?.length ?? 0,
+                  icon: <Activity className="h-6 w-6" />,
+                  color: "bg-blue-500",
+                  gradient: "from-blue-500 to-cyan-500",
+                  footer: getFooter(
+                    postsLoading,
+                    posts?.data?.length ?? 0,
+                    "Published content"
+                  ),
+                  to: "/dashboard/posts",
+                  trend: "+12%",
+                  trendUp: true,
+                },
+                {
+                  label: "Scheduled Posts",
+                  value: scheduledPosts?.data?.length ?? 0,
+                  icon: <CalendarClock className="h-6 w-6" />,
+                  color: "bg-purple-500",
+                  gradient: "from-purple-500 to-pink-500",
+                  footer: getFooter(
+                    scheduledPostsLoading,
+                    scheduledPosts?.data?.length ?? 0,
+                    "Ready to publish"
+                  ),
+                  to: "/dashboard/scheduled",
+                  trend: "+8%",
+                  trendUp: true,
+                },
+                {
+                  label: "Social Accounts",
+                  value: socialAccounts?.length ?? 0,
+                  icon: <Users className="h-6 w-6" />,
+                  color: "bg-green-500",
+                  gradient: "from-green-500 to-emerald-500",
+                  footer: getFooter(
+                    socialAccountsLoading,
+                    socialAccounts?.length ?? 0,
+                    "Connected platforms"
+                  ),
+                  to: "/dashboard/accounts",
+                  trend: "2 new",
+                  trendUp: true,
+                },
+                {
+                  label: "Collections",
+                  value: collections?.count ?? 0,
+                  icon: <FolderPlus className="h-6 w-6" />,
+                  color: "bg-orange-500",
+                  gradient: "from-orange-500 to-red-500",
+                  footer: getFooter(
+                    collectionsLoading,
+                    collections?.count ?? 0,
+                    "Organized content"
+                  ),
+                  to: "/dashboard/collections",
+                  trend: "+3",
+                  trendUp: true,
+                },
+              ].map(
+                ({
+                  label,
+                  value,
+                  icon,
+                  gradient,
+                  footer,
+                  to,
+                  trend,
+                  trendUp,
+                }) => {
+                  return (
+                    <Link to={to} key={label} className="group">
+                      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 shadow-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 group-hover:scale-[1.02] group-hover:-translate-y-1 group-active:scale-[0.98]">
+                        {/* Background gradient */}
+                        <div
+                          className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}
+                        ></div>
+
+                        <CardContent className="relative p-4 sm:p-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <div
+                              className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-sm group-hover:shadow-xl group-hover:scale-110 transition-all duration-300`}
+                            >
+                              <div className="text-white group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                                {icon}
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-1 text-sm">
+                              {trendUp ? (
+                                <TrendingUp className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <TrendingDown className="h-4 w-4 text-red-500" />
+                              )}
+                              <span
+                                className={`font-medium ${
+                                  trendUp
+                                    ? "text-green-600 dark:text-green-400"
+                                    : "text-red-600 dark:text-red-400"
+                                }`}
+                              >
+                                {trend}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                              {label}
+                            </p>
+                            <div className="flex items-baseline space-x-2">
+                              <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                                {value ?? (
+                                  <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                                )}
+                              </p>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-500">
+                              {footer}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                }
+              )}
+            </div>
+          )}
+
+          {/* Quick Actions Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <Card className="lg:col-span-2 border-0 shadow-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Target className="h-5 w-5 text-primary" />
+                      <span>Quick Actions</span>
+                    </CardTitle>
+                    <CardDescription>
+                      Jump to your most used features
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                  {[
+                    {
+                      label: "Create Post",
+                      icon: (
+                        <Plus className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
+                      ),
+                      description: "New content",
+                      color: "hover:bg-blue-50 dark:hover:bg-blue-900/20",
+                      onClick: () => {
+                        if (!hasValidSubscription) {
+                          toast.warning({
+                            title: "Upgrade Required",
+                            description:
+                              "Upgrade your plan to start creating and scheduling content.",
+                          });
+                        } else {
+                          navigate("/dashboard/post-flow");
+                        }
+                      },
+                    },
+                    {
+                      label: "Schedule",
+                      icon: (
+                        <CalendarClock className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500" />
+                      ),
+                      description: "Plan ahead",
+                      color: "hover:bg-purple-50 dark:hover:bg-purple-900/20",
+                      onClick: () => navigate("/dashboard/scheduled"),
+                    },
+                    {
+                      label: "Analytics",
+                      icon: (
+                        <BarChart2 className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
+                      ),
+                      description: "View stats",
+                      color: "hover:bg-green-50 dark:hover:bg-green-900/20",
+                      onClick: () => navigate("/dashboard/analytics"),
+                    },
+                    {
+                      label: "Accounts",
+                      icon: (
+                        <Users className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500" />
+                      ),
+                      description: "Manage links",
+                      color: "hover:bg-orange-50 dark:hover:bg-orange-900/20",
+                      onClick: () => navigate("/dashboard/accounts"),
+                    },
+                  ].map(({ label, icon, description, color, onClick }) => (
+                    <button
+                      key={label}
+                      onClick={onClick}
+                      className={`group p-4 sm:p-6 rounded-xl sm:rounded-2xl transition-all duration-200 text-center border border-gray-100 dark:border-gray-800 ${color} hover:shadow-md hover:scale-105 active:scale-95 min-h-[100px] sm:min-h-[120px] flex flex-col items-center justify-center gap-2 sm:gap-3`}
+                    >
                       {icon}
-                    </CardHeader>
-                    <CardContent className="pt-1">
-                      <div className="text-4xl font-bold text-foreground">
-                        {value ?? (
-                          <div className="h-8 w-12 bg-muted rounded animate-pulse" />
-                        )}
+                      <div className="flex flex-col items-center gap-1">
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
+                          {label}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-tight">
+                          {description}
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {footer}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Activity Status */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Activity className="h-5 w-5 text-primary" />
+                  <span>Today's Activity</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <span className="text-sm font-medium">Posts Published</span>
+                  </div>
+                  <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                    3
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                  <div className="flex items-center space-x-3">
+                    <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <span className="text-sm font-medium">Scheduled</span>
+                  </div>
+                  <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                    {scheduledPosts?.data?.length ?? 0}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                  <div className="flex items-center space-x-3">
+                    <Eye className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <span className="text-sm font-medium">Views Today</span>
+                  </div>
+                  <span className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                    1.2k
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           <Tabs defaultValue="recent">
             <TabsList>
               <TabsTrigger value="recent">Recent Posts</TabsTrigger>
               <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-              {hasValidSubscription(billing?.paymentStatus) && (
+              {hasValidSubscription && (
                 <TabsTrigger value="insights">Insights</TabsTrigger>
               )}
             </TabsList>
 
             <TabsContent value="recent" className="space-y-4">
-              <Card>
+              <Card variant="gradient">
                 <CardHeader>
                   <CardTitle>Recent Posts</CardTitle>
                   <CardDescription>
@@ -300,13 +496,26 @@ export default function DashboardPage() {
                             </p>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <span>{getPostStatus(post)}</span>
-                              <Badge
-                                className={`text-xs rounded-md px-2 py-0.5 capitalize text-white ${getStatusColor(
-                                  status
-                                )}`}
-                              >
-                                {post.platform}
-                              </Badge>
+                              <BadgeGroup spacing="tight">
+                                <StatusBadge
+                                  status={
+                                    status === "published" ||
+                                    status === "posted"
+                                      ? "published"
+                                      : status === "scheduled"
+                                      ? "pending"
+                                      : "draft"
+                                  }
+                                  size="sm"
+                                />
+                                <Badge
+                                  variant="outline"
+                                  size="sm"
+                                  className="capitalize"
+                                >
+                                  {post.platform}
+                                </Badge>
+                              </BadgeGroup>
                             </div>
                           </div>
                           <Button
@@ -326,7 +535,7 @@ export default function DashboardPage() {
             </TabsContent>
 
             <TabsContent value="upcoming">
-              <Card>
+              <Card variant="gradient">
                 <CardHeader>
                   <CardTitle>Upcoming Posts</CardTitle>
                   <CardDescription>Your scheduled content</CardDescription>
@@ -353,7 +562,17 @@ export default function DashboardPage() {
                             <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                               <CalendarClock size={14} className="mr-1" />
                               <span>Scheduled for {scheduledDate}</span>
-                              {getStatusBadge(status)}
+                              {/* {getStatusBadge(status)} */}
+                              <StatusBadge
+                                status={
+                                  status === "published" || status === "posted"
+                                    ? "published"
+                                    : status === "scheduled"
+                                    ? "pending"
+                                    : "draft"
+                                }
+                                size="sm"
+                              />
                             </div>
                           </div>
                           <Button
@@ -381,7 +600,7 @@ export default function DashboardPage() {
             </TabsContent>
 
             <TabsContent value="insights">
-              <Card>
+              <Card variant="premium">
                 <CardHeader>
                   <CardTitle>Content Insights</CardTitle>
                   <CardDescription>
@@ -408,168 +627,121 @@ export default function DashboardPage() {
             </TabsContent>
           </Tabs>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Links</CardTitle>
-                <CardDescription>Frequently used tools</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    {
-                      label: "Create Post",
-                      icon: <Plus className="h-5 w-5 mb-1 text-primary" />,
-                      onClick: () => {
-                        if (!hasValidSubscription(billing?.paymentStatus)) {
-                          toast({
-                            variant: "destructive",
-                            title: "Upgrade your plan to post content.",
-                          });
-                        } else {
-                          navigate("/dashboard/post-flow");
-                        }
-                      },
-                    },
-                    {
-                      label: "View Schedule",
-                      icon: (
-                        <CalendarClock className="h-5 w-5 mb-1 text-primary" />
-                      ),
-                      onClick: () => {
-                        if (!hasValidSubscription(billing?.paymentStatus)) {
-                          toast({
-                            variant: "destructive",
-                            title: "Upgrade your plan to view scheduled posts.",
-                          });
-                        } else {
-                          navigate("/dashboard/scheduled");
-                        }
-                      },
-                    },
-                    {
-                      label: "Manage Accounts",
-                      icon: <Users className="h-5 w-5 mb-1 text-primary" />,
-                      onClick: () => {
-                        if (!hasValidSubscription(billing?.paymentStatus)) {
-                          toast({
-                            variant: "destructive",
-                            title: "Upgrade your plan to manage accounts.",
-                          });
-                        } else {
-                          navigate("/dashboard/accounts");
-                        }
-                      },
-                    },
-                    {
-                      label: "Collections",
-                      icon: (
-                        <FolderPlus className="h-5 w-5 mb-1 text-primary" />
-                      ),
-                      onClick: () => {
-                        if (!hasValidSubscription(billing?.paymentStatus)) {
-                          toast({
-                            variant: "destructive",
-                            title: "Upgrade your plan to manage collections.",
-                          });
-                        } else {
-                          navigate("/dashboard/collections");
-                        }
-                      },
-                    },
-                  ].map(({ label, icon, onClick }) => (
-                    <button
-                      key={label}
-                      onClick={onClick}
-                      className="rounded-2xl bg-muted/60 hover:bg-muted shadow-sm transition-all py-5 px-4 flex flex-col items-center text-center focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                    >
-                      {icon}
-                      <span className="text-sm font-medium text-foreground">
-                        {label}
-                      </span>
-                    </button>
-                  ))}
+          {/* Enhanced Connected Accounts Section */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex-1">
+                  <CardTitle className="flex items-center space-x-2 mb-2">
+                    <Users className="h-5 w-5 text-primary" />
+                    <span>Connected Accounts</span>
+                  </CardTitle>
+                  <CardDescription className="text-sm">
+                    Your linked social media platforms
+                  </CardDescription>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Connected Accounts</CardTitle>
-                <CardDescription>Your social media platforms</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {socialAccounts.length > 0 ? (
-                  <div className="space-y-3">
-                    {socialAccounts
-                      .slice(0, 3)
-                      .map((account: any) =>
-                        renderSocialAccountIconArea(account)
-                      )}
-
-                    {socialAccounts.length > 3 && (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center -space-x-2 pl-1">
-                          {socialAccounts.slice(3, 6).map((account: any) => (
-                            <TooltipProvider key={account._id}>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <div
-                                    className="w-8 h-8 cursor-pointer rounded-full bg-muted flex items-center justify-center border-2 border-background"
-                                    title={account.accountName}
-                                  >
-                                    <i
-                                      className={`${getSocialIcon(
-                                        account.platform
-                                      )} text-xl ${getTextColor(
-                                        account.platform
-                                      )}`}
-                                    />
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{account.accountName}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          ))}
-                          {socialAccounts.length > 6 && (
-                            <Link
-                              to="/dashboard/accounts"
-                              className="w-8 h-8 rounded-full bg-primary text-primary-foreground text-xs font-medium flex items-center justify-center border-2 border-background"
-                            >
-                              +{socialAccounts.length - 6}
-                            </Link>
-                          )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/dashboard/accounts")}
+                  className="hover:bg-primary-50 dark:hover:bg-primary-900/20 self-start sm:self-auto"
+                >
+                  Manage All
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {socialAccounts.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    {socialAccounts.slice(0, 6).map((account: any) => (
+                      <div
+                        key={account._id}
+                        className="group p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-primary-200 dark:hover:border-primary-800 hover:shadow-md transition-all duration-200"
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className="relative flex-shrink-0">
+                            {account.metadata?.profileImageUrl ||
+                            account.metadata?.picture ||
+                            account.metadata?.profile
+                              ?.threads_profile_picture_url ? (
+                              <img
+                                src={
+                                  account.metadata.profileImageUrl ??
+                                  account.metadata.picture ??
+                                  account.metadata.profile
+                                    .threads_profile_picture_url
+                                }
+                                alt={`${account.accountName} profile`}
+                                className="h-12 w-12 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div
+                                className={`w-12 h-12 flex items-center justify-center rounded-full ${getClassName(
+                                  account.platform
+                                )}`}
+                              >
+                                <i
+                                  className={`${getSocialIcon(
+                                    account.platform
+                                  )} text-xl ${getTextColor(account.platform)}`}
+                                />
+                              </div>
+                            )}
+                            {/* Status indicator positioned better */}
+                            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-400 border-2 border-white dark:border-gray-800"></div>
+                          </div>
+                          <div className="flex-1 min-w-0 py-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <h3 className="font-semibold text-sm text-gray-900 dark:text-white truncate max-w-[120px] sm:max-w-none">
+                                {account.accountName ?? "Unknown Account"}
+                              </h3>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize mt-0.5">
+                              {account.platform}
+                            </p>
+                          </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate("/dashboard/accounts")}
-                          className="text-xs text-muted-foreground"
-                        >
-                          Manage
-                        </Button>
                       </div>
-                    )}
+                    ))}
                   </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">
-                      No accounts connected
-                    </p>
-                    <Button
-                      variant="link"
-                      onClick={() => navigate("/dashboard/accounts")}
-                      className="mt-2"
-                    >
-                      Connect an account
-                    </Button>
+
+                  {socialAccounts.length > 6 && (
+                    <div className="text-center pt-2">
+                      <Button
+                        variant="link"
+                        onClick={() => navigate("/dashboard/accounts")}
+                        className="text-sm text-gray-600 dark:text-gray-400"
+                      >
+                        View {socialAccounts.length - 6} more account
+                        {socialAccounts.length - 6 > 1 ? "s" : ""}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="mx-auto w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                    <Users className="h-8 w-8 text-gray-400 dark:text-gray-600" />
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    No accounts connected
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
+                    Connect your social media accounts to start posting
+                  </p>
+                  <Button
+                    onClick={() => navigate("/dashboard/accounts")}
+                    variant="gradient"
+                    className="shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Connect Account
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </main>

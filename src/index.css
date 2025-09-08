@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -8,15 +8,15 @@
   /* Main colors */
   --background: 210 40% 98%;
   --foreground: 222 47% 11%;
-  
+
   /* Primary color - vibrant blue (aligned with your Tailwind config) */
   --primary: 214 90% 52%; /* Matches your #4B8EF0 */
   --primary-foreground: 0 0% 100%;
-  
+
   /* Secondary color - success green */
   --secondary: 157 70% 59%; /* Approximates your original #57D8A5 */
   --secondary-foreground: 0 0% 100%;
-  
+
   /* UI element colors */
   --card: 0 0% 100%;
   --card-foreground: 222 47% 11%;
@@ -29,7 +29,7 @@
   --border: 214 32% 91%;
   --input: 214 32% 91%;
   --ring: 214 90% 52%;
-  
+
   /* Feedback colors */
   --destructive: 0 81% 68%; /* Similar to your #FC8181 */
   --destructive-foreground: 210 40% 98%;
@@ -39,7 +39,7 @@
   --warning-foreground: 0 0% 20%;
   --info: 214 90% 52%;
   --info-foreground: 210 40% 98%;
-  
+
   /* Sidebar colors */
   --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 222 47% 11%;
@@ -49,56 +49,56 @@
   --sidebar-accent-foreground: 222 47% 11%;
   --sidebar-border: 214 32% 91%;
   --sidebar-ring: 214 90% 52%;
-  
+
   /* Radius */
   --radius: 0.75rem;
 }
 
 .dark {
-  /* Main colors for dark mode */
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
-  
-  /* Primary color - vibrant blue adjusted for dark */
-  --primary: 214 90% 65%;
-  --primary-foreground: 0 0% 100%;
-  
+  /* Main colors for dark mode - better contrast but not too dark */
+  --background: 224 71% 4%;  /* Rich dark background */
+  --foreground: 213 31% 91%; /* High contrast white text */
+
+  /* Primary color - vibrant blue optimized for dark */
+  --primary: 217 91% 60%;     /* Bright but readable blue */
+  --primary-foreground: 0 0% 98%;
+
   /* Secondary color - success green adjusted for dark */
-  --secondary: 157 50% 65%;
-  --secondary-foreground: 0 0% 100%;
-  
-  /* UI element colors for dark mode */
-  --card: 222 47% 11%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222 47% 11%;
-  --popover-foreground: 210 40% 98%;
-  --muted: 223 47% 20%;
-  --muted-foreground: 215 16% 74%;
-  --accent: 262 70% 76%;
-  --accent-foreground: 210 40% 98%;
-  --border: 216 34% 17%;
-  --input: 216 34% 17%;
-  --ring: 214 90% 65%;
-  
+  --secondary: 162 63% 41%;   /* Professional green */
+  --secondary-foreground: 0 0% 98%;
+
+  /* UI element colors for dark mode - layered depth */
+  --card: 224 71% 6%;         /* Slightly lighter than background */
+  --card-foreground: 213 31% 91%;
+  --popover: 224 71% 6%;     
+  --popover-foreground: 213 31% 91%;
+  --muted: 215 28% 17%;       /* Good contrast for muted sections */
+  --muted-foreground: 217 9% 61%; /* Readable muted text */
+  --accent: 263 70% 50%;      /* Rich purple accent */
+  --accent-foreground: 0 0% 98%;
+  --border: 215 28% 17%;      /* Visible borders */
+  --input: 215 28% 17%;       /* Input background */
+  --ring: 217 91% 60%;        /* Focus ring */
+
   /* Feedback colors for dark mode */
-  --destructive: 0 81% 65%;
-  --destructive-foreground: 210 40% 98%;
-  --success: 157 60% 45%;
-  --success-foreground: 210 40% 98%;
-  --warning: 43 80% 60%;
-  --warning-foreground: 0 0% 20%;
-  --info: 214 90% 65%;
-  --info-foreground: 210 40% 98%;
-  
+  --destructive: 0 84% 60%;   
+  --destructive-foreground: 0 0% 98%;
+  --success: 162 63% 41%;     
+  --success-foreground: 0 0% 98%;
+  --warning: 38 92% 50%;      
+  --warning-foreground: 0 0% 98%;
+  --info: 217 91% 60%;
+  --info-foreground: 0 0% 98%;
+
   /* Sidebar colors for dark mode */
-  --sidebar-background: 222 47% 12%;
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-primary: 214 90% 65%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 262 70% 76%;
-  --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-border: 216 34% 20%;
-  --sidebar-ring: 214 90% 65%;
+  --sidebar-background: 224 71% 5%;
+  --sidebar-foreground: 213 31% 91%;
+  --sidebar-primary: 217 91% 60%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 263 70% 50%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 215 28% 17%;
+  --sidebar-ring: 217 91% 60%;
 }
 
 @layer base {
@@ -109,27 +109,44 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
-  
+
   /* Custom heading styles */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading font-bold tracking-tight;
   }
-  
+
   h1 {
     @apply text-4xl md:text-5xl lg:text-6xl;
   }
-  
+
   h2 {
     @apply text-3xl md:text-4xl;
   }
-  
+
   h3 {
     @apply text-2xl md:text-3xl;
   }
-  
+
   /* Custom focus styles */
   *:focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+
+  /* Remove all input outlines */
+  input:focus,
+  input:focus-visible {
+    @apply outline-none ring-0;
+  }
+  
+  /* Specifically remove Command Input styling */
+  [cmdk-input]:focus,
+  [cmdk-input]:focus-visible {
+    @apply outline-none ring-0 border-none;
   }
 }
 
@@ -138,30 +155,70 @@
   .gradient-heading {
     @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary;
   }
-  
+
   .card-hover {
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
-  
+
   .glass-effect {
-    @apply bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-white/80 dark:border-gray-700/80;
+    @apply bg-white/80 dark:bg-card/80 backdrop-blur-lg border border-white/90 dark:border-border;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
-  
+
+  /* Enhanced dark mode specific utilities */
+  .dark-gradient-bg {
+    @apply bg-gradient-to-br from-background via-card to-muted;
+  }
+
+  .dark-card-elevated {
+    @apply bg-card/95 backdrop-blur-sm border border-border/40 shadow-lg;
+  }
+
+  .dark-text-glow {
+    text-shadow: 0 0 20px rgba(var(--primary), 0.3);
+  }
+
   .badge {
     @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
   }
-  
+
   .badge-primary {
     @apply bg-primary/10 text-primary border-primary/20 dark:bg-primary/20;
   }
-  
+
   .badge-secondary {
     @apply bg-secondary/10 text-secondary border-secondary/20 dark:bg-secondary/20;
   }
-  
+
   /* Improved buttons */
   .btn-gradient {
     @apply bg-gradient-to-r from-primary to-secondary text-white font-medium shadow-lg hover:shadow-xl transition-shadow;
+  }
+
+  /* Advanced dark mode enhancements */
+  .dark-premium-card {
+    @apply bg-gradient-to-br from-card via-card/80 to-muted/40 
+           backdrop-blur-xl border border-border/30 
+           shadow-2xl shadow-primary/5;
+  }
+
+  .dark-glow-effect {
+    box-shadow: 0 0 50px -12px rgba(var(--primary), 0.25);
+  }
+
+  .dark-text-gradient {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-foreground via-primary/90 to-secondary/80;
+  }
+
+  .dark-border-glow {
+    @apply border border-primary/20 shadow-lg shadow-primary/10;
+  }
+
+  /* Improved glass morphism for dark mode */
+  .dark-glass {
+    @apply bg-card/60 dark:bg-card/40 backdrop-blur-2xl 
+           border border-border/50 dark:border-border/30 
+           shadow-xl dark:shadow-2xl dark:shadow-primary/5;
   }
 }
 
@@ -181,11 +238,11 @@
 
 /* Set custom fonts */
 :root {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .font-heading {
-  font-family: 'Manrope', 'Inter', system-ui, sans-serif;
+  font-family: "Manrope", "Inter", system-ui, sans-serif;
 }
 
 /* Utility classes */
@@ -199,3 +256,43 @@
   display: none;
 }
 
+/* Accessibility utilities */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus management */
+.focus-visible-only:focus:not(.focus-visible) {
+  outline: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .high-contrast\:border-2 {
+    border-width: 2px;
+  }
+  
+  .high-contrast\:border-foreground {
+    border-color: hsl(var(--foreground));
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

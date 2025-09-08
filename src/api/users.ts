@@ -21,12 +21,13 @@ export const usersApi = {
     await axiosInstance.post("/invitations", data);
   },
 
-  updateUser: async (userId: string, updates: Partial<User>): Promise<User> => {
+  updateUser: async (updates: FormData | Partial<User>): Promise<User> => {
     try {
-      const response = await axiosInstance.put<User>(
-        `/users/${userId}`,
-        updates
-      );
+      const response = await axiosInstance.patch(`/users/me/`, updates, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data;
     } catch (error: any) {
       return error;

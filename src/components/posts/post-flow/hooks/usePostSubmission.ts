@@ -70,19 +70,17 @@ export function usePostSubmission({
 
   const handleSubmit = async () => {
     if (selectedAccounts.length === 0) {
-      toast({
-        title: "Error",
-        description: "Select at least one account to post to",
-        variant: "destructive",
+      toast.error({
+        title: "No Account Selected",
+        description: "Select at least one account to post to.",
       });
       return;
     }
 
     if (globalCaption.trim().length === 0) {
-      toast({
-        title: "Error",
-        description: "Caption cannot be empty",
-        variant: "destructive",
+      toast.error({
+        title: "Caption Required",
+        description: "Caption cannot be empty.",
       });
       return;
     }
@@ -100,11 +98,9 @@ export function usePostSubmission({
     );
 
     if (platforms.includes("tiktok") && !allValid) {
-      toast({
-        title: "TikTok settings incomplete",
-        description:
-          "Go to media tab, select TikTok Settings and fill out all required fields to complete your post.",
-        variant: "destructive",
+      toast.warning({
+        title: "TikTok Settings Incomplete",
+        description: "Go to media tab, select TikTok Settings and fill out all required fields to complete your post.",
       });
       return;
     }
@@ -132,10 +128,9 @@ export function usePostSubmission({
     }
 
     if (postType === "mixed") {
-      toast({
-        title: "Unsupported media combination",
+      toast.error({
+        title: "Unsupported Media Combination",
         description: "Please upload only images or only videos, not both.",
-        variant: "destructive",
       });
       setIsSubmitting(false);
       return;
@@ -146,11 +141,11 @@ export function usePostSubmission({
     try {
       // Simulate progress
       await new Promise((res) => setTimeout(res, 500));
-      toast({ title: "Processing", description: "Preparing your content..." });
+      toast.loading({ title: "Processing", description: "Preparing your content..." });
 
       if (media.length > 0) {
         await new Promise((res) => setTimeout(res, 1000));
-        toast({
+        toast.loading({
           title: "Processing",
           description: "Warming up your hashtags...",
         });
@@ -159,12 +154,12 @@ export function usePostSubmission({
       await new Promise((res) => setTimeout(res, 1500));
 
       if (isScheduled && scheduledDate) {
-        toast({
+        toast.loading({
           title: "Processing",
           description: "Skedlii is lining up your post...",
         });
       } else {
-        toast({
+        toast.loading({
           title: "Processing",
           description: "Queueing your awesomeness...",
         });
@@ -197,9 +192,9 @@ export function usePostSubmission({
                 mediaType: postType,
               }
             : {
-                caption,
+                content: caption,
                 accountId: account.accountId,
-                id: account._id,
+                userId: account._id,
                 media: mediaUrls,
                 accountName: account.accountName,
                 accountType: account.accountType,
@@ -229,7 +224,7 @@ export function usePostSubmission({
         }
       }
 
-      toast({
+      toast.success({
         title: "Success",
         description: isScheduled
           ? "Your post has been scheduled!"
@@ -237,12 +232,11 @@ export function usePostSubmission({
       });
 
       navigate(`/dashboard/${isScheduled ? "scheduled" : "posts"}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Submission error:", err);
-      toast({
-        title: "Error",
-        description: "Failed to create post. Please try again.",
-        variant: "destructive",
+      toast.error({
+        title: "Post Submission Failed",
+        description: err.message || "Please try again.",
       });
     } finally {
       setIsSubmitting(false);

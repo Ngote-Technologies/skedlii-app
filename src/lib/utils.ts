@@ -90,6 +90,12 @@ export function getTextColor(platform: string) {
       return "text-blue-600";
     case "threads":
       return "text-black dark:text-white";
+    case "tiktok":
+      return "text-pink-500";
+    case "youtube":
+      return "text-red-500";
+    case "facebook":
+      return "text-blue-600";
     default:
       return "text-gray-500";
   }
