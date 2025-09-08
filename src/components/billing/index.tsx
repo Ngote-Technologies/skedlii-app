@@ -12,6 +12,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Button } from "../ui/button";
 import { useQuery } from "@tanstack/react-query";
+import { getApiClient } from "../../api/axios";
 import { Switch } from "../ui/switch";
 import { CreditCard, FileText, Zap } from "lucide-react";
 import { InvoiceGrid } from "./InvoiceGrid";
@@ -32,7 +33,7 @@ const TAB_ITEMS = [
 type TabValue = "subscription" | "plans" | "invoices";
 
 const Billing = () => {
-  const { user, fetchUserData, subscriptionInfo, updateSubscriptionInfo } =
+  const { user, fetchUserData, subscriptionInfo, refreshPermissions } =
     useAuth();
   const { toast } = useToast();
   const { canManageBilling } = useAccessControl();
@@ -89,11 +90,7 @@ const Billing = () => {
         await fetchUserData();
         try {
           const activeOrgId = user?.defaultOrganizationId;
-          const { authApi } = await import("../../api/auth");
-          const { subscriptionInfo } = await authApi.refreshPermissions(
-            activeOrgId
-          );
-          updateSubscriptionInfo(subscriptionInfo);
+          await refreshPermissions(activeOrgId);
         } catch (e) {
           /* ignore */
         }
@@ -166,9 +163,19 @@ const Billing = () => {
   }) as { data: any };
   const plans = (plansResponse?.plans as any[]) || [];
 
-  const { data: invoices = [] } = useQuery({
-    queryKey: [`/invoices/user/${user?._id}`],
-  }) as { data: any[] };
+  const activeOrgId = user?.defaultOrganizationId;
+  const { data: invoicesResp } = useQuery({
+    queryKey: ["/billing/organizations", activeOrgId, "invoices"],
+    enabled: !!activeOrgId,
+    queryFn: async () => {
+      const api = getApiClient("v2");
+      const res = await api.get(
+        `/billing/organizations/${activeOrgId}/invoices?limit=50`
+      );
+      return res.data;
+    },
+  }) as { data: any };
+  const invoices = (invoicesResp?.data as any[]) || [];
 
   console.log({ plans });
 
@@ -209,11 +216,7 @@ const Billing = () => {
         const refreshData = async () => {
           try {
             const activeOrgId = user?.defaultOrganizationId;
-            const { authApi } = await import("../../api/auth");
-            const response = await authApi.refreshPermissions(activeOrgId);
-            if (response.subscriptionInfo) {
-              updateSubscriptionInfo(response.subscriptionInfo);
-            }
+            await refreshPermissions(activeOrgId);
           } catch (error) {
             console.error("Failed to refresh subscription:", error);
             // Fallback to full user fetch only if needed
@@ -230,7 +233,7 @@ const Billing = () => {
         });
       }
     },
-    [user, updateSubscriptionInfo, fetchUserData, toast]
+    [user, refreshPermissions, fetchUserData, toast]
   );
 
   const handlePreviewError = useCallback(
@@ -340,8 +343,26 @@ const Billing = () => {
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="text-center">
-              <div className="text-sm font-bold text-foreground">$0</div>
-              <div className="text-xs text-muted-foreground">Last Payment</div>
+                    <div className="text-sm font-bold text-foreground">
+                      {(() => {
+                        const paid = invoices.filter((i) => i.status === "paid");
+                        const last = paid.length ? paid[0] : null;
+                        if (!last) return "$0";
+                        const amt = (last.amount_paid ?? 0) / 100;
+                        try {
+                          return new Intl.NumberFormat(undefined, {
+                            style: "currency",
+                            currency: (last.currency || "usd").toUpperCase(),
+                            maximumFractionDigits: 2,
+                          }).format(amt);
+                        } catch {
+                          return `$${amt.toFixed(2)}`;
+                        }
+                      })()}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Last Payment
+                    </div>
             </div>
           </div>
         </div>

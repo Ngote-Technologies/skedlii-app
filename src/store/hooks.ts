@@ -16,6 +16,7 @@ export const useAuth = () => {
     fetchUserData,
     clearError: clearAuthError,
     updateSubscriptionInfo,
+    refreshPermissions,
 
     // Enhanced authentication context
     userRole,
@@ -87,6 +88,7 @@ export const useAuth = () => {
     fetchUserData,
     clearAuthError,
     updateSubscriptionInfo,
+    refreshPermissions,
 
     // Computed permissions
     isAdmin,

@@ -37,7 +37,14 @@ import {
 import { useToast } from "../hooks/use-toast";
 
 export default function DashboardHeader() {
-  const { user, logout, canManageBilling, fetchUserData } = useAuth();
+  const {
+    user,
+    logout,
+    canManageBilling,
+    fetchUserData,
+    updateSubscriptionInfo,
+    refreshPermissions,
+  } = useAuth();
   const { canConnectSocialAccounts } = useAccessControl();
   const location = useLocation();
   const [isCreateOrgDialogOpen, setIsCreateOrgDialogOpen] = useState(false);
@@ -57,12 +64,15 @@ export default function DashboardHeader() {
   // Handle sync functionality
   const handleSync = async () => {
     if (isSyncing) return; // Prevent multiple simultaneous syncs
-    
+
     setIsSyncing(true);
     try {
-      await fetchUserData();
+      // Single source of truth: use store action which updates state internally
+      const activeOrgId = user?.defaultOrganizationId;
+      await refreshPermissions(activeOrgId);
+
       toast.success({
-        title: "Data Synced",
+        title: "Data Synced", 
         description: "Your account data has been refreshed successfully.",
       });
     } catch (error) {
@@ -167,7 +177,9 @@ export default function DashboardHeader() {
             aria-label="Sync data"
             title="Refresh account data"
           >
-            <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
+            />
           </Button>
 
           {/* Theme Toggle */}
