@@ -50,32 +50,35 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  const { data: posts, isLoading: postsLoading } = useQuery({
-    queryKey: [`/social-posts/${user?._id}`],
+  const { data: summary, isLoading: summaryLoading } = useQuery({
+    queryKey: ["/dashboard/summary"],
     enabled: isAuthenticated,
-  }) as { data: { data: any[] }; isLoading: boolean };
+    staleTime: 10_000,
+  }) as { data: any; isLoading: boolean };
 
-  const { data: socialAccounts = [], isLoading: socialAccountsLoading } =
-    useQuery({
-      queryKey: [`/social-accounts/${user?._id}`],
-      enabled: isAuthenticated,
-    }) as { data: any[]; isLoading: boolean };
-
-  const {
-    data: collections = { count: 0, data: [] },
-    isLoading: collectionsLoading,
-  } = useQuery({
-    queryKey: ["/collections"],
+  // Lightweight lists for UI sections (keep one counts call; lists are small)
+  // Small lists for previews
+  const { data: recentPostsResp } = useQuery({
+    queryKey: ["/social-posts?limit=3"],
     enabled: isAuthenticated,
-  }) as { data: { count: number; data: any[] }; isLoading: boolean };
+    staleTime: 10_000,
+  }) as { data: { items: any[] } };
 
-  const { data: scheduledPosts, isLoading: scheduledPostsLoading } = useQuery({
-    queryKey: ["/scheduled-posts"],
+  const { data: upcomingResp } = useQuery({
+    queryKey: ["/social-posts?status=scheduled&limit=3"],
     enabled: isAuthenticated,
-  }) as { data: { data: any[] }; isLoading: boolean };
+    staleTime: 10_000,
+  }) as { data: { items: any[] } };
 
-  const recentPosts = posts?.data?.slice(0, 3);
-  const recentScheduledPosts = scheduledPosts?.data?.slice(0, 3);
+  const { data: socialAccountsResp = { items: [] } } = useQuery({
+    queryKey: [`/social-accounts/${user?._id}`],
+    enabled: isAuthenticated,
+    staleTime: 10_000,
+  }) as { data: { items: any[] } };
+
+  const recentPosts = recentPostsResp?.items || [];
+  const recentScheduledPosts = upcomingResp?.items || [];
+  const socialAccounts = socialAccountsResp?.items || [];
 
   if (authLoading) {
     return (
@@ -193,23 +196,20 @@ export default function DashboardPage() {
           </div>
 
           {/* Enhanced Analytics Cards with Micro-interactions */}
-          {postsLoading ||
-          scheduledPostsLoading ||
-          socialAccountsLoading ||
-          collectionsLoading ? (
+          {summaryLoading ? (
             <DashboardStatsSkeleton />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {[
                 {
                   label: "Total Posts",
-                  value: posts?.data?.length ?? 0,
+                  value: summary?.counts?.posts?.total ?? 0,
                   icon: <Activity className="h-6 w-6" />,
                   color: "bg-blue-500",
                   gradient: "from-blue-500 to-cyan-500",
                   footer: getFooter(
-                    postsLoading,
-                    posts?.data?.length ?? 0,
+                    summaryLoading,
+                    summary?.counts?.posts?.total ?? 0,
                     "Published content"
                   ),
                   to: "/dashboard/posts",
@@ -218,13 +218,13 @@ export default function DashboardPage() {
                 },
                 {
                   label: "Scheduled Posts",
-                  value: scheduledPosts?.data?.length ?? 0,
+                  value: summary?.counts?.posts?.scheduled ?? 0,
                   icon: <CalendarClock className="h-6 w-6" />,
                   color: "bg-purple-500",
                   gradient: "from-purple-500 to-pink-500",
                   footer: getFooter(
-                    scheduledPostsLoading,
-                    scheduledPosts?.data?.length ?? 0,
+                    summaryLoading,
+                    summary?.counts?.posts?.scheduled ?? 0,
                     "Ready to publish"
                   ),
                   to: "/dashboard/scheduled",
@@ -233,13 +233,13 @@ export default function DashboardPage() {
                 },
                 {
                   label: "Social Accounts",
-                  value: socialAccounts?.length ?? 0,
+                  value: summary?.counts?.socialAccounts ?? 0,
                   icon: <Users className="h-6 w-6" />,
                   color: "bg-green-500",
                   gradient: "from-green-500 to-emerald-500",
                   footer: getFooter(
-                    socialAccountsLoading,
-                    socialAccounts?.length ?? 0,
+                    summaryLoading,
+                    summary?.counts?.socialAccounts ?? 0,
                     "Connected platforms"
                   ),
                   to: "/dashboard/accounts",
@@ -248,13 +248,13 @@ export default function DashboardPage() {
                 },
                 {
                   label: "Collections",
-                  value: collections?.count ?? 0,
+                  value: summary?.counts?.collections ?? 0,
                   icon: <FolderPlus className="h-6 w-6" />,
                   color: "bg-orange-500",
                   gradient: "from-orange-500 to-red-500",
                   footer: getFooter(
-                    collectionsLoading,
-                    collections?.count ?? 0,
+                    summaryLoading,
+                    summary?.counts?.collections ?? 0,
                     "Organized content"
                   ),
                   to: "/dashboard/collections",
@@ -442,7 +442,7 @@ export default function DashboardPage() {
                     <span className="text-sm font-medium">Scheduled</span>
                   </div>
                   <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                    {scheduledPosts?.data?.length ?? 0}
+                    {summary?.counts?.posts?.scheduled ?? 0}
                   </span>
                 </div>
 
