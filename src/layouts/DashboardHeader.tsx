@@ -26,7 +26,7 @@ import {
 import { useMobileMenuStore } from "../store/layout";
 import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import DashboardSidebar from "./DashboardSidebar";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "../components/ui/badge";
 import NotificationBadge from "../components/ui/notification-badge";
 import { useDynamicBreadcrumbs } from "../hooks/useDynamicBreadcrumbs";
@@ -35,21 +35,70 @@ import {
   CreateOrganizationDialog,
 } from "../components/organization";
 import { useToast } from "../hooks/use-toast";
+import { Input } from "../components/ui/input";
+import { getApiClient, useV2Api } from "../api/axios";
 
 export default function DashboardHeader() {
   const {
     user,
+    organization,
     logout,
     canManageBilling,
     fetchUserData,
-    updateSubscriptionInfo,
     refreshPermissions,
+    canCreateTeams,
   } = useAuth();
   const { canConnectSocialAccounts } = useAccessControl();
+  const canUseV2 = useV2Api("auth");
   const location = useLocation();
   const [isCreateOrgDialogOpen, setIsCreateOrgDialogOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const { toast } = useToast();
+  const [orgSetupOpen, setOrgSetupOpen] = useState(false);
+  const [orgName, setOrgName] = useState("");
+  const [isSavingOrg, setIsSavingOrg] = useState(false);
+
+  // Determine if we should prompt for org setup: collaboration-capable plan and missing name
+  const shouldPromptOrgSetup = useMemo(() => {
+    const hasOrgId = !!(organization?._id || user?.defaultOrganizationId);
+    const missingName = !organization?.name;
+    // Only owners can set the org profile via the lightweight endpoint
+    const isOwner = (organization as any)?.role === "owner";
+    // Gate by collaboration-capable plans (Team/Enterprise/Trial)
+    return hasOrgId && missingName && isOwner && !!canCreateTeams;
+  }, [organization, user?.defaultOrganizationId, canCreateTeams]);
+
+  useEffect(() => {
+    if (shouldPromptOrgSetup) {
+      setOrgSetupOpen(true);
+    }
+  }, [shouldPromptOrgSetup]);
+
+  const saveOrganizationProfile = async () => {
+    if (!orgName?.trim()) return;
+    const orgId =
+      (organization?._id as string) || (user?.defaultOrganizationId as string);
+    if (!orgId) return;
+    setIsSavingOrg(true);
+    try {
+      const api = getApiClient(canUseV2 ? "v2" : undefined);
+      await api.patch(`/organizations/${orgId}/profile`, {
+        name: orgName.trim(),
+      });
+      await fetchUserData();
+      setOrgSetupOpen(false);
+      toast.success({
+        title: "Organization updated",
+        description: "Name saved successfully.",
+      });
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.message || "Failed to update organization";
+      toast.error({ title: "Update failed", description: msg });
+    } finally {
+      setIsSavingOrg(false);
+    }
+  };
 
   const mobileMenuOpen = useMobileMenuStore(
     (state: any) => state.mobileMenuOpen
@@ -72,7 +121,7 @@ export default function DashboardHeader() {
       await refreshPermissions(activeOrgId);
 
       toast.success({
-        title: "Data Synced", 
+        title: "Data Synced",
         description: "Your account data has been refreshed successfully.",
       });
     } catch (error) {
@@ -287,6 +336,40 @@ export default function DashboardHeader() {
         open={isCreateOrgDialogOpen}
         onOpenChange={setIsCreateOrgDialogOpen}
       />
+
+      {/* Organization Setup Prompt (inline) */}
+      {orgSetupOpen && (
+        <div className="border-t bg-amber-50 dark:bg-amber-950/40 px-4 lg:px-6 py-3 flex items-center gap-3">
+          <div className="text-amber-800 dark:text-amber-200 text-sm flex-1">
+            <span className="font-medium">Set up your organization</span>
+            <span className="ml-2 opacity-90">
+              Give your workspace a name to get started.
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Organization name"
+              value={orgName}
+              onChange={(e) => setOrgName(e.target.value)}
+              className="w-56"
+            />
+            <Button
+              size="sm"
+              onClick={saveOrganizationProfile}
+              disabled={!orgName?.trim() || isSavingOrg}
+            >
+              {isSavingOrg ? "Saving..." : "Save"}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setOrgSetupOpen(false)}
+            >
+              Dismiss
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Debug Component */}
     </header>
