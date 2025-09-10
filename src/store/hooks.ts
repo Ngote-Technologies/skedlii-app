@@ -17,6 +17,7 @@ export const useAuth = () => {
     clearError: clearAuthError,
     updateSubscriptionInfo,
     refreshPermissions,
+    setActiveOrganization,
 
     // Enhanced authentication context
     userRole,
@@ -89,6 +90,7 @@ export const useAuth = () => {
     clearAuthError,
     updateSubscriptionInfo,
     refreshPermissions,
+    setActiveOrganization,
 
     // Computed permissions
     isAdmin,
