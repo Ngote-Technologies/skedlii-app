@@ -19,7 +19,9 @@ export const socialApi = {
   // Get organization social accounts
   getOrganizationSocialAccounts: async (organizationId: string) => {
     try {
-      const response = await axiosInstance.get(`/social-accounts/organization/${organizationId}`);
+      const response = await axiosInstance.get(
+        `/social-accounts/organization/${organizationId}`
+      );
       return response.data;
     } catch (error: any) {
       console.error("Failed to fetch organization social accounts:", error);
@@ -72,7 +74,7 @@ export const socialApi = {
   connectThreads: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/threads/direct-auth`
+      `/social-accounts/threads/connect`
     );
     return response;
   },
@@ -80,7 +82,7 @@ export const socialApi = {
   connectLinkedIn: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/linkedin/direct-auth`
+      `/social-accounts/linkedin/connect`
     );
     return response;
   },
@@ -88,7 +90,7 @@ export const socialApi = {
   connectFacebook: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/facebook/direct-auth`
+      `/social-accounts/facebook/connect`
     );
     return response;
   },
@@ -100,7 +102,7 @@ export const socialApi = {
   }) => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/meta/direct-auth?platform=${platform}`
+      `/social-accounts/meta/connect?platform=${platform}`
     );
     return response;
   },
@@ -108,7 +110,7 @@ export const socialApi = {
   connectInstagram: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/instagram/direct-auth`
+      `/social-accounts/instagram/connect`
     );
     return response;
   },
@@ -116,7 +118,7 @@ export const socialApi = {
   connectTikTok: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/tiktok/direct-auth`
+      `/social-accounts/tiktok/connect`
     );
     return response;
   },
@@ -124,7 +126,7 @@ export const socialApi = {
   connectYoutube: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/youtube/direct-auth`
+      `/social-accounts/youtube/connect`
     );
     return response;
   },
@@ -180,7 +182,7 @@ export const socialApi = {
   refreshYoutubeAccessToken: async ({ accountId }: { accountId: string }) => {
     try {
       const response = await axiosInstance.get(
-        `/social-accounts/youtube/refresh/${accountId}`
+        `/social-accounts/youtube/reauth/start/${accountId}`
       );
       return response.data;
     } catch (error: any) {

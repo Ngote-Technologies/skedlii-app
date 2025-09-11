@@ -101,10 +101,12 @@ export function getTextColor(platform: string) {
   }
 }
 
-// Count accounts by platform
-export const platformCounts = (accounts: any[]) => {
-  return accounts.reduce((acc, account) => {
-    const platform = account.platform.toLowerCase();
+// Count accounts by platform (guards undefined and missing platform)
+export const platformCounts = (accounts: any[] | undefined | null) => {
+  const list = Array.isArray(accounts) ? accounts : [];
+  return list.reduce((acc, account) => {
+    const platform = String(account?.platform || "").toLowerCase();
+    if (!platform) return acc;
     acc[platform] = (acc[platform] ?? 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -130,15 +132,16 @@ export const handleSchedulingChange = (
 
 // Helper to count selected accounts per platform
 export const countSelectedByPlatform = (
-  accounts: any[],
+  accounts: any[] | undefined | null,
   selectedAccounts: string[]
 ) => {
-  return accounts
+  const list = Array.isArray(accounts) ? accounts : [];
+  return list
     .filter((account) => selectedAccounts.includes(account._id))
     .reduce((acc, account) => {
-      const platform = account.platform.toLowerCase();
+      const platform = String(account?.platform || "").toLowerCase();
+      if (!platform) return acc;
       acc[platform] = (acc[platform] ?? 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 };
-

@@ -44,7 +44,7 @@ import {
   TrendingUp,
   Eye,
   Calendar,
-  Zap,
+  // Zap,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -216,22 +216,24 @@ export default function SocialAccounts() {
 
   // Individual user accounts (only when not using organization accounts)
   const {
-    data: individualAccounts = [],
+    data: individualAccountsData,
     isPending: isIndividualAccountsLoading,
     refetch: refetchIndividualAccounts,
   } = useGetSocialAccounts(shouldUseOrganizationAccounts ? "" : user?._id);
+  const individualAccounts: any[] = individualAccountsData?.items ?? [];
 
   // Organization accounts (only when using organization accounts)
   const {
-    data: organizationAccounts = [],
+    data: organizationAccountsData,
     isPending: isOrganizationAccountsLoading,
     refetch: refetchOrganizationAccounts,
   } = useGetOrganizationSocialAccounts(
     shouldUseOrganizationAccounts ? organization?._id || "" : ""
   );
+  const organizationAccounts: any[] = organizationAccountsData?.items ?? [];
 
   // Use the appropriate accounts and loading state
-  const accounts = shouldUseOrganizationAccounts
+  const accounts: any[] = shouldUseOrganizationAccounts
     ? organizationAccounts
     : individualAccounts;
   const isAccountsLoading = shouldUseOrganizationAccounts
@@ -242,93 +244,99 @@ export default function SocialAccounts() {
     : refetchIndividualAccounts;
 
   // Fetch organization teams for assignment functionality
-  const { data: organizationTeams = [] } = useQuery<Team[]>({
-    queryKey: ["/teams", organization?._id],
-    queryFn: () => {
-      if (!organization) return Promise.resolve([]);
-      return teamsApi.getTeams(organization._id);
-    },
-    enabled: Boolean(shouldUseOrganizationAccounts && organization),
-  });
+  // const { data: organizationTeams = [] } = useQuery<Team[]>({
+  //   queryKey: ["/teams", organization?._id],
+  //   queryFn: () => {
+  //     if (!organization) return Promise.resolve([]);
+  //     return teamsApi.getTeams(organization._id);
+  //   },
+  //   enabled: Boolean(shouldUseOrganizationAccounts && organization),
+  // });
+
+  console.log({ accounts });
 
   // Team assignment mutations
-  const { mutate: assignToTeam, isPending: isAssigning } = useMutation({
-    mutationFn: async ({
-      teamId,
-      accountId,
-    }: {
-      teamId: string;
-      accountId: string;
-    }) => {
-      if (!organization) throw new Error("No active organization");
-      return await teamsApi.assignSocialAccountToTeam(
-        organization._id,
-        teamId,
-        accountId
-      );
-    },
-    onSuccess: () => {
-      // Invalidate both social accounts and teams queries to refresh data
-      if (shouldUseOrganizationAccounts) {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts/organization", organization?._id] });
-      } else {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
-      }
-      queryClient.invalidateQueries({ queryKey: ["/teams"] });
-      toast({
-        title: "Account assigned",
-        description:
-          "Social account has been successfully assigned to the team.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Assignment failed",
-        description:
-          error.response?.data?.message || "Failed to assign account to team.",
-        variant: "destructive",
-      });
-    },
-  });
+  // const { mutate: assignToTeam, isPending: isAssigning } = useMutation({
+  //   mutationFn: async ({
+  //     teamId,
+  //     accountId,
+  //   }: {
+  //     teamId: string;
+  //     accountId: string;
+  //   }) => {
+  //     if (!organization) throw new Error("No active organization");
+  //     return await teamsApi.assignSocialAccountToTeam(
+  //       organization._id,
+  //       teamId,
+  //       accountId
+  //     );
+  //   },
+  //   onSuccess: () => {
+  //     // Invalidate both social accounts and teams queries to refresh data
+  //     if (shouldUseOrganizationAccounts) {
+  //       queryClient.invalidateQueries({
+  //         queryKey: ["/social-accounts/organization", organization?._id],
+  //       });
+  //     } else {
+  //       queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+  //     }
+  //     queryClient.invalidateQueries({ queryKey: ["/teams"] });
+  //     toast({
+  //       title: "Account assigned",
+  //       description:
+  //         "Social account has been successfully assigned to the team.",
+  //     });
+  //   },
+  //   onError: (error: any) => {
+  //     toast({
+  //       title: "Assignment failed",
+  //       description:
+  //         error.response?.data?.message || "Failed to assign account to team.",
+  //       variant: "destructive",
+  //     });
+  //   },
+  // });
 
-  const { mutate: unassignFromTeam, isPending: isUnassigning } = useMutation({
-    mutationFn: async ({
-      teamId,
-      accountId,
-    }: {
-      teamId: string;
-      accountId: string;
-    }) => {
-      if (!organization) throw new Error("No active organization");
-      return await teamsApi.removeSocialAccountFromTeam(
-        organization._id,
-        teamId,
-        accountId
-      );
-    },
-    onSuccess: () => {
-      // Invalidate both social accounts and teams queries to refresh data
-      if (shouldUseOrganizationAccounts) {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts/organization", organization?._id] });
-      } else {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
-      }
-      queryClient.invalidateQueries({ queryKey: ["/teams"] });
-      toast({
-        title: "Account unassigned",
-        description: "Social account has been removed from the team.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Unassignment failed",
-        description:
-          error.response?.data?.message ||
-          "Failed to remove account from team.",
-        variant: "destructive",
-      });
-    },
-  });
+  // const { mutate: unassignFromTeam, isPending: isUnassigning } = useMutation({
+  //   mutationFn: async ({
+  //     teamId,
+  //     accountId,
+  //   }: {
+  //     teamId: string;
+  //     accountId: string;
+  //   }) => {
+  //     if (!organization) throw new Error("No active organization");
+  //     return await teamsApi.removeSocialAccountFromTeam(
+  //       organization._id,
+  //       teamId,
+  //       accountId
+  //     );
+  //   },
+  //   onSuccess: () => {
+  //     // Invalidate both social accounts and teams queries to refresh data
+  //     if (shouldUseOrganizationAccounts) {
+  //       queryClient.invalidateQueries({
+  //         queryKey: ["/social-accounts/organization", organization?._id],
+  //       });
+  //     } else {
+  //       queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+  //     }
+  //     queryClient.invalidateQueries({ queryKey: ["/teams"] });
+  //     toast({
+  //       title: "Account unassigned",
+  //       description: "Social account has been removed from the team.",
+  //     });
+  //   },
+  //   onError: (error: any) => {
+  //     toast({
+  //       title: "Unassignment failed",
+  //       description:
+  //         error.response?.data?.message ||
+  //         "Failed to remove account from team.",
+  //       variant: "destructive",
+  //     });
+  //   },
+  // });
 
   // Get unique platforms and their counts
   const platformStats = useMemo(() => {
@@ -495,7 +503,7 @@ export default function SocialAccounts() {
         });
         break;
       case "youtube":
-        refreshYoutubeAccessToken(account._id, {
+        refreshYoutubeAccessToken(account.accountId, {
           onSuccess: () => {
             refetchAccounts();
           },
@@ -512,6 +520,8 @@ export default function SocialAccounts() {
         break;
     }
   };
+
+  // console.log({ platformStats });
 
   const togglePlatformFilter = (platform: string) => {
     setSelectedPlatforms((prev) =>
@@ -576,7 +586,7 @@ export default function SocialAccounts() {
           </div>
 
           {/* Enhanced Platform Filter Pills */}
-          {platformStats.uniquePlatforms.length > 1 && (
+          {platformStats?.uniquePlatforms?.length > 1 && (
             <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30 p-4 border border-border/50 backdrop-blur-sm">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
               <div className="relative flex flex-wrap items-center gap-3">
@@ -588,7 +598,7 @@ export default function SocialAccounts() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {platformStats.uniquePlatforms.map((platform) => {
+                  {platformStats?.uniquePlatforms?.map((platform) => {
                     const isSelected = selectedPlatforms.includes(platform);
                     return (
                       <Button
@@ -669,10 +679,6 @@ export default function SocialAccounts() {
                                 alt={`${account.accountName} profile`}
                                 className="h-12 w-12 rounded-full object-cover ring-2 ring-offset-2 ring-offset-background transition-all duration-200 group-hover:ring-primary/50"
                               />
-                              {/* Platform icon overlay */}
-                              {/* <div className={`absolute -bottom-1 -right-1 p-1 rounded-full ${getClassName(account.platform)} ring-2 ring-background`}>
-                                <i className={`${getSocialIcon(account.platform)} text-xs ${getTextColor(account.platform)}`} />
-                              </div> */}
                             </div>
                           ) : (
                             <div
@@ -685,11 +691,6 @@ export default function SocialAccounts() {
                                   account.platform
                                 )} text-xl ${getTextColor(account.platform)}`}
                               />
-
-                              {/* Pulse effect for active accounts */}
-                              {/* {account.status === 'active' && (
-                                <div className="absolute -inset-1 rounded-xl bg-green-500/20 animate-pulse" />
-                              )} */}
                             </div>
                           )}
 
@@ -710,11 +711,6 @@ export default function SocialAccounts() {
                             <CardTitle className="text-base font-semibold truncate group-hover:text-primary transition-colors">
                               {account.accountName ?? "Unknown Account"}
                             </CardTitle>
-                            {account.status === "active" && (
-                              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/20">
-                                <Zap className="h-2.5 w-2.5 text-green-500" />
-                              </div>
-                            )}
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
                             <CardDescription className="capitalize font-medium">
@@ -877,10 +873,10 @@ export default function SocialAccounts() {
                   </CardContent>
                   <CardFooter className="relative flex flex-col gap-3 pt-3 border-t border-border/50">
                     {/* Team Assignment (Organization Mode Only) */}
-                    {shouldUseOrganizationAccounts && canCreateTeams && (
+                    {/* {shouldUseOrganizationAccounts && canCreateTeams && (
                       <TeamAssignmentDropdown
                         currentTeamId={account.teamId}
-                        availableTeams={organizationTeams}
+                        availableTeams={organizationTeams || []}
                         onAssign={(teamId) =>
                           assignToTeam({ teamId, accountId: account._id })
                         }
@@ -892,7 +888,7 @@ export default function SocialAccounts() {
                         }
                         isLoading={isAssigning || isUnassigning}
                       />
-                    )}
+                    )} */}
 
                     <div className="flex justify-between items-center">
                       {/* Quick Actions */}
@@ -998,7 +994,7 @@ export default function SocialAccounts() {
 
   return (
     <div className="space-y-6">
-      {accounts.length === 0 && !isLoading ? (
+      {accounts?.length === 0 && !isLoading ? (
         <div className="flex flex-col items-center justify-center space-y-4 h-[60vh]">
           <div className="relative">
             <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-full blur-lg animate-pulse" />
@@ -1058,7 +1054,7 @@ export default function SocialAccounts() {
                   <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 border border-green-500/20">
                     <Activity className="h-3 w-3 text-green-500 animate-pulse" />
                     <span className="text-xs font-medium text-green-600">
-                      {accounts.length} Active
+                      {accounts?.length} Active
                     </span>
                   </div>
                 </div>
@@ -1089,10 +1085,10 @@ export default function SocialAccounts() {
                 <div className="flex items-center gap-4 pt-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="h-4 w-4 text-primary" />
-                    <span className="font-medium">{accounts.length}</span>
+                    <span className="font-medium">{accounts?.length}</span>
                     <span className="text-muted-foreground">Connected</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
+                  {/* <div className="flex items-center gap-2 text-sm">
                     <BarChart3 className="h-4 w-4 text-green-500" />
                     <span className="font-medium">
                       {
@@ -1101,8 +1097,8 @@ export default function SocialAccounts() {
                       }
                     </span>
                     <span className="text-muted-foreground">Active</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
+                  </div> */}
+                  {/* <div className="flex items-center gap-2 text-sm">
                     <AlertCircle className="h-4 w-4 text-orange-500" />
                     <span className="font-medium">
                       {
@@ -1113,7 +1109,7 @@ export default function SocialAccounts() {
                     <span className="text-muted-foreground">
                       Need Attention
                     </span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
               {canConnectSocialAccounts ? (

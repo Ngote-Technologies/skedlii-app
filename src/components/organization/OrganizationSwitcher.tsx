@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Building, ChevronsUpDown, Plus } from "lucide-react";
 import { cn, getInitials } from "../../lib/utils";
 import { Button } from "../ui/button";
@@ -27,6 +28,7 @@ export default function OrganizationSwitcher({
   onCreateOrganization,
 }: OrganizationSwitcherProps) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const {
     canManageOrganization,
     organization,
@@ -148,6 +150,8 @@ export default function OrganizationSwitcher({
                         status: org.status || undefined,
                         role: null,
                       });
+                      // Route to organization dashboard after switching
+                      navigate("/dashboard/organizations");
                     } catch (e: any) {
                       toast.error({
                         title: "Failed to switch organization",
@@ -201,6 +205,7 @@ export function CompactOrganizationSwitcher({
   onCreateOrganization,
 }: OrganizationSwitcherProps) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const {
     canManageOrganization,
     organization,
@@ -294,6 +299,8 @@ export function CompactOrganizationSwitcher({
                         status: org.status || undefined,
                         role: null,
                       });
+                      // Route to organization dashboard after switching
+                      navigate("/dashboard/organizations");
                     } catch (e: any) {
                       toast.error({
                         title: "Failed to switch organization",
