@@ -78,6 +78,12 @@ interface AuthState {
     options?: { skipRefresh?: boolean }
   ) => Promise<void>;
   refreshPermissions: (organizationId?: string) => Promise<void>;
+  setActiveOrganization: (org: {
+    _id: string;
+    name?: string | null;
+    status?: string;
+    role?: UserRole | string | null;
+  }) => Promise<void>;
 }
 
 // Response format adapters for V1/V2 compatibility
@@ -87,12 +93,18 @@ const adaptLoginResponse = (
 ) => {
   if (isV2) {
     const v2Response = response as LoginResponseV2;
+    // Prefer enriched organization summary if provided by API
+    const enrichedOrg = (v2Response as any).organization as
+      | { _id: string; name?: string | null; status?: string; role?: any }
+      | undefined;
     return {
       token: v2Response.accessToken,
       refreshToken: v2Response.refreshToken,
       user: v2Response.user,
-      // V2 now provides these in login response - use them if available, else defaults
-      organization: v2Response.organizationId
+      // Use enriched org when available; fallback to minimal shape
+      organization: enrichedOrg
+        ? enrichedOrg
+        : v2Response.organizationId
         ? {
             _id: v2Response.organizationId,
             role: v2Response.userRole,
@@ -161,6 +173,11 @@ const adaptGetMeResponse = (response: any, isV2: boolean) => {
         : "member";
     const isOwnerOrAdmin = userRole === "owner" || userRole === "admin";
 
+    // Prefer enriched organization summary when provided by API
+    const enrichedOrg = (v2Response as any).organization as
+      | { _id: string; name?: string | null; status?: string; role?: any }
+      | undefined;
+
     return {
       user: {
         ...v2Response.user,
@@ -168,13 +185,14 @@ const adaptGetMeResponse = (response: any, isV2: boolean) => {
         role: userRole,
         userType: "individual", // Default, can be enhanced later
       },
-      organization:
-        v2Response.organizations.length > 0
-          ? {
-              _id: v2Response.organizations[0].orgId,
-              role: v2Response.organizations[0].role,
-            }
-          : null,
+      organization: enrichedOrg
+        ? enrichedOrg
+        : v2Response.organizations.length > 0
+        ? {
+            _id: v2Response.organizations[0].orgId,
+            role: v2Response.organizations[0].role,
+          }
+        : null,
       organizations: v2Response.organizations,
       // V2 doesn't provide these in /me response, will need separate calls
       teams: [],
@@ -245,7 +263,6 @@ export const logoutUser = async () => {
 
     // Clear team store explicitly
     useTeamStore.getState().clearTeams();
-
 
     // Clear all app storage
     localStorage.removeItem("skedlii-storage");
@@ -484,6 +501,26 @@ export const useAuthStore = create<AuthState>()(
           });
         } catch (error: any) {
           console.error("Failed to refresh permissions:", error);
+          set({ error: error.message });
+        }
+      },
+
+      setActiveOrganization: async (org) => {
+        try {
+          // Update active organization in store to influence X-Organization-Id header
+          set({ organization: org as any });
+          // Refresh permissions and computed caps for the selected org
+          const response = await authApi.refreshPermissions(org._id);
+          set({
+            userRole: response.userRole,
+            userType: response.userType,
+            subscriptionInfo: response.subscriptionInfo,
+            ...response.computedPermissions,
+            // Ensure organization role reflects backend-evaluated role when available
+            organization: { ...org, role: response.userRole } as any,
+          });
+        } catch (error: any) {
+          console.error("Failed to switch organization:", error);
           set({ error: error.message });
         }
       },
