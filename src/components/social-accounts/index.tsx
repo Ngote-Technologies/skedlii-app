@@ -76,6 +76,7 @@ import {
   useGetSocialAccounts,
   useGetOrganizationSocialAccounts,
   useConnectMeta,
+  useConnectFacebook,
 } from "../../hooks/useSocialAccounts";
 import PlatformSelector from "./PlatformSelector";
 // import { hasValidSubscription } from "../../lib/access";
@@ -190,6 +191,8 @@ export default function SocialAccounts() {
     useConnectThreads();
   const { mutate: connectInstagram, isPending: isConnectingInstagramPending } =
     useConnectInstagram();
+  const { mutate: connectFacebook, isPending: isConnectingFacebookPending } =
+    useConnectFacebook();
   const { mutate: connectMeta, isPending: isConnectingMetaPending } =
     useConnectMeta();
   const { mutate: connectTikTok, isPending: isConnectingTikTokPending } =
@@ -381,10 +384,10 @@ export default function SocialAccounts() {
         break;
       }
       case "facebook":
-        // connectFacebook();
-        connectMeta({
-          platform: "facebook",
-        });
+        connectFacebook();
+        // connectMeta({
+        //   platform: "facebook",
+        // });
         break;
       case "tiktok":
         connectTikTok();
@@ -412,6 +415,7 @@ export default function SocialAccounts() {
     isRefreshingTwitterPending ||
     isRefreshingYoutubePending ||
     isRefreshingTiktokPending ||
+    isConnectingFacebookPending ||
     isConnectingMetaPending;
 
   useEffect(() => {
