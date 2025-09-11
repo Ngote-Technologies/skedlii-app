@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -79,6 +79,8 @@ import { UserPlus } from "lucide-react";
 //   useOrganizationStore,
 // } from "../../store/organizationStore";
 import { OrganizationMember } from "../../api/organizations";
+import { invitationsApi, type InvitationListItem } from "../../api/invitations";
+import { useAuth } from "../../store/hooks";
 // import { organizationsApi, OrganizationMember } from "../../api/organizations";
 // import { useToast } from "../../hooks/use-toast";
 // import { getInitials } from "../../lib/utils";
@@ -89,7 +91,7 @@ const inviteMemberSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  role: z.enum(["admin", "member", "viewer"]),
+  role: z.enum(["admin", "editor", "viewer"]),
 });
 
 type InviteMemberFormData = z.infer<typeof inviteMemberSchema>;
@@ -98,11 +100,14 @@ export default function OrganizationMembers() {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] =
     useState<OrganizationMember | null>(null);
+  const [pendingInvites, setPendingInvites] = useState<InvitationListItem[]>([]);
+  const [loadingInvites, setLoadingInvites] = useState(false);
 
   // const activeOrganization = useActiveOrganization();
   // const permissions = useOrganizationPermissions();
   // const { removeMember } = useOrganizationStore();
   const { userContext } = useAccessControl();
+  const { organization } = useAuth();
 
   // Function to check if current user can manage a specific role
   const canManageRole = (targetRole: string) => {
@@ -113,7 +118,8 @@ export default function OrganizationMembers() {
       owner: 5,
       org_owner: 5, // Same as owner
       admin: 4,
-      member: 3,
+      member: 3, // legacy alias for UI; maps to editor
+      editor: 3,
       viewer: 2,
     };
 
@@ -133,7 +139,7 @@ export default function OrganizationMembers() {
       email: "",
       firstName: "",
       lastName: "",
-      role: "member",
+      role: "editor",
     },
   });
 
@@ -209,8 +215,22 @@ export default function OrganizationMembers() {
   // });
 
   const onInviteSubmit = async (data: InviteMemberFormData) => {
-    console.log({ data });
-    // await inviteMutation.mutateAsync(data);
+    if (!organization?._id) {
+      console.warn("No active organization for invitation");
+      return;
+    }
+    try {
+      await invitationsApi.sendInvitation({
+        email: data.email,
+        orgId: organization._id,
+        role: data.role,
+      });
+      setIsInviteDialogOpen(false);
+      form.reset();
+      await loadPendingInvites();
+    } catch (e) {
+      console.error("Failed to send invitation", e);
+    }
   };
 
   const handleRemoveMember = async () => {
@@ -244,7 +264,7 @@ export default function OrganizationMembers() {
     const allRoles = [
       { value: "viewer", label: "Viewer - Can view content", level: 1 },
       {
-        value: "member",
+        value: "editor",
         label: "Member - Can create and manage content",
         level: 2,
       },
@@ -257,6 +277,44 @@ export default function OrganizationMembers() {
 
     // Only show roles that are lower in hierarchy than current user
     return allRoles.filter((role) => canManageRole(role.value as any));
+  };
+
+  async function loadPendingInvites() {
+    if (!organization?._id) return;
+    try {
+      setLoadingInvites(true);
+      const items = await invitationsApi.listInvitations(
+        organization._id,
+        "pending"
+      );
+      setPendingInvites(items);
+    } catch (e) {
+      console.error("Failed to load pending invitations", e);
+    } finally {
+      setLoadingInvites(false);
+    }
+  }
+
+  useEffect(() => {
+    loadPendingInvites();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [organization?._id]);
+
+  const handleResendInvite = async (invitationId: string) => {
+    try {
+      await invitationsApi.resendInvitation(invitationId);
+    } catch (e) {
+      console.error("Failed to resend invitation", e);
+    }
+  };
+
+  const handleRevokeInvite = async (invitationId: string) => {
+    try {
+      await invitationsApi.revokeInvitation(invitationId);
+      await loadPendingInvites();
+    } catch (e) {
+      console.error("Failed to revoke invitation", e);
+    }
   };
 
   // if (!activeOrganization) {
@@ -518,6 +576,58 @@ export default function OrganizationMembers() {
             </div>
           )}
         </CardContent> */}
+      </Card>
+
+      {/* Pending Invitations */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Pending Invitations</CardTitle>
+          <CardDescription>Invitations waiting to be accepted</CardDescription>
+        </CardHeader>
+        <div className="p-4">
+          {loadingInvites ? (
+            <div className="text-sm text-muted-foreground">Loading...</div>
+          ) : pendingInvites.length === 0 ? (
+            <div className="text-sm text-muted-foreground">
+              No pending invitations
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {pendingInvites.map((inv) => (
+                <div
+                  key={inv._id}
+                  className="flex items-center justify-between border rounded p-3"
+                >
+                  <div>
+                    <div className="text-sm font-medium">{inv.email}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Role: {inv.role === "editor" ? "member" : inv.role}
+                      {inv.expiresAt
+                        ? ` · Expires: ${new Date(inv.expiresAt).toLocaleString()}`
+                        : ""}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleResendInvite(inv._id)}
+                    >
+                      Resend
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleRevokeInvite(inv._id)}
+                    >
+                      Revoke
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </Card>
 
       {/* Remove Member Confirmation */}
