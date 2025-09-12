@@ -6,13 +6,14 @@ export const useConnectLinkedIn = () => {
   return useMutation({
     mutationFn: async () => {
       const response = await socialApi.connectLinkedIn();
-      window.location.href = response;
+      window.location.href = response.url;
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
       toast.error({
         title: "Connection Failed",
-        description: errorMsg ?? "Failed to connect to LinkedIn. Please try again.",
+        description:
+          errorMsg ?? "Failed to connect to LinkedIn. Please try again.",
       });
     },
   });
@@ -22,13 +23,15 @@ export const useConnectTwitter = () => {
   return useMutation({
     mutationFn: async () => {
       const response = await socialApi.connectTwitter();
-      window.location.href = response;
+      window.location.href = response.url;
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
       toast.error({
         title: "Twitter Connection Failed",
-        description: errorMsg ?? "Failed to connect to Twitter. Please check your account and try again.",
+        description:
+          errorMsg ??
+          "Failed to connect to Twitter. Please check your account and try again.",
       });
     },
   });
@@ -38,13 +41,15 @@ export const useConnectThreads = () => {
   return useMutation({
     mutationFn: async () => {
       const response = await socialApi.connectThreads();
-      window.location.href = response;
+      window.location.href = response.url;
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
       toast.error({
         title: "Threads Connection Failed",
-        description: errorMsg ?? "Failed to connect to Threads. Please check your account and try again.",
+        description:
+          errorMsg ??
+          "Failed to connect to Threads. Please check your account and try again.",
       });
     },
   });
@@ -60,13 +65,14 @@ export const useConnectMeta = () => {
       const response = await socialApi.connectViaMeta({
         platform,
       });
-      window.location.href = response;
+      window.location.href = response.url;
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
       toast.error({
         title: "Meta Connection Failed",
-        description: errorMsg ?? "Failed to connect to Meta platform. Please try again.",
+        description:
+          errorMsg ?? "Failed to connect to Meta platform. Please try again.",
       });
     },
   });
@@ -76,13 +82,15 @@ export const useConnectInstagram = () => {
   return useMutation({
     mutationFn: async () => {
       const response = await socialApi.connectInstagram();
-      window.location.href = response;
+      window.location.href = response.url;
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
       toast.error({
         title: "Instagram Connection Failed",
-        description: errorMsg ?? "Failed to connect to Instagram. Please check your account and try again.",
+        description:
+          errorMsg ??
+          "Failed to connect to Instagram. Please check your account and try again.",
       });
     },
   });
@@ -92,13 +100,15 @@ export const useConnectFacebook = () => {
   return useMutation({
     mutationFn: async () => {
       const response = await socialApi.connectFacebook();
-      window.location.href = response;
+      window.location.href = response.url;
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
       toast.error({
         title: "Facebook Connection Failed",
-        description: errorMsg ?? "Failed to connect to Facebook. Please check your account and try again.",
+        description:
+          errorMsg ??
+          "Failed to connect to Facebook. Please check your account and try again.",
       });
     },
   });
@@ -108,13 +118,15 @@ export const useConnectTikTok = () => {
   return useMutation({
     mutationFn: async () => {
       const response = await socialApi.connectTikTok();
-      window.location.href = response;
+      window.location.href = response.url;
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
       toast.error({
         title: "TikTok Connection Failed",
-        description: errorMsg ?? "Failed to connect to TikTok. Please check your account and try again.",
+        description:
+          errorMsg ??
+          "Failed to connect to TikTok. Please check your account and try again.",
       });
     },
   });
@@ -124,13 +136,15 @@ export const useConnectYoutube = () => {
   return useMutation({
     mutationFn: async () => {
       const response = await socialApi.connectYoutube();
-      window.location.href = response;
+      window.location.href = response.url;
     },
     onError: (err: any) => {
       const errorMsg = err?.response?.data?.error || err?.message;
       toast.error({
         title: "YouTube Connection Failed",
-        description: errorMsg ?? "Failed to connect to YouTube. Please check your account and try again.",
+        description:
+          errorMsg ??
+          "Failed to connect to YouTube. Please check your account and try again.",
       });
     },
   });
@@ -151,7 +165,8 @@ export const useDeleteAccount = () => {
     onError: (err: any) => {
       toast.error({
         title: "Disconnect Failed",
-        description: err.message ?? "Failed to disconnect account. Please try again.",
+        description:
+          err.message ?? "Failed to disconnect account. Please try again.",
       });
     },
   });
@@ -166,7 +181,9 @@ export const useRefreshTwitterAccessToken = () => {
     onError: (err: any) => {
       toast.error({
         title: "Token Refresh Failed",
-        description: err.message ?? "Failed to refresh Twitter access token. Please try again.",
+        description:
+          err.message ??
+          "Failed to refresh Twitter access token. Please try again.",
       });
     },
   });
@@ -181,7 +198,9 @@ export const useRefreshYoutubeAccessToken = () => {
     onError: (err: any) => {
       toast.error({
         title: "Token Refresh Failed",
-        description: err.message ?? "Failed to refresh YouTube access token. Please try again.",
+        description:
+          err.message ??
+          "Failed to refresh YouTube access token. Please try again.",
       });
     },
   });
@@ -196,7 +215,9 @@ export const useRefreshTikTokAccessToken = () => {
     onError: (err: any) => {
       toast.error({
         title: "Token Refresh Failed",
-        description: err.message ?? "Failed to refresh TikTok access token. Please try again.",
+        description:
+          err.message ??
+          "Failed to refresh TikTok access token. Please try again.",
       });
     },
   });
@@ -217,7 +238,9 @@ export const useGetOrganizationSocialAccounts = (organizationId: string) => {
   return useQuery({
     queryKey: ["/social-accounts/organization", organizationId],
     queryFn: async () => {
-      const response = await socialApi.getOrganizationSocialAccounts(organizationId);
+      const response = await socialApi.getOrganizationSocialAccounts(
+        organizationId
+      );
       return response;
     },
     enabled: !!organizationId,
