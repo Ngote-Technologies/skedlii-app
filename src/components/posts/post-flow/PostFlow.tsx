@@ -21,7 +21,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "../../../lib/utils";
-import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../store/hooks";
 import { MediaItem } from "./MediaUpload";
 import TikTokSettingsDrawer, {
@@ -41,9 +40,10 @@ import {
   handleCaptionChange,
 } from "../../../services/postFlow";
 import { handleMediaChange, handleSchedulingChange } from "../../../lib/utils";
+import { useGetOrganizationSocialAccounts } from "../../../hooks/useSocialAccounts";
 
 export default function PostFlow() {
-  const { user } = useAuth();
+  const { organization } = useAuth();
 
   const [activeTab, setActiveTab] = useState("accounts");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,27 +69,18 @@ export default function PostFlow() {
     Record<string, any>
   >({});
 
-  // Get social accounts
-  const { data: socialAccounts = [], isLoading: isFetchingAccounts } = useQuery(
-    {
-      queryKey: [`/social-accounts/${user?._id}`],
-    }
-  ) as { data: any[]; isLoading: boolean };
+  const {
+    data: organizationAccounts = [],
+    isLoading: isFetchingOrganizationAccounts,
+  } = useGetOrganizationSocialAccounts(organization?._id || "");
+  const socialAccounts: any[] = organizationAccounts.items;
 
-  const isLoading = isFetchingAccounts;
+  const isLoading = isFetchingOrganizationAccounts;
 
   // Check if we can proceed to the next step
   const canProceedToCaption = selectedAccounts.length > 0;
   const canProceedToMedia =
     canProceedToCaption && globalCaption.trim().length > 0;
-
-  // Set up swipe navigation for mobile
-  // const swipeRef = useSwipeNavigation({
-  //   onSwipeLeft: navigateToNextTab,
-  //   onSwipeRight: navigateToPreviousTab,
-  //   minSwipeDistance: 50,
-  //   maxVerticalDistance: 100,
-  // });
 
   const { handleSubmit } = usePostSubmission({
     selectedAccounts,
