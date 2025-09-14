@@ -354,7 +354,7 @@ export default function SocialAccounts() {
         });
         break;
       case "youtube":
-        refreshYoutubeAccessToken(account.accountId, {
+        refreshYoutubeAccessToken(account._id, {
           onSuccess: () => {
             refetchAccounts();
           },

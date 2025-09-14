@@ -1,102 +1,9 @@
-// import { sentryVitePlugin } from "@sentry/vite-plugin";
-// import { defineConfig } from "vite";
-// import react from "@vitejs/plugin-react";
-// import { visualizer } from "rollup-plugin-visualizer";
-
-// export default defineConfig({
-//   plugins: [react(), visualizer({
-//     filename: "dist/stats.html", // Output location
-//     open: true, // Auto-open after build
-//     gzipSize: true, // Show gzip-compressed size
-//     brotliSize: true, // Show brotli-compressed size
-//   }), sentryVitePlugin({
-//     org: "skedlii-app",
-//     project: "javascript-react"
-//   })],
-//   build: {
-//     outDir: "dist",
-//     sourcemap: true,
-//   },
-//   server: {
-//     proxy: {
-//       "/api": {
-//         target: "http://localhost:3001",
-//         changeOrigin: true,
-//       },
-//     },
-//     port: 5173,
-//   },
-//   assetsInclude: ["**/*.md"],
-// });
-
-// import { sentryVitePlugin } from "@sentry/vite-plugin";
-// import { defineConfig } from "vite";
-// import react from "@vitejs/plugin-react";
-// import { visualizer } from "rollup-plugin-visualizer";
-
-// export default defineConfig(({ command }) => {
-//   const isDev = command === "serve";
-
-//   return {
-//     plugins: [
-//       react(),
-//       visualizer({
-//         filename: "dist/stats.html",
-//         open: true,
-//         gzipSize: true,
-//         brotliSize: true,
-//       }),
-//       sentryVitePlugin({
-//         org: "skedlii-app",
-//         project: "javascript-react",
-//       }),
-//       {
-//         name: "vite:eruda-inject",
-//         transformIndexHtml(html) {
-//           if (isDev) {
-//             return html.replace(
-//               "</body>",
-//               `<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-//                <script>
-//                  document.addEventListener('DOMContentLoaded', function () {
-//                    try {
-//                      eruda.init({ tool: ['console', 'elements', 'network'] });
-//                      eruda.position({ x: 20, y: 20 });
-//                      console.log("🛠 Eruda enabled for mobile debugging");
-//                    } catch (err) {
-//                      console.error("❌ Failed to init Eruda:", err);
-//                    }
-//                  });
-//                </script></body>`
-//             );
-//           }
-//           return html;
-//         },
-//       },
-//     ],
-//     build: {
-//       outDir: "dist",
-//       sourcemap: true,
-//     },
-//     server: {
-//       host: "0.0.0.0", // allow phone access
-//       proxy: {
-//         "/api": {
-//           target: "http://localhost:3001",
-//           changeOrigin: true,
-//         },
-//       },
-//       port: 5173,
-//     },
-//     assetsInclude: ["**/*.md"],
-//   };
-// });
-
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
 import os from "os";
+import fs from "fs";
 
 // Helper to get LAN IP
 function getLocalIp() {
@@ -170,15 +77,20 @@ export default defineConfig(({ command }) => {
       sourcemap: true,
     },
     server: {
-      host: "0.0.0.0", // allow phone access
-      // port: 5173,
-      proxy: {
-        "/api": {
-          target: `http://192.168.1.14:3001`, // use your LAN IP so phone can reach backend
-          // target: `http://${localIp}:3001`, // use your LAN IP so phone can reach backend
-          changeOrigin: true,
-        },
-      },
+      // host: "0.0.0.0", // allow phone access
+      // // port: 5173,
+      // proxy: {
+      //   "/api": {
+      //     target: `http://192.168.1.14:3001`, // use your LAN IP so phone can reach backend
+      //     // target: `http://${localIp}:3001`, // use your LAN IP so phone can reach backend
+      //     changeOrigin: true,
+      //   },
+      // },
+      // https: {
+      //   key: fs.readFileSync("./localhost+2-key.pem"),
+      //   cert: fs.readFileSync("./localhost+2.pem"),
+      // },
+      allowedHosts: ["4d96dbad50d7.ngrok-free.app"],
     },
     assetsInclude: ["**/*.md"],
   };

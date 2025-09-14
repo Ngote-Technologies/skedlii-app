@@ -116,10 +116,7 @@ export const socialApi = {
   },
 
   connectTikTok: async () => {
-    const response = await apiRequest(
-      "GET",
-      `/social-accounts/tiktok/connect`
-    );
+    const response = await apiRequest("GET", `/social-accounts/tiktok/connect`);
     return response;
   },
 
@@ -179,10 +176,10 @@ export const socialApi = {
     }
   },
 
-  refreshYoutubeAccessToken: async ({ accountId }: { accountId: string }) => {
+  refreshYoutubeAccessToken: async ({ id }: { id: string }) => {
     try {
       const response = await axiosInstance.get(
-        `/social-accounts/youtube/reauth/start/${accountId}`
+        `/social-accounts/youtube/reauth/start/${id}`
       );
       return response.data;
     } catch (error: any) {

@@ -191,8 +191,8 @@ export const useRefreshTwitterAccessToken = () => {
 
 export const useRefreshYoutubeAccessToken = () => {
   return useMutation({
-    mutationFn: async (accountId: string) => {
-      const response = await socialApi.refreshYoutubeAccessToken({ accountId });
+    mutationFn: async (id: string) => {
+      const response = await socialApi.refreshYoutubeAccessToken({ id });
       return response;
     },
     onError: (err: any) => {

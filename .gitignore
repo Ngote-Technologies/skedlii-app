@@ -61,3 +61,7 @@ public/workbox-*.js
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# SSL Certificates
+localhost+2-key.pem
+localhost+2.pem
