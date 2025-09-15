@@ -130,29 +130,28 @@ export function getScheduledPostCalendarView({
               )}
             </CardContent>
             <CardFooter className="flex flex-wrap gap-1 border-t pt-2 bg-muted/30">
-              {post.platforms?.map((platform: any, index: number) => (
-                <div
-                  key={`${platform.platform}-${index}`}
-                  className="text-xs bg-muted px-2 py-1 rounded-full flex items-center"
-                >
-                  <i
-                    className={`${getSocialIcon(platform.platform ?? "")} mr-1`}
-                  ></i>
-                  <span>
-                    {post.account ? (
-                      <>
-                        {post.account.accountName} at{" "}
-                        {formatDate(post.scheduledFor, "p")}
-                      </>
-                    ) : (
-                      <>
-                        {platform.platform} at{" "}
-                        {formatDate(post.scheduledFor, "p")}
-                      </>
-                    )}
-                  </span>
-                </div>
-              ))}
+              {post.platforms?.map((platform: any, index: number) => {
+                const name = (platform.platformName || platform.platform || "").toString().toLowerCase();
+                return (
+                  <div
+                    key={`${name}-${index}`}
+                    className="text-xs bg-muted px-2 py-1 rounded-full flex items-center"
+                  >
+                    <i className={`${getSocialIcon(name)} mr-1`}></i>
+                    <span>
+                      {post.account ? (
+                        <>
+                          {post.account.accountName} at {formatDate(post.scheduledFor, "p")}
+                        </>
+                      ) : (
+                        <>
+                          {name || platform.platformId} at {formatDate(post.scheduledFor, "p")}
+                        </>
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
             </CardFooter>
           </Card>
         ))}
