@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { toast } from "../../../../hooks/use-toast";
 import socialApi from "../../../../api/socialApi";
+import { uploadToCloudinary } from "../../../../api/upload";
+import { useAuth } from "../../../../store/hooks";
 import {
   getImageDimensions,
   getMediaDimensions,
@@ -44,28 +46,49 @@ export function usePostSubmission({
   setIsSubmitting,
 }: UsePostSubmissionParams) {
   const navigate = useNavigate();
+  const { organization } = useAuth();
 
-  const handleFormData = async (postData: any, media: MediaItem[]) => {
-    const formData = new FormData();
-    formData.append("postData", JSON.stringify(postData));
+  // Build SSOT media array; upload local files to Cloudinary when needed
+  const buildSSOTMedia = async (items: MediaItem[]) => {
+    const result: Array<{
+      type: "image" | "video";
+      url: string;
+      width?: number;
+      height?: number;
+      durationSec?: number;
+      ref?: string;
+    }> = [];
 
-    for (const item of media) {
-      const dimensions =
+    for (const item of items) {
+      let url = item.url;
+      let ref: string | undefined = undefined;
+
+      // Upload if we still have a blob URL or no publicId
+      const needsUpload = /^blob:/.test(url);
+      if (needsUpload) {
+        const uploaded = await uploadToCloudinary(item.file);
+        if (!uploaded) throw new Error("Cloudinary upload failed");
+        url = uploaded.url;
+        // our upload helper returns id as the publicId
+        ref = uploaded.id;
+      }
+
+      const dims =
         item.type === "image"
           ? await getImageDimensions(item.file)
           : await getMediaDimensions(item.file);
-      formData.append("media", item.file, item.id);
-      formData.append(
-        "dimensions[]",
-        JSON.stringify({
-          id: item.id,
-          width: dimensions.width,
-          height: dimensions.height,
-        })
-      );
-    }
 
-    return formData;
+      result.push({
+        type: item.type,
+        url,
+        width: dims?.width,
+        height: dims?.height,
+        // durationSec best-effort from getMediaDimensions for videos
+        durationSec: (dims as any)?.duration ?? undefined,
+        ref,
+      });
+    }
+    return result;
   };
 
   const handleSubmit = async () => {
@@ -107,12 +130,9 @@ export function usePostSubmission({
 
     setIsSubmitting(true);
 
-    const platformData = platforms.map((platform) => ({
-      platform,
-      accounts: selectedAccountsData
-        .filter((acc) => acc.platform === platform)
-        .map((acc) => acc._id),
-      caption: platformCaptions[platform] || globalCaption,
+    const targets = selectedAccountsData.map((acc) => ({
+      platform: acc.platform,
+      socialAccountId: acc._id,
     }));
 
     const mediaTypes = Array.from(new Set(media.map((item) => item.type)));
@@ -136,7 +156,24 @@ export function usePostSubmission({
       return;
     }
 
-    const mediaUrls = media.map((item) => item.url);
+    // Prepare SSOT media (uploads to Cloudinary if needed)
+    const ssotMedia = await buildSSOTMedia(media);
+
+    // Compute Idempotency-Key (simple stable key from payload)
+    const baseString = JSON.stringify({
+      orgId: organization?._id,
+      content: globalCaption,
+      targets: targets.map((t) => t.socialAccountId).sort(),
+      media: ssotMedia.map((m) => m.ref || m.url).sort(),
+      scheduleAt: isScheduled && scheduledDate
+        ? new Date(scheduledDate).toISOString()
+        : null,
+    });
+    // Base64-encode to a stable, ASCII-safe key
+    const base64 = typeof window !== 'undefined' && window.btoa
+      ? window.btoa(unescape(encodeURIComponent(baseString)))
+      : Buffer.from(baseString).toString('base64');
+    const idemKey = base64.slice(0, 128);
 
     try {
       // Simulate progress
@@ -165,63 +202,26 @@ export function usePostSubmission({
         });
       }
 
-      const method = isScheduled
-        ? socialApi.schedulePost
-        : socialApi.postToMultiPlatform;
-
-      for (const { platform, accounts, caption } of platformData) {
-        const platformAccounts = selectedAccountsData.filter(
-          (acc) => acc.platform === platform && accounts.includes(acc._id)
+      if (isScheduled && scheduledDate) {
+        await socialApi.scheduleSSOT(
+          {
+            content: globalCaption,
+            targets,
+            media: ssotMedia,
+            scheduleAt: new Date(scheduledDate).toISOString(),
+          },
+          { headers: { "Idempotency-Key": idemKey } }
         );
-
-        for (const account of platformAccounts) {
-          const basePost = isScheduled
-            ? {
-                content: caption,
-                platforms: [
-                  {
-                    platform,
-                    accountId: account.accountId,
-                    accountName: account.accountName,
-                    accountType: account.accountType,
-                  },
-                ],
-                media: mediaUrls,
-                scheduledFor: new Date(scheduledDate!),
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                mediaType: postType,
-              }
-            : {
-                content: caption,
-                accountId: account.accountId,
-                userId: account._id,
-                media: mediaUrls,
-                accountName: account.accountName,
-                accountType: account.accountType,
-                platform: platform,
-                platformId: account.platformId,
-                mediaType: postType,
-              };
-
-          if (platform === "tiktok") {
-            const opts = tiktokAccountOptions[account._id];
-            if (opts) {
-              (basePost as any).tiktokAccountOptions = {
-                title: opts.title,
-                privacy: opts.privacy,
-                allowComments: opts.allowComments,
-                allowDuet: opts.allowDuet,
-                allowStitch: opts.allowStitch,
-                isCommercial: opts.isCommercial,
-                brandType: opts.brandType,
-                agreedToPolicy: opts.agreedToPolicy,
-              };
-            }
-          }
-
-          const formData = await handleFormData(basePost, media);
-          await method(formData);
-        }
+      } else {
+        await socialApi.postNowSSOT(
+          {
+            content: globalCaption,
+            targets,
+            media: ssotMedia,
+            scheduleAt: null,
+          },
+          { headers: { "Idempotency-Key": idemKey } }
+        );
       }
 
       toast.success({

@@ -84,7 +84,8 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
           badgeVariants({ variant, size, interactive: isInteractive }),
           pulse && "animate-pulse",
           dismissible && "pr-1",
-          className
+          className,
+          "cursor-pointer"
         )}
         onClick={onClick}
         {...props}

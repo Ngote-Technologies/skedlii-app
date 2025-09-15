@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
 import { useToast } from "../../hooks/use-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   formatDate,
   getClassName,
@@ -28,7 +27,6 @@ import {
 import { Form, FormField } from "../ui/form";
 import { Badge, StatusBadge } from "../ui/badge";
 import {
-  AlertCircle,
   Clock,
   Filter,
   Loader2,
@@ -44,6 +42,7 @@ import {
   TrendingUp,
   Eye,
   Calendar,
+  AlertCircle,
   // Zap,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -51,8 +50,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "../../store/hooks";
 import { useAccessControl } from "../../hooks/useAccessControl";
-// Organization context now handled through useAuth hook
-import { teamsApi } from "../../api/teams";
 import { Team } from "../../types";
 import { Skeleton } from "../ui/skeleton";
 import {
@@ -114,67 +111,10 @@ interface TeamAssignmentDropdownProps {
   isLoading?: boolean;
 }
 
-function TeamAssignmentDropdown({
-  currentTeamId,
-  availableTeams,
-  onAssign,
-  onUnassign,
-  isLoading = false,
-}: TeamAssignmentDropdownProps) {
-  const currentTeam = availableTeams.find((team) => team._id === currentTeamId);
-
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <Users className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm text-muted-foreground">Team:</span>
-      </div>
-      <Select
-        value={currentTeamId || "unassigned"}
-        onValueChange={(value) => {
-          if (value === "unassigned") {
-            onUnassign();
-          } else {
-            onAssign(value);
-          }
-        }}
-        disabled={isLoading}
-      >
-        <SelectTrigger className="w-[180px] h-8">
-          <SelectValue placeholder="Select team">
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                <span className="text-xs">Updating...</span>
-              </div>
-            ) : currentTeam ? (
-              <span className="text-xs">{currentTeam.name}</span>
-            ) : (
-              <span className="text-xs text-muted-foreground">Unassigned</span>
-            )}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="unassigned">
-            <span className="text-muted-foreground">Unassigned</span>
-          </SelectItem>
-          {availableTeams.map((team) => (
-            <SelectItem key={team._id} value={team._id}>
-              {team.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
-
 export default function SocialAccounts() {
   const { user, organization } = useAuth();
-  const { canConnectSocialAccounts, hasValidSubscription, canCreateTeams } =
-    useAccessControl();
+  const { canConnectSocialAccounts, hasValidSubscription } = useAccessControl();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [isAddingAccount, setIsAddingAccount] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [deleteConfig, setDeleteConfig] = useState({
@@ -235,6 +175,8 @@ export default function SocialAccounts() {
   );
   const organizationAccounts: any[] = organizationAccountsData?.items ?? [];
 
+  console.log({ shouldUseOrganizationAccounts });
+
   // Use the appropriate accounts and loading state
   const accounts: any[] = shouldUseOrganizationAccounts
     ? organizationAccounts
@@ -245,101 +187,6 @@ export default function SocialAccounts() {
   const refetchAccounts = shouldUseOrganizationAccounts
     ? refetchOrganizationAccounts
     : refetchIndividualAccounts;
-
-  // Fetch organization teams for assignment functionality
-  // const { data: organizationTeams = [] } = useQuery<Team[]>({
-  //   queryKey: ["/teams", organization?._id],
-  //   queryFn: () => {
-  //     if (!organization) return Promise.resolve([]);
-  //     return teamsApi.getTeams(organization._id);
-  //   },
-  //   enabled: Boolean(shouldUseOrganizationAccounts && organization),
-  // });
-
-  console.log({ accounts });
-
-  // Team assignment mutations
-  // const { mutate: assignToTeam, isPending: isAssigning } = useMutation({
-  //   mutationFn: async ({
-  //     teamId,
-  //     accountId,
-  //   }: {
-  //     teamId: string;
-  //     accountId: string;
-  //   }) => {
-  //     if (!organization) throw new Error("No active organization");
-  //     return await teamsApi.assignSocialAccountToTeam(
-  //       organization._id,
-  //       teamId,
-  //       accountId
-  //     );
-  //   },
-  //   onSuccess: () => {
-  //     // Invalidate both social accounts and teams queries to refresh data
-  //     if (shouldUseOrganizationAccounts) {
-  //       queryClient.invalidateQueries({
-  //         queryKey: ["/social-accounts/organization", organization?._id],
-  //       });
-  //     } else {
-  //       queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
-  //     }
-  //     queryClient.invalidateQueries({ queryKey: ["/teams"] });
-  //     toast({
-  //       title: "Account assigned",
-  //       description:
-  //         "Social account has been successfully assigned to the team.",
-  //     });
-  //   },
-  //   onError: (error: any) => {
-  //     toast({
-  //       title: "Assignment failed",
-  //       description:
-  //         error.response?.data?.message || "Failed to assign account to team.",
-  //       variant: "destructive",
-  //     });
-  //   },
-  // });
-
-  // const { mutate: unassignFromTeam, isPending: isUnassigning } = useMutation({
-  //   mutationFn: async ({
-  //     teamId,
-  //     accountId,
-  //   }: {
-  //     teamId: string;
-  //     accountId: string;
-  //   }) => {
-  //     if (!organization) throw new Error("No active organization");
-  //     return await teamsApi.removeSocialAccountFromTeam(
-  //       organization._id,
-  //       teamId,
-  //       accountId
-  //     );
-  //   },
-  //   onSuccess: () => {
-  //     // Invalidate both social accounts and teams queries to refresh data
-  //     if (shouldUseOrganizationAccounts) {
-  //       queryClient.invalidateQueries({
-  //         queryKey: ["/social-accounts/organization", organization?._id],
-  //       });
-  //     } else {
-  //       queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
-  //     }
-  //     queryClient.invalidateQueries({ queryKey: ["/teams"] });
-  //     toast({
-  //       title: "Account unassigned",
-  //       description: "Social account has been removed from the team.",
-  //     });
-  //   },
-  //   onError: (error: any) => {
-  //     toast({
-  //       title: "Unassignment failed",
-  //       description:
-  //         error.response?.data?.message ||
-  //         "Failed to remove account from team.",
-  //       variant: "destructive",
-  //     });
-  //   },
-  // });
 
   // Get unique platforms and their counts
   const platformStats = useMemo(() => {
@@ -507,7 +354,7 @@ export default function SocialAccounts() {
         });
         break;
       case "youtube":
-        refreshYoutubeAccessToken(account.accountId, {
+        refreshYoutubeAccessToken(account._id, {
           onSuccess: () => {
             refetchAccounts();
           },
@@ -1092,7 +939,7 @@ export default function SocialAccounts() {
                     <span className="font-medium">{accounts?.length}</span>
                     <span className="text-muted-foreground">Connected</span>
                   </div>
-                  {/* <div className="flex items-center gap-2 text-sm">
+                  <div className="flex items-center gap-2 text-sm">
                     <BarChart3 className="h-4 w-4 text-green-500" />
                     <span className="font-medium">
                       {
@@ -1101,8 +948,8 @@ export default function SocialAccounts() {
                       }
                     </span>
                     <span className="text-muted-foreground">Active</span>
-                  </div> */}
-                  {/* <div className="flex items-center gap-2 text-sm">
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
                     <AlertCircle className="h-4 w-4 text-orange-500" />
                     <span className="font-medium">
                       {
@@ -1113,7 +960,7 @@ export default function SocialAccounts() {
                     <span className="text-muted-foreground">
                       Need Attention
                     </span>
-                  </div> */}
+                  </div>
                 </div>
               </div>
               {canConnectSocialAccounts ? (
@@ -1283,3 +1130,58 @@ const SocialAccountSkeleton = () => (
     </CardFooter>
   </Card>
 );
+
+export function TeamAssignmentDropdown({
+  currentTeamId,
+  availableTeams,
+  onAssign,
+  onUnassign,
+  isLoading = false,
+}: TeamAssignmentDropdownProps) {
+  const currentTeam = availableTeams.find((team) => team._id === currentTeamId);
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <Users className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">Team:</span>
+      </div>
+      <Select
+        value={currentTeamId || "unassigned"}
+        onValueChange={(value) => {
+          if (value === "unassigned") {
+            onUnassign();
+          } else {
+            onAssign(value);
+          }
+        }}
+        disabled={isLoading}
+      >
+        <SelectTrigger className="w-[180px] h-8">
+          <SelectValue placeholder="Select team">
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span className="text-xs">Updating...</span>
+              </div>
+            ) : currentTeam ? (
+              <span className="text-xs">{currentTeam.name}</span>
+            ) : (
+              <span className="text-xs text-muted-foreground">Unassigned</span>
+            )}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="unassigned">
+            <span className="text-muted-foreground">Unassigned</span>
+          </SelectItem>
+          {availableTeams.map((team) => (
+            <SelectItem key={team._id} value={team._id}>
+              {team.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
