@@ -424,9 +424,9 @@ export default function PlatformCaptions({
                         <Badge
                           key={account._id}
                           variant="outline"
+                          icon={getPlatformIcon(platform)}
                           className="flex items-center gap-1"
                         >
-                          {getPlatformIcon(platform)}
                           <span>{account.accountName}</span>
                         </Badge>
                       ))}

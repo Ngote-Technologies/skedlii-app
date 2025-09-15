@@ -5,23 +5,26 @@ export async function uploadToCloudinary(
   file: File,
   onProgress?: (percent: number) => void
 ): Promise<MediaItem | null> {
-  const publicId = `${file.name.split(".")[0]}-${Date.now()}`;
+  const requestedPublicId = `${file.name.split(".")[0]}-${Date.now()}`;
 
+  // IMPORTANT: The signature endpoint expects camelCase keys: { publicId, folder }
   const res = await axiosInstance.post("/media/cloudinary/signature", {
-    public_id: publicId,
+    publicId: requestedPublicId,
     folder: "skedlii",
   });
 
   if (!res.data) throw new Error("Failed to get Cloudinary signature");
-  const { signature, timestamp, apiKey, cloudName } = res.data;
+  const { signature, timestamp, apiKey, cloudName, publicId, folder } =
+    res.data;
 
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("api_key", apiKey);
-  formData.append("timestamp", timestamp);
+  formData.append("api_key", String(apiKey));
+  formData.append("timestamp", String(timestamp));
   formData.append("signature", signature);
-  formData.append("public_id", publicId);
-  formData.append("folder", "skedlii");
+  // Use exactly the values returned by the server to avoid signature mismatch
+  formData.append("public_id", publicId || requestedPublicId);
+  if (folder) formData.append("folder", folder);
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -38,8 +41,9 @@ export async function uploadToCloudinary(
         try {
           const data = JSON.parse(xhr.responseText);
           if (xhr.status >= 200 && xhr.status < 300) {
+            const cloudPublicId = data.public_id;
             resolve({
-              id: publicId,
+              id: cloudPublicId,
               url: data.secure_url,
               file,
               type: file.type.startsWith("video/") ? "video" : "image",

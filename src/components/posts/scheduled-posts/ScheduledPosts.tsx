@@ -34,6 +34,7 @@ import { getScheduledPostListView } from "./listView";
 import { getScheduledPostCalendarView } from "./calendarView";
 import { useNavigate } from "react-router-dom";
 import { useAccessControl } from "../../../hooks/useAccessControl";
+import { ScrollArea } from "../../ui/scroll-area";
 
 export default function ScheduledPosts() {
   const { hasValidSubscription } = useAccessControl();
@@ -52,11 +53,24 @@ export default function ScheduledPosts() {
 
   // Get posts
   const {
-    data: scheduledPosts = { data: [] },
+    data: scheduledResp,
     isLoading: isFetchingScheduledPosts,
   } = useQuery({
+    // Organization-scoped v2 endpoint; axios injects x-organization-id
     queryKey: ["/scheduled-posts"],
-  }) as { data: { data: any[] } } & { isLoading: boolean };
+  }) as {
+    data:
+      | { items?: any[]; nextCursor?: string }
+      | { data?: any[] }
+      | undefined;
+    isLoading: boolean;
+  };
+
+  // Normalize API response shape
+  const scheduledItems: any[] =
+    ((scheduledResp as any)?.items as any[]) ||
+    ((scheduledResp as any)?.data as any[]) ||
+    [];
 
   // Delete post mutation
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
@@ -105,7 +119,7 @@ export default function ScheduledPosts() {
   const filterPostsByDate = (date: Date | undefined) => {
     if (!date) return [];
 
-    return scheduledPosts.data.filter((post: any) => {
+    return scheduledItems.filter((post: any) => {
       if (!post.scheduledFor) return false;
       const postDate = new Date(post.scheduledFor);
       return (
@@ -120,7 +134,7 @@ export default function ScheduledPosts() {
   const getPostsByDate = () => {
     const postsByDate: Record<string, number> = {};
 
-    scheduledPosts.data.forEach((post: any) => {
+    scheduledItems.forEach((post: any) => {
       if (post.scheduledFor) {
         const dateKey = getDateKey(post.scheduledFor);
         postsByDate[dateKey] = (postsByDate[dateKey] || 0) + 1;
@@ -169,7 +183,7 @@ export default function ScheduledPosts() {
           <div className="hidden sm:flex items-center gap-4 px-4 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
             <div className="text-center">
               <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                {scheduledPosts.data.length}
+                {scheduledItems.length}
               </div>
               <div className="text-xs text-gray-500">Total</div>
             </div>
@@ -246,17 +260,17 @@ export default function ScheduledPosts() {
                     selected={selectedDate}
                     onSelect={setSelectedDate}
                     modifiers={{
-                      hasPost: (date) =>
-                        scheduleHasPostsForDate(new Date(date)),
+                      hasPost: (date) => scheduleHasPostsForDate(new Date(date)),
                     }}
-                    modifiersStyles={{
-                      hasPost: {
-                        fontWeight: "bold",
-                        background:
-                          "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
-                        color: "white",
-                        borderRadius: "0.5rem",
-                      },
+                    modifiersClassNames={{
+                      // Small dot indicator for days that have posts
+                      hasPost:
+                        "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:h-1.5 after:w-1.5 after:rounded-full after:bg-blue-500 dark:after:bg-blue-400",
+                    }}
+                    classNames={{
+                      // Make today visually distinct (ring) from hasPost dot and selection
+                      day_today:
+                        "rounded-md outline-none ring-2 ring-primary/70 dark:ring-primary/60",
                     }}
                     className="rounded-lg"
                   />
@@ -308,13 +322,28 @@ export default function ScheduledPosts() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {getScheduledPostCalendarView({
-                    isFetchingScheduledPosts,
-                    postsByDate: filterPostsByDate(selectedDate),
-                    updatePostStatus,
-                    handleDeletePost,
-                    navigate,
-                  })}
+                  {/* Mobile/stacked: natural height (no scroll container) */}
+                  <div className="block lg:hidden">
+                    {getScheduledPostCalendarView({
+                      isFetchingScheduledPosts,
+                      postsByDate: filterPostsByDate(selectedDate),
+                      updatePostStatus,
+                      handleDeletePost,
+                      navigate,
+                    })}
+                  </div>
+                  {/* Desktop side-by-side: fixed height scroll */}
+                  <div className="hidden lg:block">
+                    <ScrollArea className="h-[65vh] pr-2">
+                      {getScheduledPostCalendarView({
+                        isFetchingScheduledPosts,
+                        postsByDate: filterPostsByDate(selectedDate),
+                        updatePostStatus,
+                        handleDeletePost,
+                        navigate,
+                      })}
+                    </ScrollArea>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -339,24 +368,39 @@ export default function ScheduledPosts() {
                   </div>
                 </div>
 
-                {scheduledPosts.data.length > 0 && (
+                {scheduledItems.length > 0 && (
                   <div className="flex items-center gap-3">
                     <div className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 px-3 py-1 rounded-full text-sm font-medium">
-                      {scheduledPosts.data.length} total post
-                      {scheduledPosts.data.length !== 1 ? "s" : ""}
+                      {scheduledItems.length} total post
+                      {scheduledItems.length !== 1 ? "s" : ""}
                     </div>
                   </div>
                 )}
               </div>
             </CardHeader>
             <CardContent>
-              {getScheduledPostListView(
-                isFetchingScheduledPosts,
-                scheduledPosts,
-                updatePostStatus,
-                handleDeletePost,
-                navigate
-              )}
+              {/* Mobile/stacked: natural height */}
+              <div className="block lg:hidden">
+                {getScheduledPostListView(
+                  isFetchingScheduledPosts,
+                  scheduledItems,
+                  updatePostStatus,
+                  handleDeletePost,
+                  navigate
+                )}
+              </div>
+              {/* Desktop side-by-side: fixed height scroll */}
+              <div className="hidden lg:block">
+                <ScrollArea className="h-[70vh] pr-2">
+                  {getScheduledPostListView(
+                    isFetchingScheduledPosts,
+                    scheduledItems,
+                    updatePostStatus,
+                    handleDeletePost,
+                    navigate
+                  )}
+                </ScrollArea>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

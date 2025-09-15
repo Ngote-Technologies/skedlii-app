@@ -372,16 +372,6 @@ export default function AccountSelection({
                         </div>
                       </div>
                     </div>
-
-                    {/* Hover effect overlay */}
-                    {/* <div
-                      className={cn(
-                        "absolute inset-0 rounded-xl transition-opacity duration-300 pointer-events-none",
-                        isSelected
-                          ? "bg-gradient-to-br from-primary/5 to-transparent opacity-100"
-                          : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 opacity-0 group-hover:opacity-100"
-                      )}
-                    /> */}
                   </button>
                 );
               })}
@@ -419,9 +409,9 @@ export default function AccountSelection({
                   <Badge
                     key={platform}
                     variant="secondary"
+                    icon={getPlatformIcon(platform)}
                     className="flex items-center gap-1.5 bg-white/80 border border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-700 dark:text-green-200"
                   >
-                    {getPlatformIcon(platform)}
                     <span className="font-medium">
                       {count as any} {platform}
                     </span>
