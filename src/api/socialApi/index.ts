@@ -449,6 +449,70 @@ export const socialApi = {
     }
   },
 
+  // SSOT JSON: Immediate post (preferred)
+  postNowSSOT: async (
+    data: {
+      content: string;
+      targets: Array<{ platform: string; socialAccountId: string }>;
+      media?: Array<{
+        type: 'image' | 'video';
+        url: string;
+        width?: number;
+        height?: number;
+        durationSec?: number;
+        ref?: string;
+      }>;
+      scheduleAt?: null;
+    },
+    config?: any
+  ) => {
+    try {
+      const response = await axiosInstance.post(
+        "/social-posts/post-to-platforms",
+        data,
+        config
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to post (SSOT now):", error);
+      throw new Error(
+        error.response?.data?.message ?? error.message ?? "Failed to post"
+      );
+    }
+  },
+
+  // SSOT JSON: Schedule post
+  scheduleSSOT: async (
+    data: {
+      content: string;
+      targets: Array<{ platform: string; socialAccountId: string }>;
+      media?: Array<{
+        type: 'image' | 'video';
+        url: string;
+        width?: number;
+        height?: number;
+        durationSec?: number;
+        ref?: string;
+      }>;
+      scheduleAt: string;
+    },
+    config?: any
+  ) => {
+    try {
+      const response = await axiosInstance.post(
+        "/scheduled-posts",
+        data,
+        config
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to schedule (SSOT):", error);
+      throw new Error(
+        error.response?.data?.message ?? error.message ?? "Failed to schedule"
+      );
+    }
+  },
+
   schedulePost: async (formData: FormData) => {
     try {
       const response = await axiosInstance.post("/scheduled-posts", formData, {
