@@ -59,7 +59,13 @@ import {
 import { useAccessControl } from "../../hooks/useAccessControl";
 
 // Media Carousel Component
-const MediaCarousel = ({ mediaUrls, mediaType }: { mediaUrls: string[]; mediaType: string }) => {
+const MediaCarousel = ({
+  mediaUrls,
+  mediaType,
+}: {
+  mediaUrls: string[];
+  mediaType: string;
+}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (!mediaUrls || mediaUrls.length === 0) return null;
@@ -76,7 +82,7 @@ const MediaCarousel = ({ mediaUrls, mediaType }: { mediaUrls: string[]; mediaTyp
     <div className="relative bg-gray-50 dark:bg-gray-800 rounded-lg overflow-hidden">
       {/* Media Display */}
       <div className="relative aspect-video">
-        {mediaType === 'video' ? (
+        {mediaType === "video" ? (
           <video
             src={mediaUrls[currentIndex]}
             className="w-full h-full object-cover"
@@ -91,7 +97,7 @@ const MediaCarousel = ({ mediaUrls, mediaType }: { mediaUrls: string[]; mediaTyp
             loading="lazy"
           />
         )}
-        
+
         {/* Navigation Buttons */}
         {mediaUrls.length > 1 && (
           <>
@@ -111,7 +117,7 @@ const MediaCarousel = ({ mediaUrls, mediaType }: { mediaUrls: string[]; mediaTyp
         )}
 
         {/* Video Play Overlay */}
-        {mediaType === 'video' && (
+        {mediaType === "video" && (
           <div className="absolute top-2 left-2 bg-black/50 text-white rounded-full p-1">
             <Play className="h-3 w-3 fill-current" />
           </div>
@@ -126,7 +132,7 @@ const MediaCarousel = ({ mediaUrls, mediaType }: { mediaUrls: string[]; mediaTyp
               key={index}
               onClick={() => setCurrentIndex(index)}
               className={`w-2 h-2 rounded-full transition-colors ${
-                index === currentIndex ? 'bg-white' : 'bg-white/50'
+                index === currentIndex ? "bg-white" : "bg-white/50"
               }`}
             />
           ))}
@@ -155,7 +161,7 @@ const Posts = () => {
     isOpen: false,
   });
 
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { hasValidSubscription } = useAccessControl();
 
@@ -173,14 +179,20 @@ const Posts = () => {
     isError,
     refetch: refetchPosts,
   } = useQuery({
-    queryKey: [`/social-posts/${user?._id}`],
+    // Organization-scoped posts listing (v2): axios injects x-organization-id header
+    queryKey: ["/social-posts"],
     enabled: isAuthenticated,
   }) as {
-    data: { data: any[] };
+    // Support both v1 { data: [...] } and v2 { items: [...], nextCursor }
+    data: { items?: any[]; data?: any[]; nextCursor?: string } | undefined;
     isLoading: boolean;
     isError: boolean;
     refetch: () => void;
   };
+
+  // Normalize response shape across API versions
+  const postItems: any[] =
+    (posts?.items as any[]) || (posts as any)?.data || [];
 
   const useDeletePost = () => {
     return useMutation({
@@ -246,7 +258,8 @@ const Posts = () => {
       onError: () => {
         toast.error({
           title: "Collection Addition Failed",
-          description: "Failed to add the post to the collection. Please try again.",
+          description:
+            "Failed to add the post to the collection. Please try again.",
         });
       },
     });
@@ -282,7 +295,10 @@ const Posts = () => {
         </div>
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i} className="overflow-hidden border-0 shadow-md bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 mb-6 break-inside-avoid">
+            <Card
+              key={i}
+              className="overflow-hidden border-0 shadow-md bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 mb-6 break-inside-avoid"
+            >
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -332,22 +348,23 @@ const Posts = () => {
     );
   }
 
-  if (!posts?.data?.length) {
+  if (!postItems?.length) {
     return (
       <div className="flex flex-col items-center justify-center space-y-6 h-[60vh]">
         <div className="rounded-full bg-gradient-to-br from-primary/10 to-primary/5 p-6 shadow-lg">
           <MessageSquare className="h-12 w-12 text-primary" />
         </div>
         <div className="text-center space-y-2">
-          <h3 className="text-2xl font-semibold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">No posts yet</h3>
+          <h3 className="text-2xl font-semibold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+            No posts yet
+          </h3>
           <p className="text-muted-foreground text-center max-w-md text-lg">
-            You haven't created any posts yet. Create your first post to get started with your social media journey.
+            You haven't created any posts yet. Create your first post to get
+            started with your social media journey.
           </p>
         </div>
         {hasValidSubscription && (
-          <Button
-            onClick={() => navigate("/dashboard/post-flow")}
-          >
+          <Button onClick={() => navigate("/dashboard/post-flow")}>
             <Plus size={16} className="mr-2" />
             Create Post
           </Button>
@@ -357,7 +374,7 @@ const Posts = () => {
   }
 
   return (
-      <div className="space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Posts</h2>
@@ -394,16 +411,15 @@ const Posts = () => {
           <div className="flex items-center space-x-2">
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {posts.data.length} post{posts.data.length !== 1 ? "s" : ""} published
+              {postItems.length} post{postItems.length !== 1 ? "s" : ""}{" "}
+              published
             </p>
           </div>
-          <div className="text-xs text-muted-foreground">
-            Latest activity
-          </div>
+          <div className="text-xs text-muted-foreground">Latest activity</div>
         </div>
 
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-          {posts?.data?.map((post: any) => {
+          {postItems?.map((post: any) => {
             const platform = post.platform?.toLowerCase() ?? "";
 
             return (
@@ -417,28 +433,60 @@ const Posts = () => {
                       <div className="relative">
                         <div className="relative">
                           <img
-                            src={post.metadata?.profileImageUrl ?? post.metadata?.profile?.threads_profile_picture_url ?? 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="100%" height="100%" fill="transparent"/></svg>'}
+                            src={
+                              post.metadata?.profileImageUrl ??
+                              post.metadata?.profile
+                                ?.threads_profile_picture_url ??
+                              'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="100%" height="100%" fill="transparent"/></svg>'
+                            }
                             alt="Profile"
                             className="h-10 w-10 rounded-full object-cover border-2 border-gray-100 dark:border-gray-700"
                             onError={(e) => {
-                              console.log('Profile image failed for platform:', platform, 'URL:', e.currentTarget.src);
+                              console.log(
+                                "Profile image failed for platform:",
+                                platform,
+                                "URL:",
+                                e.currentTarget.src
+                              );
                               // Replace with fallback background
-                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.style.display = "none";
                             }}
                             onLoad={(e) => {
-                              console.log('Profile image loaded for platform:', platform, 'URL:', e.currentTarget.src);
+                              console.log(
+                                "Profile image loaded for platform:",
+                                platform,
+                                "URL:",
+                                e.currentTarget.src
+                              );
                             }}
                           />
                           {/* Fallback icon - always rendered but conditionally visible */}
-                          <div 
-                            className={`absolute inset-0 h-10 w-10 rounded-full border-2 border-gray-100 dark:border-gray-700 flex items-center justify-center ${getPlatformSimpleTextColor(platform)} bg-gray-50 dark:bg-gray-800`}
-                            style={{ display: (!post.metadata?.profileImageUrl && !post.metadata?.profile?.threads_profile_picture_url) ? 'flex' : 'none' }}
+                          <div
+                            className={`absolute inset-0 h-10 w-10 rounded-full border-2 border-gray-100 dark:border-gray-700 flex items-center justify-center ${getPlatformSimpleTextColor(
+                              platform
+                            )} bg-gray-50 dark:bg-gray-800`}
+                            style={{
+                              display:
+                                !post.metadata?.profileImageUrl &&
+                                !post.metadata?.profile
+                                  ?.threads_profile_picture_url
+                                  ? "flex"
+                                  : "none",
+                            }}
                           >
-                            <i className={`${getSocialIcon(platform)} text-lg`} />
+                            <i
+                              className={`${getSocialIcon(platform)} text-lg`}
+                            />
                           </div>
                           {/* Platform badge */}
-                          <div className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center ${getPlatformSimpleTextColor(platform)} bg-white dark:bg-gray-800`}>
-                            <i className={`${getSocialIcon(platform)} text-xs`} />
+                          <div
+                            className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center ${getPlatformSimpleTextColor(
+                              platform
+                            )} bg-white dark:bg-gray-800`}
+                          >
+                            <i
+                              className={`${getSocialIcon(platform)} text-xs`}
+                            />
                           </div>
                         </div>
                       </div>
@@ -457,15 +505,24 @@ const Posts = () => {
                     <div className="flex items-center space-x-2">
                       {post.mediaType && (
                         <div className="flex items-center space-x-1 text-xs text-muted-foreground bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                          {post.mediaType === 'image' && <Image className="h-3 w-3" />}
-                          {post.mediaType === 'video' && <Video className="h-3 w-3" />}
-                          {post.mediaType === 'text' && <FileText className="h-3 w-3" />}
+                          {post.mediaType === "image" && (
+                            <Image className="h-3 w-3" />
+                          )}
+                          {post.mediaType === "video" && (
+                            <Video className="h-3 w-3" />
+                          )}
+                          {post.mediaType === "text" && (
+                            <FileText className="h-3 w-3" />
+                          )}
                           <span className="capitalize">{post.mediaType}</span>
                         </div>
                       )}
                       <StatusBadge
                         status={
-                          post.status === "posted" || post.status === "published" ? "published" : post.status
+                          post.status === "posted" ||
+                          post.status === "published"
+                            ? "published"
+                            : post.status
                         }
                         size="sm"
                       />
@@ -547,7 +604,9 @@ const Posts = () => {
                     {post.content}
                   </div>
                   {/* Media Display with Carousel */}
-                  {(post.mediaUrls?.length > 0 || post.imageUrl || post.metadata?.videoUrl) && (
+                  {(post.mediaUrls?.length > 0 ||
+                    post.imageUrl ||
+                    post.metadata?.videoUrl) && (
                     <div className="mb-3">
                       <MediaCarousel
                         mediaUrls={
@@ -559,7 +618,7 @@ const Posts = () => {
                             ? [post.metadata.videoUrl]
                             : []
                         }
-                        mediaType={post.mediaType || 'image'}
+                        mediaType={post.mediaType || "image"}
                       />
                     </div>
                   )}
@@ -568,7 +627,15 @@ const Posts = () => {
                   <div className="flex justify-between items-center w-full">
                     <div className="flex flex-col space-y-1">
                       <span className="text-xs text-muted-foreground flex items-center space-x-1">
-                        <span>Published {formatDate(post.publishedDate ?? post.postedAt ?? post.createdAt, "MMM d, yyyy")}</span>
+                        <span>
+                          Published{" "}
+                          {formatDate(
+                            post.publishedDate ??
+                              post.postedAt ??
+                              post.createdAt,
+                            "MMM d, yyyy"
+                          )}
+                        </span>
                       </span>
                       {post.collection && (
                         <div className="flex items-center space-x-1 text-xs">
@@ -589,7 +656,9 @@ const Posts = () => {
                           size="icon"
                           className="h-8 w-8 hover:bg-green-50 dark:hover:bg-green-900/20"
                           onClick={() => handleViewAnalytics(post._id)}
-                          disabled={!["posted", "published"].includes(post.status)}
+                          disabled={
+                            !["posted", "published"].includes(post.status)
+                          }
                           title="View Analytics"
                         >
                           <BarChart2 className="h-4 w-4" />
@@ -601,7 +670,9 @@ const Posts = () => {
                           size="icon"
                           className="h-8 w-8 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                           onClick={() => handleEditPost(post._id)}
-                          disabled={["published", "posted"].includes(post.status)}
+                          disabled={["published", "posted"].includes(
+                            post.status
+                          )}
                           title="Edit Post"
                         >
                           <Edit2 className="h-4 w-4" />
