@@ -111,7 +111,7 @@ export default function TikTokSettingsDrawer({
 
         <Accordion
           type="multiple"
-          className="max-h-[75vh] overflow-y-auto p-4 space-y-2"
+          className="max-h-[75vh] p-4 space-y-2"
         >
           {Object.entries(localOptions).map(([accountId, opts]) => (
             <AccordionItem key={accountId} value={accountId}>
@@ -137,7 +137,7 @@ export default function TikTokSettingsDrawer({
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {creatorInfoMap[accountId]?.data?.monetizationEligibility
+                  {creatorInfoMap[accountId]?.data?.monetization_eligibility
                     ? "Eligible for branded content"
                     : "Branded content not supported"}
                 </p>
@@ -147,7 +147,6 @@ export default function TikTokSettingsDrawer({
                   <Input
                     placeholder="Video title"
                     value={opts.title}
-                    disabled={!opts.hasCustomTitle}
                     onChange={(e) => {
                       const newTitle = e.target.value;
                       setLocalOptions((prev) => ({
@@ -270,7 +269,7 @@ export default function TikTokSettingsDrawer({
                           return updated;
                         });
                       }}
-                      disabled={!creatorInfoMap[accountId]?.data?.allow_duet}
+                      disabled={Boolean(creatorInfoMap[accountId]?.data?.duet_disabled)}
                     />
                     <label
                       htmlFor={`allowDuet-${accountId}`}
@@ -309,7 +308,7 @@ export default function TikTokSettingsDrawer({
                           return updated;
                         });
                       }}
-                      disabled={!creatorInfoMap[accountId]?.data?.allow_stitch}
+                      disabled={Boolean(creatorInfoMap[accountId]?.data?.stitch_disabled)}
                     />
                     <label
                       htmlFor={`allowStitch-${accountId}`}

@@ -120,14 +120,14 @@ export default function Header() {
                 <HashLink
                   smooth
                   to="/"
-                  elementId="solutions"
+                  elementId="pricing"
                   className={`px-4 rounded-full text-sm font-medium transition-colors ${
-                    location.pathname.includes("/solutions")
+                    location.pathname.includes("/pricing")
                       ? "bg-primary-100 text-primary-900 dark:bg-primary-900/20 dark:text-primary-300"
                       : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50"
                   }`}
                 >
-                  Solutions
+                  Pricing
                 </HashLink>
                 <HashLink
                   smooth
@@ -316,11 +316,11 @@ export default function Header() {
                       smooth
                       to="/"
                       onClick={() => setMobileMenuOpen(false)}
-                      elementId="solutions"
+                      elementId="pricing"
                       className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       <Users className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                      <span className="font-medium">Solutions</span>
+                      <span className="font-medium">Pricing</span>
                     </HashLink>
                     <HashLink
                       smooth
@@ -436,7 +436,7 @@ export default function Header() {
                       </div>
                     </Link>
                     <Link
-                      to="/dashboard/teams"
+                      to="/dashboard/organizations/teams"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <div className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">

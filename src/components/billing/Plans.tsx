@@ -1,26 +1,38 @@
 import { Button } from "../ui/button";
-import { CheckCircle2 } from "lucide-react";
+import { Badge } from "../ui/badge";
+import {
+  CheckCircle2,
+  Crown,
+  Zap,
+  Star,
+  Sparkles,
+  TrendingUp,
+  Users,
+  Rocket,
+} from "lucide-react";
 
 const Plans = ({
   displayedPlans,
   isYearly,
   billing,
   handleUpgradeDowngrade,
+  canManageBilling,
 }: {
   displayedPlans: any[];
   isYearly: boolean;
   billing: any;
-  handleUpgradeDowngrade: (plan: any) => void;
+  handleUpgradeDowngrade: (plan: any, interval: "monthly" | "yearly") => void;
+  canManageBilling?: boolean;
 }) => {
   const getPlanActionText = (planId: string) => {
-    if (!billing?.planId) {
+    if (!billing?.subscriptionTier) {
       return "Choose Plan";
     }
 
-    if (billing.planId === planId) return "Current Plan";
+    if (billing.subscriptionTier === planId) return "Current Plan";
 
-    const tiers = ["test", "creator", "pro", "enterprise"];
-    const currentIndex = tiers.indexOf(billing.planId);
+    const tiers = ["test", "creator", "team", "enterprise"];
+    const currentIndex = tiers.indexOf(billing.subscriptionTier);
     const targetIndex = tiers.indexOf(planId);
 
     if (targetIndex > currentIndex) return "Upgrade";
@@ -29,55 +41,230 @@ const Plans = ({
     return "Choose Plan";
   };
 
+  // Enhanced plan styling
+  const getPlanIcon = (planId: string) => {
+    switch (planId) {
+      case "test":
+        return Users;
+      case "creator":
+        return Star;
+      case "team":
+        return Crown;
+      case "enterprise":
+        return Rocket;
+      default:
+        return Sparkles;
+    }
+  };
+
+  const getPlanTheme = (planId: string, isPopular: boolean) => {
+    if (isPopular) {
+      return {
+        gradient: "from-primary to-purple-500",
+        ring: "ring-primary/50",
+        iconBg: "bg-primary text-white",
+        badge: "bg-primary text-white",
+      };
+    }
+
+    switch (planId) {
+      case "test":
+        return {
+          gradient: "from-gray-500 to-gray-600",
+          ring: "ring-gray-300",
+          iconBg: "bg-gray-500/10 text-gray-600",
+          badge: "bg-gray-500/10 text-gray-600",
+        };
+      case "creator":
+        return {
+          gradient: "from-blue-500 to-cyan-500",
+          ring: "ring-blue-300",
+          iconBg: "bg-blue-500/10 text-blue-600",
+          badge: "bg-blue-500/10 text-blue-600",
+        };
+      case "team":
+        return {
+          gradient: "from-purple-500 to-pink-500",
+          ring: "ring-purple-300",
+          iconBg: "bg-purple-500/10 text-purple-600",
+          badge: "bg-purple-500/10 text-purple-600",
+        };
+      case "enterprise":
+        return {
+          gradient: "from-orange-500 to-red-500",
+          ring: "ring-orange-300",
+          iconBg: "bg-orange-500/10 text-orange-600",
+          badge: "bg-orange-500/10 text-orange-600",
+        };
+      default:
+        return {
+          gradient: "from-gray-500 to-gray-600",
+          ring: "ring-gray-300",
+          iconBg: "bg-gray-500/10 text-gray-600",
+          badge: "bg-gray-500/10 text-gray-600",
+        };
+    }
+  };
+
+  const currencyFormatter = (
+    amountCents?: number | null,
+    currency?: string | null
+  ) => {
+    if (amountCents == null) return null;
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency: (currency || "USD").toUpperCase(),
+        maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2,
+      }).format(amountCents / 100);
+    } catch {
+      return `$${(amountCents / 100).toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
+    }
+  };
+
   return (
-    <div className="grid gap-6 md:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-stretch">
       {displayedPlans.map((plan) => {
-        const displayPrice = isYearly ? plan.priceYearly : plan.priceMonthly;
-        const displayPeriod = isYearly ? "yearly" : "monthly";
-        const isCurrentPlan: boolean = billing?.productId === plan.productId;
+        const cycle: "monthly" | "yearly" = isYearly ? "yearly" : "monthly";
+        const interval = (plan.intervals || []).find(
+          (i: any) => i.cycle === cycle
+        );
+        const formatted = currencyFormatter(
+          interval?.amount,
+          interval?.currency
+        );
+        const displayPrice =
+          formatted ?? (isYearly ? plan.priceYearly : plan.priceMonthly) ?? "—";
+        const displayPeriod = cycle;
+        const isCurrentPlan: boolean =
+          (billing?.subscriptionTier && billing.subscriptionTier === plan.id) ||
+          false;
+        const PlanIcon = getPlanIcon(plan.id);
+        const theme = getPlanTheme(plan.id, plan.isPopular);
 
         return (
           <div
             key={plan.id}
-            className={`border rounded-lg p-6 space-y-4 ${
-              plan.isPopular
-                ? "border-primary-500 shadow-lg"
-                : "border-gray-200 dark:border-gray-700"
-            }`}
+            className={`group relative overflow-hidden transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 h-full`}
           >
-            <div className="flex items-center space-x-3">
-              <h3 className="font-bold text-lg capitalize">{plan.name}</h3>
-              {plan.badge && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-300">
-                  {plan.badge}
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-baseline">
-              <span className="text-3xl font-bold">${displayPrice}</span>
-              <span className="ml-1 text-gray-500 dark:text-gray-400">
-                {displayPeriod}
-              </span>
-            </div>
-
-            <ul className="space-y-2">
-              {plan.features.map((feature: string) => (
-                <li key={feature} className="flex items-center space-x-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            <Button
-              className="w-full"
-              variant={isCurrentPlan ? "outline" : "default"}
-              onClick={() => handleUpgradeDowngrade(plan)}
-              disabled={isCurrentPlan}
+            {/* Background Card */}
+            <div
+              className={`relative h-full rounded-xl border bg-gradient-to-br from-background to-muted/30 p-6 backdrop-blur-sm flex flex-col ${
+                isCurrentPlan ? "border-green-300" : "border-border/50"
+              }`}
             >
-              {getPlanActionText(plan.id)}
-            </Button>
+              {/* Background gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+              {/* Top badges moved inline; removed ring/shiny badges */}
+
+              {/* Plan Header */}
+              <div className="relative space-y-4 flex-1 flex flex-col">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${theme.iconBg}`}>
+                    <PlanIcon className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-lg capitalize bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+                        {plan.name}
+                      </h3>
+                      {isCurrentPlan && (
+                        <Badge
+                          icon={<CheckCircle2 className="h-3 w-3" />}
+                          className="h-5 px-2 bg-green-500/10 text-green-700 border border-green-500/20"
+                        >
+                          Current
+                        </Badge>
+                      )}
+                    </div>
+                    {plan.badge && (
+                      <Badge
+                        variant="secondary"
+                        className={`text-xs ${theme.badge}`}
+                      >
+                        {plan.badge}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Pricing */}
+                <div className="text-center py-4">
+                  <div className="flex items-baseline justify-center">
+                    <span className="text-4xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                      {typeof displayPrice === "string" &&
+                      displayPrice.startsWith("$")
+                        ? displayPrice
+                        : `$${displayPrice}`}
+                    </span>
+                    <span className="ml-2 text-sm text-muted-foreground font-medium">
+                      /{displayPeriod}
+                    </span>
+                  </div>
+                  {isYearly && (
+                    <div className="mt-1 flex items-center justify-center gap-1">
+                      <TrendingUp className="h-3 w-3 text-green-500" />
+                      <span className="text-xs text-green-600 font-medium">
+                        Save 20%
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Features */}
+                <div className="space-y-3 flex-1">
+                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                    What's included:
+                  </h4>
+                  <ul className="space-y-2">
+                    {plan.features.map((feature: string) => (
+                      <li key={feature} className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-foreground/90">
+                          {feature}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Action Button */}
+                <Button
+                  className={`w-full mt-auto transition-all duration-200 h-10 font-semibold tracking-tight ${
+                    isCurrentPlan
+                      ? "bg-green-500/10 border-green-500/30 text-green-700 hover:bg-green-500/15"
+                      : plan.isPopular
+                      ? `bg-gradient-to-r ${theme.gradient} hover:shadow-lg hover:shadow-primary/25 text-white border-0`
+                      : "bg-primary/10 text-primary border border-primary/30 hover:bg-primary/15"
+                  } ${
+                    !canManageBilling
+                      ? "disabled:opacity-50 disabled:cursor-not-allowed"
+                      : ""
+                  }`}
+                  variant={
+                    isCurrentPlan
+                      ? "outline"
+                      : plan.isPopular
+                      ? "default"
+                      : "secondary"
+                  }
+                  onClick={() => handleUpgradeDowngrade(plan, cycle)}
+                  disabled={isCurrentPlan || !canManageBilling}
+                  title={
+                    !canManageBilling
+                      ? "Only account owners can manage billing"
+                      : ""
+                  }
+                >
+                  {isCurrentPlan && <CheckCircle2 className="h-4 w-4 mr-2" />}
+                  {plan.isPopular && !isCurrentPlan && (
+                    <Zap className="h-4 w-4 mr-2" />
+                  )}
+                  {!canManageBilling ? "View Only" : getPlanActionText(plan.id)}
+                </Button>
+              </div>
+            </div>
           </div>
         );
       })}

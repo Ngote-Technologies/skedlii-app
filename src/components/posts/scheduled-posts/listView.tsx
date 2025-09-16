@@ -25,18 +25,17 @@ import {
   DropdownMenuTrigger,
 } from "../../ui/dropdown-menu";
 import { formatDate, getSocialIcon } from "../../../lib/utils";
-import { hasValidSubscription } from "../../../lib/access";
 import { toast } from "../../../hooks/use-toast";
+import { useAccessControl } from "../../../hooks/useAccessControl";
 
 export function getScheduledPostListView(
   isFetchingScheduledPosts: boolean,
-  scheduledPosts: any,
+  scheduledItems: any[],
   updatePostStatus: any,
   handleDeletePost: any,
-  navigate: any,
-  user: any
+  navigate: any
 ) {
-  const { billing } = user;
+  const { hasValidSubscription } = useAccessControl();
 
   if (isFetchingScheduledPosts) {
     return (
@@ -46,7 +45,7 @@ export function getScheduledPostListView(
     );
   }
 
-  if (scheduledPosts.data.length === 0) {
+  if (scheduledItems.length === 0) {
     return (
       <div className="text-center p-6 border rounded-lg bg-muted/20">
         <p className="text-muted-foreground">
@@ -56,7 +55,7 @@ export function getScheduledPostListView(
           variant="link"
           className="mt-2"
           onClick={() => {
-            if (!hasValidSubscription(billing?.paymentStatus)) {
+            if (!hasValidSubscription) {
               toast({
                 variant: "destructive",
                 title: "Upgrade your plan to manage collections.",
@@ -72,10 +71,10 @@ export function getScheduledPostListView(
     );
   }
 
-  if (scheduledPosts.data.length > 0) {
+  if (scheduledItems.length > 0) {
     return (
       <div className="space-y-4">
-        {scheduledPosts.data.map((post: any) => (
+        {scheduledItems.map((post: any) => (
           <Card key={post._id} className="overflow-hidden">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-start">
@@ -144,17 +143,17 @@ export function getScheduledPostListView(
               </div>
             </CardContent>
             <CardFooter className="flex flex-wrap gap-1 border-t pt-2 bg-muted/30">
-              {post.platforms?.map((platform: any) => (
+              {post.platforms?.map((platform: any) => {
+                const name = (platform.platformName || platform.platform || "").toString().toLowerCase();
+                return (
                 <div
                   key={platform.accountId}
                   className="text-xs bg-muted px-2 py-1 rounded-full flex items-center"
                 >
-                  <i
-                    className={`${getSocialIcon(platform.platform ?? "")} mr-1`}
-                  ></i>
-                  <span>{platform.platform ?? platform.platformId}</span>
+                  <i className={`${getSocialIcon(name)} mr-1`}></i>
+                  <span className="capitalize">{name || platform.platformId}</span>
                 </div>
-              ))}
+              );})}
             </CardFooter>
           </Card>
         ))}
@@ -168,29 +167,64 @@ export const getStatusBadge = (status: string) => {
   switch (status) {
     case "draft":
       return (
-        <Badge variant="outline" className="flex items-center gap-1 w-24">
-          <FileText size={12} /> Draft
+        <Badge
+          variant="outline"
+          className="flex items-center gap-1 w-fit"
+          icon={<FileText size={12} />}
+        >
+          Draft
         </Badge>
       );
     case "published":
       return (
-        <Badge variant="secondary" className="flex items-center gap-1 w-24">
-          <Clock size={12} /> Published
+        <Badge
+          variant="secondary"
+          className="flex items-center gap-1 w-fit"
+          icon={<CheckCircle size={12} />}
+        >
+          Published
         </Badge>
       );
     case "scheduled":
+    case "pending": // backend initial state
       return (
-        <Badge variant="default" className="flex items-center gap-1 w-24">
-          <CheckCircle size={12} /> Scheduled
+        <Badge
+          variant="default"
+          className="flex items-center gap-1 w-fit"
+          icon={<Clock size={12} />}
+        >
+          Scheduled
+        </Badge>
+      );
+    case "publishing": // backend while job runs
+      return (
+        <Badge
+          variant="info"
+          className="flex items-center gap-1 w-fit"
+          icon={<Loader2 size={12} className="animate-spin" />}
+        >
+          Publishing
         </Badge>
       );
     case "failed":
       return (
-        <Badge variant="destructive" className="flex items-center gap-1 w-24">
-          <AlertCircle size={12} /> Failed
+        <Badge
+          variant="destructive"
+          className="flex items-center gap-1 w-fit"
+          icon={<AlertCircle size={12} />}
+        >
+          Failed
         </Badge>
       );
     default:
-      return <Badge variant="outline">{status}</Badge>;
+      return (
+        <Badge
+          variant="outline"
+          className="flex items-center gap-1 w-fit"
+          icon={<FileText size={12} />}
+        >
+          {status}
+        </Badge>
+      );
   }
 };

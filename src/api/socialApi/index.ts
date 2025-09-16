@@ -16,6 +16,23 @@ export const socialApi = {
     }
   },
 
+  // Get organization social accounts
+  getOrganizationSocialAccounts: async (organizationId: string) => {
+    try {
+      const response = await axiosInstance.get(
+        `/social-accounts/organization/${organizationId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch organization social accounts:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to fetch organization social accounts"
+      );
+    }
+  },
+
   listAccountsIndividual: async ({ userId }: { userId: string }) => {
     try {
       const response = await axiosInstance.get(`/social-accounts/${userId}`);
@@ -57,7 +74,7 @@ export const socialApi = {
   connectThreads: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/threads/direct-auth`
+      `/social-accounts/threads/connect`
     );
     return response;
   },
@@ -65,7 +82,7 @@ export const socialApi = {
   connectLinkedIn: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/linkedin/direct-auth`
+      `/social-accounts/linkedin/connect`
     );
     return response;
   },
@@ -73,7 +90,7 @@ export const socialApi = {
   connectFacebook: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/facebook/direct-auth`
+      `/social-accounts/facebook/connect`
     );
     return response;
   },
@@ -85,7 +102,7 @@ export const socialApi = {
   }) => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/meta/direct-auth?platform=${platform}`
+      `/social-accounts/meta/connect?platform=${platform}`
     );
     return response;
   },
@@ -93,23 +110,20 @@ export const socialApi = {
   connectInstagram: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/instagram/direct-auth`
+      `/social-accounts/instagram/connect`
     );
     return response;
   },
 
   connectTikTok: async () => {
-    const response = await apiRequest(
-      "GET",
-      `/social-accounts/tiktok/direct-auth`
-    );
+    const response = await apiRequest("GET", `/social-accounts/tiktok/connect`);
     return response;
   },
 
   connectYoutube: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/youtube/direct-auth`
+      `/social-accounts/youtube/connect`
     );
     return response;
   },
@@ -162,10 +176,10 @@ export const socialApi = {
     }
   },
 
-  refreshYoutubeAccessToken: async ({ accountId }: { accountId: string }) => {
+  refreshYoutubeAccessToken: async ({ id }: { id: string }) => {
     try {
       const response = await axiosInstance.get(
-        `/social-accounts/youtube/refresh/${accountId}`
+        `/social-accounts/youtube/reauth/start/${id}`
       );
       return response.data;
     } catch (error: any) {
@@ -431,6 +445,72 @@ export const socialApi = {
         error.response?.data?.message ??
           error.message ??
           "Failed to post to multi platforms"
+      );
+    }
+  },
+
+  // SSOT JSON: Immediate post (preferred)
+  postNowSSOT: async (
+    data: {
+      content: string;
+      targets: Array<{ platform: string; socialAccountId: string }>;
+      media?: Array<{
+        type: 'image' | 'video';
+        url: string;
+        width?: number;
+        height?: number;
+        durationSec?: number;
+        ref?: string;
+      }>;
+      scheduleAt?: null;
+      tiktokOptions?: Record<string, any>;
+    },
+    config?: any
+  ) => {
+    try {
+      const response = await axiosInstance.post(
+        "/social-posts/post-to-platforms",
+        data,
+        config
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to post (SSOT now):", error);
+      throw new Error(
+        error.response?.data?.message ?? error.message ?? "Failed to post"
+      );
+    }
+  },
+
+  // SSOT JSON: Schedule post
+  scheduleSSOT: async (
+    data: {
+      content: string;
+      targets: Array<{ platform: string; socialAccountId: string }>;
+      media?: Array<{
+        type: 'image' | 'video';
+        url: string;
+        width?: number;
+        height?: number;
+        durationSec?: number;
+        ref?: string;
+      }>;
+      scheduleAt: string;
+      tiktokOptions?: Record<string, any>;
+    },
+    config?: any
+  ) => {
+    try {
+      const response = await axiosInstance.post(
+        "/scheduled-posts",
+        data,
+        config
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to schedule (SSOT):", error);
+      throw new Error(
+        error.response?.data?.message ?? error.message ?? "Failed to schedule"
       );
     }
   },

@@ -2,6 +2,9 @@ export interface Organization {
   _id: string;
   name: string;
   description?: string;
+  role?: "owner" | "admin" | "member" | "viewer";
+  logo?: string;
+  status: "active" | "inactive" | "suspended";
   type: "enterprise" | "business" | "startup";
   settings: {
     permissions: string[];
@@ -52,7 +55,14 @@ export interface User {
   stripeCustomerId?: string;
   subscriptionId?: string;
   subscriptionStatus?: "paid" | "trialing" | "cancelled" | "inactive";
-  subscriptionTier?: "free" | "basic" | "pro" | "business";
+  subscriptionTier?:
+    | "free"
+    | "creator"
+    | "team"
+    | "enterprise"
+    | "trial"
+    | "basic"
+    | "business";
   subscriptionRenewalDate?: string;
   invoices?: any[];
   renewalDate?: string;

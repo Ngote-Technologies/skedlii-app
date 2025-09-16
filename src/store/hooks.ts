@@ -7,7 +7,7 @@ export const useAuth = () => {
     user,
     token,
     organization,
-    // teams,
+    teams,
     isLoading: authLoading,
     error: authError,
     login,
@@ -15,15 +15,43 @@ export const useAuth = () => {
     register,
     fetchUserData,
     clearError: clearAuthError,
+    updateSubscriptionInfo,
+    refreshPermissions,
+    setActiveOrganization,
+
+    // Enhanced authentication context
+    userRole,
+    userType,
+    subscriptionInfo,
+
+    // Computed permissions
     isAdmin,
+    canManageOrganization,
+    canManageBilling,
+    canConnectSocialAccounts,
+    canCreateTeams,
+    canManageTeams,
+    canDeleteTeams,
+    canInviteMembers,
+    canRemoveMembers,
+    canViewAnalytics,
+    canExportData,
+    canAccessAdvancedFeatures,
+    canSchedulePosts,
+    canBulkSchedule,
+    canUseAIFeatures,
+    canManageWebhooks,
+    canViewAuditLogs,
+    canManageApiKeys,
+    canAccessBetaFeatures,
   } = useAuthStore();
 
   const {
-    teams,
+    // teams,
     activeTeam,
     isLoading: teamsLoading,
     error: teamsError,
-    fetchTeams,
+    // fetchTeams,
     setActiveTeam,
     createTeam,
   } = useTeamStore();
@@ -43,6 +71,11 @@ export const useAuth = () => {
     authLoading,
     authError,
 
+    // Enhanced authentication context
+    userRole,
+    userType,
+    subscriptionInfo,
+
     // Team state
     teams,
     activeTeam,
@@ -55,9 +88,33 @@ export const useAuth = () => {
     register,
     fetchUserData,
     clearAuthError,
+    updateSubscriptionInfo,
+    refreshPermissions,
+    setActiveOrganization,
+
+    // Computed permissions
     isAdmin,
+    canManageOrganization,
+    canManageBilling,
+    canConnectSocialAccounts,
+    canCreateTeams,
+    canManageTeams,
+    canDeleteTeams,
+    canInviteMembers,
+    canRemoveMembers,
+    canViewAnalytics,
+    canExportData,
+    canAccessAdvancedFeatures,
+    canSchedulePosts,
+    canBulkSchedule,
+    canUseAIFeatures,
+    canManageWebhooks,
+    canViewAuditLogs,
+    canManageApiKeys,
+    canAccessBetaFeatures,
+
     // Team actions
-    fetchTeams,
+    // fetchTeams,
     setActiveTeam,
     createTeam,
   };

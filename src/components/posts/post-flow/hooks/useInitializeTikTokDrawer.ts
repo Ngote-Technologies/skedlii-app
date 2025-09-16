@@ -25,18 +25,19 @@ export function useInitializeTikTokDrawer({
   setOpenTikTokDrawer,
 }: Params) {
   useEffect(() => {
-    const tiktokAccounts = socialAccounts.filter(
+    const tiktokAccounts = (socialAccounts || []).filter(
       (account) =>
-        selectedAccounts.includes(account._id) && account.platform === "tiktok"
+        (selectedAccounts || []).includes(account._id) && account.platform === "tiktok"
     );
 
-    if (tiktokAccounts.length > 0 && media.length > 0) {
+    if (tiktokAccounts.length > 0 && ((media || []).length > 0)) {
       setTiktokSelected(true);
 
-      const newOptions = { ...tiktokAccountOptions };
+      const newOptions = { ...(tiktokAccountOptions || {}) } as Record<string, TikTokOptions>;
       let anyMissing = false;
+      let changed = false;
 
-      const caption = platformCaptions["tiktok"] || globalCaption || "";
+      const caption = (platformCaptions?.["tiktok"] as string) || globalCaption || "";
 
       for (const account of tiktokAccounts) {
         if (!newOptions[account._id]) {
@@ -51,10 +52,21 @@ export function useInitializeTikTokDrawer({
             accountName: account.accountName,
           };
           anyMissing = true;
+          changed = true;
+        } else if (newOptions[account._id].accountName !== account.accountName) {
+          // Keep account name in sync without disturbing other choices
+          newOptions[account._id] = {
+            ...newOptions[account._id],
+            accountName: account.accountName,
+          };
+          changed = true;
         }
       }
 
-      setTiktokAccountOptions(newOptions);
+      // Avoid resetting options if nothing actually changed
+      if (changed) {
+        setTiktokAccountOptions(newOptions);
+      }
 
       if (anyMissing) {
         setOpenTikTokDrawer(true);
@@ -62,5 +74,5 @@ export function useInitializeTikTokDrawer({
     } else {
       setTiktokSelected(false);
     }
-  }, [selectedAccounts, media]);
+  }, [selectedAccounts, media, socialAccounts, platformCaptions, globalCaption, tiktokAccountOptions]);
 }
