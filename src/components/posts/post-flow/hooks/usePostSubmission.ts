@@ -202,6 +202,14 @@ export function usePostSubmission({
         });
       }
 
+      // Build optional TikTok options map keyed by socialAccountId
+      const tiktokOptionsPayload: Record<string, any> = {};
+      for (const acc of selectedAccountsData) {
+        if (acc.platform === "tiktok" && tiktokAccountOptions[acc._id]) {
+          tiktokOptionsPayload[acc._id] = tiktokAccountOptions[acc._id];
+        }
+      }
+
       if (isScheduled && scheduledDate) {
         await socialApi.scheduleSSOT(
           {
@@ -209,6 +217,7 @@ export function usePostSubmission({
             targets,
             media: ssotMedia,
             scheduleAt: new Date(scheduledDate).toISOString(),
+            tiktokOptions: tiktokOptionsPayload,
           },
           { headers: { "Idempotency-Key": idemKey } }
         );
@@ -219,6 +228,7 @@ export function usePostSubmission({
             targets,
             media: ssotMedia,
             scheduleAt: null,
+            tiktokOptions: tiktokOptionsPayload,
           },
           { headers: { "Idempotency-Key": idemKey } }
         );
