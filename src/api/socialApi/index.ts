@@ -463,6 +463,7 @@ export const socialApi = {
         ref?: string;
       }>;
       scheduleAt?: null;
+      tiktokOptions?: Record<string, any>;
     },
     config?: any
   ) => {
@@ -495,6 +496,7 @@ export const socialApi = {
         ref?: string;
       }>;
       scheduleAt: string;
+      tiktokOptions?: Record<string, any>;
     },
     config?: any
   ) => {
