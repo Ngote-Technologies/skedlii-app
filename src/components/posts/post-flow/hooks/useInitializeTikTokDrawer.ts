@@ -35,6 +35,7 @@ export function useInitializeTikTokDrawer({
 
       const newOptions = { ...(tiktokAccountOptions || {}) } as Record<string, TikTokOptions>;
       let anyMissing = false;
+      let changed = false;
 
       const caption = (platformCaptions?.["tiktok"] as string) || globalCaption || "";
 
@@ -51,10 +52,21 @@ export function useInitializeTikTokDrawer({
             accountName: account.accountName,
           };
           anyMissing = true;
+          changed = true;
+        } else if (newOptions[account._id].accountName !== account.accountName) {
+          // Keep account name in sync without disturbing other choices
+          newOptions[account._id] = {
+            ...newOptions[account._id],
+            accountName: account.accountName,
+          };
+          changed = true;
         }
       }
 
-      setTiktokAccountOptions(newOptions);
+      // Avoid resetting options if nothing actually changed
+      if (changed) {
+        setTiktokAccountOptions(newOptions);
+      }
 
       if (anyMissing) {
         setOpenTikTokDrawer(true);
