@@ -52,17 +52,13 @@ export default function ScheduledPosts() {
   }, [selectedDate]);
 
   // Get posts
-  const {
-    data: scheduledResp,
-    isLoading: isFetchingScheduledPosts,
-  } = useQuery({
-    // Organization-scoped v2 endpoint; axios injects x-organization-id
-    queryKey: ["/scheduled-posts"],
-  }) as {
-    data:
-      | { items?: any[]; nextCursor?: string }
-      | { data?: any[] }
-      | undefined;
+  const { data: scheduledResp, isLoading: isFetchingScheduledPosts } = useQuery(
+    {
+      // Only show truly scheduled items
+      queryKey: ["/scheduled-posts?mode=scheduled"],
+    }
+  ) as {
+    data: { items?: any[]; nextCursor?: string } | { data?: any[] } | undefined;
     isLoading: boolean;
   };
 
@@ -260,7 +256,8 @@ export default function ScheduledPosts() {
                     selected={selectedDate}
                     onSelect={setSelectedDate}
                     modifiers={{
-                      hasPost: (date) => scheduleHasPostsForDate(new Date(date)),
+                      hasPost: (date) =>
+                        scheduleHasPostsForDate(new Date(date)),
                     }}
                     modifiersClassNames={{
                       // Small dot indicator for days that have posts
