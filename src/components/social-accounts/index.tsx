@@ -85,20 +85,9 @@ import {
   SelectValue,
 } from "../ui/select";
 
-const socialAccountSchema = z
-  .object({
-    platform: z.string().min(1, "Select One Platform"),
-    instagramAccountType: z.string().optional(),
-  })
-  .refine(
-    (data) =>
-      data.platform !== "instagram" ||
-      (data.platform === "instagram" && data.instagramAccountType),
-    {
-      message: "Please select a login method for Instagram",
-      path: ["instagramAccountType"],
-    }
-  );
+const socialAccountSchema = z.object({
+  platform: z.string().min(1, "Select One Platform"),
+});
 
 type SocialAccountFormData = z.infer<typeof socialAccountSchema>;
 
@@ -207,7 +196,6 @@ export default function SocialAccounts() {
     resolver: zodResolver(socialAccountSchema),
     defaultValues: {
       platform: "",
-      instagramAccountType: "",
     },
   });
 
@@ -223,11 +211,7 @@ export default function SocialAccounts() {
         connectLinkedIn();
         break;
       case "instagram": {
-        if (data.instagramAccountType === "facebook")
-          connectMeta({
-            platform: "instagram",
-          });
-        else connectInstagram();
+        connectInstagram();
         break;
       }
       case "facebook":
@@ -580,16 +564,7 @@ export default function SocialAccounts() {
                       </div>
 
                       <div className="flex flex-col items-end gap-2">
-                        <StatusBadge
-                          status={
-                            account.status === "active"
-                              ? "active"
-                              : account.status === "expired"
-                              ? "expired"
-                              : "inactive"
-                          }
-                          size="sm"
-                        />
+                        <StatusBadge status={account.status} size="sm" />
 
                         {/* Quick action menu */}
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -905,7 +880,11 @@ export default function SocialAccounts() {
                   <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 border border-green-500/20">
                     <Activity className="h-3 w-3 text-green-500 animate-pulse" />
                     <span className="text-xs font-medium text-green-600">
-                      {accounts?.length} Active
+                      {
+                        accounts.filter((acc: any) => acc.status === "active")
+                          .length
+                      }{" "}
+                      Active Accounts
                     </span>
                   </div>
                 </div>
@@ -1040,36 +1019,10 @@ export default function SocialAccounts() {
                   Cancel
                 </Button>
                 <div className="flex items-center gap-6">
-                  {form.watch("platform") === "instagram" && (
-                    <Select
-                      disabled={isLoading}
-                      value={form.watch("instagramAccountType")}
-                      onValueChange={(value) => {
-                        form.setValue("instagramAccountType", value);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Login Method" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="instagram" showIndicator>
-                          Instagram Login
-                        </SelectItem>
-                        <SelectItem value="facebook" showIndicator>
-                          Facebook Login
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
                   <Button
                     type="submit"
                     className="min-w-[140px]"
-                    disabled={
-                      isLoading ||
-                      !form.watch("platform") ||
-                      (form.watch("platform") === "instagram" &&
-                        !form.watch("instagramAccountType"))
-                    }
+                    disabled={isLoading || !form.watch("platform")}
                   >
                     {isLoading && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
