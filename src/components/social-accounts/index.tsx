@@ -76,6 +76,7 @@ import {
   useConnectFacebook,
 } from "../../hooks/useSocialAccounts";
 import PlatformSelector from "./PlatformSelector";
+import { useConnectResultParams } from "../../hooks/useConnectResultParams";
 // import { hasValidSubscription } from "../../lib/access";
 import {
   Select,
@@ -249,55 +250,30 @@ export default function SocialAccounts() {
     isConnectingFacebookPending ||
     isConnectingMetaPending;
 
+  const { hasResult, isSuccess, isError, code, message, clearParams } =
+    useConnectResultParams();
   useEffect(() => {
-    const fetchData = async () => {
-      const searchParams = new URLSearchParams(window.location.search);
-
-      // Legacy: ?success=true
-      if (searchParams.get("success") === "true") {
-        toast.success({
-          title: "Social Account Connected",
-          description: "Your social account has been connected successfully.",
-        });
-        window.history.replaceState({}, "", "/dashboard/accounts");
-        return;
-      }
-
-      // Legacy: ?error=someType
-      if (searchParams.get("error")) {
-        const message = searchParams.get("message");
-        // OAuth error will be displayed in the toast below
-        toast.error({
-          title: "Social Account Connection Failed",
-          description: message ?? "Failed to connect social account.",
-        });
-        window.history.replaceState({}, "", "/dashboard/accounts");
-        return;
-      }
-
-      // Instagram Graph-style: ?status=failed&message=...
-      if (searchParams.get("status") === "failed") {
-        const decodedMessage = decodeURIComponent(
-          searchParams.get("message") ?? ""
-        );
-        toast.error({
-          title: "Social Account Connection Failed",
-          description: decodedMessage ?? "Something went wrong.",
-        });
-        window.history.replaceState({}, "", "/dashboard/accounts");
-      }
-
-      if (searchParams.get("status") === "success") {
-        toast.success({
-          title: "Social Account Connected",
-          description: "Your social account has been connected successfully.",
-        });
-        window.history.replaceState({}, "", "/dashboard/accounts");
-      }
-    };
-
-    fetchData();
-  }, [location]);
+    if (!hasResult) return;
+    if (isSuccess) {
+      toast.success({
+        title: "Social Account Connected",
+        description: "Your social account has been connected successfully.",
+      });
+      clearParams("/dashboard/accounts");
+      return;
+    }
+    if (isError) {
+      const fallback =
+        code === "account_already_linked"
+          ? "This account is already linked in another organization. Disconnect there first, then try again."
+          : "Failed to connect social account. Please try again.";
+      toast.error({
+        title: "Social Account Connection Failed",
+        description: message || fallback,
+      });
+      clearParams("/dashboard/accounts");
+    }
+  }, [hasResult, isSuccess, isError, code, message, clearParams]);
 
   const getImageSrc = (account: any) => {
     if (account.metadata?.profileImageUrl) {
