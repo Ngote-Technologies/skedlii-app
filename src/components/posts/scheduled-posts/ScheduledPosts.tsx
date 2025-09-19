@@ -42,6 +42,7 @@ export default function ScheduledPosts() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
   );
+  const [hideCanceled, setHideCanceled] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const { toast } = useToast();
@@ -52,17 +53,13 @@ export default function ScheduledPosts() {
   }, [selectedDate]);
 
   // Get posts
-  const {
-    data: scheduledResp,
-    isLoading: isFetchingScheduledPosts,
-  } = useQuery({
-    // Organization-scoped v2 endpoint; axios injects x-organization-id
-    queryKey: ["/scheduled-posts"],
-  }) as {
-    data:
-      | { items?: any[]; nextCursor?: string }
-      | { data?: any[] }
-      | undefined;
+  const { data: scheduledResp, isLoading: isFetchingScheduledPosts } = useQuery(
+    {
+      // Only show truly scheduled items
+      queryKey: ["/scheduled-posts?mode=scheduled"],
+    }
+  ) as {
+    data: { items?: any[]; nextCursor?: string } | { data?: any[] } | undefined;
     isLoading: boolean;
   };
 
@@ -72,6 +69,19 @@ export default function ScheduledPosts() {
     ((scheduledResp as any)?.data as any[]) ||
     [];
 
+  const visibleItems = hideCanceled
+    ? scheduledItems.filter((post: any) => {
+        const platforms: any[] = Array.isArray(post.platforms) ? post.platforms : [];
+        const hasActive = platforms.some(
+          (p: any) => p?.status === "pending" || p?.status === "publishing"
+        );
+        const isCanceled = Boolean(post.canceledAt);
+        // Hide posts that were canceled and have no active targets left
+        if (isCanceled && !hasActive) return false;
+        return true;
+      })
+    : scheduledItems;
+
   // Delete post mutation
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
     mutationFn: async (id: number) => {
@@ -79,6 +89,7 @@ export default function ScheduledPosts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/scheduled-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/scheduled-posts?mode=scheduled"] });
       toast({
         title: "Post deleted",
         description: "The post has been deleted successfully",
@@ -95,31 +106,35 @@ export default function ScheduledPosts() {
     },
   });
 
-  // Change post status mutation
-  const { mutate: updatePostStatus } = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      return await apiRequest("PATCH", `/scheduled-posts/${id}`, { status });
+  // Cancel scheduled post mutation
+  const { mutate: cancelPost } = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest("POST", `/scheduled-posts/${id}/cancel`);
     },
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       queryClient.invalidateQueries({ queryKey: ["/scheduled-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/scheduled-posts?mode=scheduled"] });
+      const removed = Array.isArray(res?.jobResults)
+        ? res.jobResults.filter((r: any) => r.removed).length
+        : undefined;
       toast({
-        title: "Status updated",
-        description: "The post status has been updated",
+        title: "Post canceled",
+        description:
+          removed !== undefined
+            ? `Removed ${removed} pending job${removed === 1 ? "" : "s"}.`
+            : "Pending targets canceled.",
       });
     },
-    onError: () => {
-      toast({
-        title: "Update failed",
-        description: "Failed to update the post status. Please try again.",
-        variant: "destructive",
-      });
+    onError: (err: any) => {
+      const msg = err?.message || "Failed to cancel the post.";
+      toast({ title: "Cancel failed", description: msg, variant: "destructive" });
     },
   });
 
   const filterPostsByDate = (date: Date | undefined) => {
     if (!date) return [];
 
-    return scheduledItems.filter((post: any) => {
+    return visibleItems.filter((post: any) => {
       if (!post.scheduledFor) return false;
       const postDate = new Date(post.scheduledFor);
       return (
@@ -134,7 +149,7 @@ export default function ScheduledPosts() {
   const getPostsByDate = () => {
     const postsByDate: Record<string, number> = {};
 
-    scheduledItems.forEach((post: any) => {
+    visibleItems.forEach((post: any) => {
       if (post.scheduledFor) {
         const dateKey = getDateKey(post.scheduledFor);
         postsByDate[dateKey] = (postsByDate[dateKey] || 0) + 1;
@@ -183,7 +198,7 @@ export default function ScheduledPosts() {
           <div className="hidden sm:flex items-center gap-4 px-4 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
             <div className="text-center">
               <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                {scheduledItems.length}
+                {visibleItems.length}
               </div>
               <div className="text-xs text-gray-500">Total</div>
             </div>
@@ -194,6 +209,16 @@ export default function ScheduledPosts() {
               <div className="text-xs text-gray-500">Today</div>
             </div>
           </div>
+
+          <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+            <input
+              type="checkbox"
+              className="h-4 w-4"
+              checked={hideCanceled}
+              onChange={(e) => setHideCanceled(e.target.checked)}
+            />
+            Hide canceled
+          </label>
 
           <Button
             disabled={!hasValidSubscription}
@@ -260,7 +285,8 @@ export default function ScheduledPosts() {
                     selected={selectedDate}
                     onSelect={setSelectedDate}
                     modifiers={{
-                      hasPost: (date) => scheduleHasPostsForDate(new Date(date)),
+                      hasPost: (date) =>
+                        scheduleHasPostsForDate(new Date(date)),
                     }}
                     modifiersClassNames={{
                       // Small dot indicator for days that have posts
@@ -327,7 +353,7 @@ export default function ScheduledPosts() {
                     {getScheduledPostCalendarView({
                       isFetchingScheduledPosts,
                       postsByDate: filterPostsByDate(selectedDate),
-                      updatePostStatus,
+                      cancelPost,
                       handleDeletePost,
                       navigate,
                     })}
@@ -338,7 +364,7 @@ export default function ScheduledPosts() {
                       {getScheduledPostCalendarView({
                         isFetchingScheduledPosts,
                         postsByDate: filterPostsByDate(selectedDate),
-                        updatePostStatus,
+                        cancelPost,
                         handleDeletePost,
                         navigate,
                       })}
@@ -368,11 +394,11 @@ export default function ScheduledPosts() {
                   </div>
                 </div>
 
-                {scheduledItems.length > 0 && (
+                {visibleItems.length > 0 && (
                   <div className="flex items-center gap-3">
                     <div className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 px-3 py-1 rounded-full text-sm font-medium">
-                      {scheduledItems.length} total post
-                      {scheduledItems.length !== 1 ? "s" : ""}
+                      {visibleItems.length} total post
+                      {visibleItems.length !== 1 ? "s" : ""}
                     </div>
                   </div>
                 )}
@@ -383,8 +409,8 @@ export default function ScheduledPosts() {
               <div className="block lg:hidden">
                 {getScheduledPostListView(
                   isFetchingScheduledPosts,
-                  scheduledItems,
-                  updatePostStatus,
+                  visibleItems,
+                  cancelPost,
                   handleDeletePost,
                   navigate
                 )}
@@ -394,8 +420,8 @@ export default function ScheduledPosts() {
                 <ScrollArea className="h-[70vh] pr-2">
                   {getScheduledPostListView(
                     isFetchingScheduledPosts,
-                    scheduledItems,
-                    updatePostStatus,
+                    visibleItems,
+                    cancelPost,
                     handleDeletePost,
                     navigate
                   )}

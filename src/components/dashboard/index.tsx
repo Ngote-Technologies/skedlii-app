@@ -31,7 +31,7 @@ import {
   getTextColor,
 } from "../../lib/utils";
 import { useNavigate, Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useAuth } from "../../store/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { Badge, StatusBadge, BadgeGroup } from "../ui/badge";
@@ -64,8 +64,14 @@ export default function DashboardPage() {
     staleTime: 10_000,
   }) as { data: { items: any[] } };
 
+  const upcomingFrom = useMemo(() => new Date().toISOString(), []);
   const { data: upcomingResp } = useQuery({
-    queryKey: ["/social-posts?status=scheduled&limit=3"],
+    // Use v2 scheduled-posts with active scheduled filter and time window
+    queryKey: [
+      `/scheduled-posts?mode=scheduled&status=pending&from=${encodeURIComponent(
+        upcomingFrom
+      )}&limit=3&order=scheduledAsc`,
+    ],
     enabled: isAuthenticated,
     staleTime: 10_000,
   }) as { data: { items: any[] } };
@@ -77,7 +83,7 @@ export default function DashboardPage() {
   }) as { data: { items: any[] } };
 
   const recentPosts = recentPostsResp?.items || [];
-  const recentScheduledPosts = upcomingResp?.items || [];
+  const recentScheduledPosts = (upcomingResp?.items || []).slice(0, 3);
   const socialAccounts = socialAccountsResp?.items || [];
 
   if (authLoading) {

@@ -31,8 +31,8 @@ import { useAccessControl } from "../../../hooks/useAccessControl";
 export function getScheduledPostListView(
   isFetchingScheduledPosts: boolean,
   scheduledItems: any[],
-  updatePostStatus: any,
-  handleDeletePost: any,
+  cancelPost: (id: string) => void,
+  handleDeletePost: (post: any) => void,
   navigate: any
 ) {
   const { hasValidSubscription } = useAccessControl();
@@ -95,27 +95,24 @@ export function getScheduledPostListView(
                   <DropdownMenuContent align="end">
                     {post.platforms[0].status !== "published" && (
                       <DropdownMenuItem asChild>
-                        <Link to={`/dashboard/posts/${post.id}/edit`}>
+                        <Link to={`/dashboard/posts/${post._id}/edit`}>
                           <Edit size={14} className="mr-2" />
                           Edit Post
                         </Link>
                       </DropdownMenuItem>
                     )}
-                    {post.status === "scheduled" && (
-                      <DropdownMenuItem
-                        onClick={() =>
-                          updatePostStatus({
-                            id: post.id,
-                            status: "published",
-                          })
-                        }
-                      >
-                        <CheckCircle size={14} className="mr-2" />
-                        Publish Now
-                      </DropdownMenuItem>
-                    )}
+                    {/* Cancel is allowed when there are pending targets and none are publishing */}
+                    {Array.isArray(post.platforms) &&
+                      post.platforms.some((p: any) => p?.status === "pending") &&
+                      !post.platforms.some((p: any) => p?.status === "publishing") && (
+                        <DropdownMenuItem onClick={() => cancelPost(String(post._id))}>
+                          <CheckCircle size={14} className="mr-2" />
+                          Cancel Post
+                        </DropdownMenuItem>
+                      )}
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
+                      disabled={Array.isArray(post.platforms) && post.platforms.some((p: any) => p?.status === "pending" || p?.status === "publishing")}
                       onClick={() => handleDeletePost(post)}
                     >
                       <Trash2 size={14} className="mr-2" />
@@ -214,6 +211,16 @@ export const getStatusBadge = (status: string) => {
           icon={<AlertCircle size={12} />}
         >
           Failed
+        </Badge>
+      );
+    case "canceled":
+      return (
+        <Badge
+          variant="secondary"
+          className="flex items-center gap-1 w-fit"
+          icon={<Clock size={12} />}
+        >
+          Canceled
         </Badge>
       );
     default:

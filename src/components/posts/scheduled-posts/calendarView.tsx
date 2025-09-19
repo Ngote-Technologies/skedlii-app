@@ -29,7 +29,7 @@ import { useAccessControl } from "../../../hooks/useAccessControl";
 export function getScheduledPostCalendarView({
   isFetchingScheduledPosts,
   postsByDate = [],
-  updatePostStatus,
+  cancelPost,
   handleDeletePost,
   navigate,
 }: any) {
@@ -97,21 +97,17 @@ export function getScheduledPostCalendarView({
                         Edit Post
                       </Link>
                     </DropdownMenuItem>
-                    {post.status === "scheduled" && (
-                      <DropdownMenuItem
-                        onClick={() =>
-                          updatePostStatus({
-                            id: post._id,
-                            status: "published",
-                          })
-                        }
-                      >
-                        <CheckCircle size={14} className="mr-2" />
-                        Publish Now
-                      </DropdownMenuItem>
-                    )}
+                    {Array.isArray(post.platforms) &&
+                      post.platforms.some((p: any) => p?.status === "pending") &&
+                      !post.platforms.some((p: any) => p?.status === "publishing") && (
+                        <DropdownMenuItem onClick={() => cancelPost(String(post._id))}>
+                          <CheckCircle size={14} className="mr-2" />
+                          Cancel Post
+                        </DropdownMenuItem>
+                      )}
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
+                      disabled={Array.isArray(post.platforms) && post.platforms.some((p: any) => p?.status === "pending" || p?.status === "publishing")}
                       onClick={() => handleDeletePost(post)}
                     >
                       <Trash2 size={14} className="mr-2" />

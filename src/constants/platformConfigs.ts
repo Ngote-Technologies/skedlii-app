@@ -23,14 +23,7 @@ export const platformConfigs = [
     description:
       "Schedule and publish media content to your connected account.",
     permissions: ["Post content", "Upload media"],
-    // constraints: "Requires Instagram Business or Creator account profile.",
-    constraints: `
-  <strong>Requirements:</strong><br />
-  • Instagram account must be a <strong>Business</strong> or <strong>Creator</strong> profile.<br />
-  • If using <strong>Facebook Login</strong>: your Instagram account must be connected to a Facebook Page.<br />
-  <br />
-  <em>We recommend using <strong>Instagram Login</strong> for simpler setup and better reliability.</em>
-`,
+    constraints: "Instagram account must be a Business or Creator profile.",
     scopes: [
       "instagram_basic",
       "pages_show_list",
@@ -52,7 +45,7 @@ export const platformConfigs = [
     description:
       "Schedule and publish text/media content to your Facebook Page.",
     permissions: ["Post content", "Upload media"],
-    constraints: "Requires a Facebook Page linked to your account.",
+    constraints: "Facebook Page linked to your account.",
     scopes: ["pages_manage_posts", "pages_read_engagement", "pages_show_list"],
     platformDocsUrl: "https://developers.facebook.com/docs/pages",
     comingSoon: false,
@@ -68,7 +61,7 @@ export const platformConfigs = [
     },
     description: "Schedule and publish threads to your connected account.",
     permissions: ["Post threads", "Upload media"],
-    constraints: "Requires a Threads account connected to Instagram.",
+    constraints: "Threads account connected to Instagram.",
     scopes: [], // currently non-public API
     platformDocsUrl: "https://developers.facebook.com/docs/threads",
     comingSoon: false,
@@ -84,8 +77,7 @@ export const platformConfigs = [
     },
     description: "Schedule and publish videos to your connected channel.",
     permissions: ["Upload videos", "Edit metadata"],
-    constraints:
-      'Requires a YouTube channel. Ensure to select <span class="font-bold">"Manage your YouTube videos"</span> in the following Google Auth Screen.',
+    constraints: "YouTube channel.",
     scopes: ["https://www.googleapis.com/auth/youtube.upload"],
     platformDocsUrl:
       "https://developers.google.com/youtube/registering_an_application",
@@ -103,7 +95,7 @@ export const platformConfigs = [
     description:
       "Schedule and publish content to your LinkedIn feed or company page.",
     permissions: ["Post content", "Upload media"],
-    constraints: "Requires appropriate post permissions (e.g. admin on Page).",
+    constraints: "Appropriate post permissions (e.g. admin on Page).",
     scopes: ["w_member_social", "r_liteprofile", "r_emailaddress"],
     platformDocsUrl: "https://learn.microsoft.com/en-us/linkedin/marketing/",
     comingSoon: false,
@@ -119,7 +111,7 @@ export const platformConfigs = [
     },
     description: "Schedule and publish video posts to your TikTok account.",
     permissions: ["Upload videos", "Publish videos"],
-    constraints: "Requires a business or creator account.",
+    constraints: "Business or creator account.",
     scopes: ["video.upload", "video.publish"],
     platformDocsUrl:
       "https://developers.tiktok.com/doc/login-kit-manage-user-access-token",
