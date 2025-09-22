@@ -152,7 +152,7 @@ export const useConnectYoutube = () => {
 
 export const useDeleteAccount = () => {
   return useMutation({
-    mutationFn: async ({ id, platform }: { id: string; platform: string }) => {
+    mutationFn: async ({ id }: { id: string }) => {
       const response = await socialApi.disconnectSocialAccount({
         accountId: id,
       });
