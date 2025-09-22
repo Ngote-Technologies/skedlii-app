@@ -1,27 +1,10 @@
 import { useEffect, useState } from "react";
-// import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  Card,
-  // CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-// import { Badge } from "../ui/badge";
-// import { Avatar, AvatarFallback } from "../ui/avatar";
-// import {
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableHead,
-//   TableHeader,
-//   TableRow,
-// } from "../ui/table";
 import {
   Dialog,
   DialogContent,
@@ -31,14 +14,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuLabel,
-//   DropdownMenuSeparator,
-//   DropdownMenuTrigger,
-// } from "../ui/dropdown-menu";
 import {
   Form,
   FormControl,
@@ -65,26 +40,9 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { UserPlus } from "lucide-react";
-// import {
-//   Users,
-//   UserPlus,
-//   MoreHorizontal,
-//   Mail,
-//   Shield,
-//   Loader2,
-// } from "lucide-react";
-// import {
-//   useActiveOrganization,
-//   useOrganizationPermissions,
-//   useOrganizationStore,
-// } from "../../store/organizationStore";
 import { OrganizationMember } from "../../api/organizations";
 import { invitationsApi, type InvitationListItem } from "../../api/invitations";
 import { useAuth } from "../../store/hooks";
-// import { organizationsApi, OrganizationMember } from "../../api/organizations";
-// import { useToast } from "../../hooks/use-toast";
-// import { getInitials } from "../../lib/utils";
-// import { invitationsApi } from "../../api/invitations";
 import { useAccessControl } from "../../hooks/useAccessControl";
 
 const inviteMemberSchema = z.object({
@@ -100,12 +58,10 @@ export default function OrganizationMembers() {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] =
     useState<OrganizationMember | null>(null);
-  const [pendingInvites, setPendingInvites] = useState<InvitationListItem[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<InvitationListItem[]>(
+    []
+  );
   const [loadingInvites, setLoadingInvites] = useState(false);
-
-  // const activeOrganization = useActiveOrganization();
-  // const permissions = useOrganizationPermissions();
-  // const { removeMember } = useOrganizationStore();
   const { userContext } = useAccessControl();
   const { organization } = useAuth();
 
@@ -130,8 +86,6 @@ export default function OrganizationMembers() {
 
     return currentLevel > targetLevel;
   };
-  // const { toast } = useToast();
-  // const queryClient = useQueryClient();
 
   const form = useForm<InviteMemberFormData>({
     resolver: zodResolver(inviteMemberSchema),
@@ -142,77 +96,6 @@ export default function OrganizationMembers() {
       role: "editor",
     },
   });
-
-  // Fetch organization details with members
-  // const { data: organizationDetails, isLoading } = useQuery({
-  //   queryKey: ["organization", activeOrganization?._id],
-  //   queryFn: () =>
-  //     activeOrganization
-  //       ? organizationsApi.getOrganization(activeOrganization._id)
-  //       : null,
-  //   enabled: !!activeOrganization,
-  // });
-
-  // const inviteMutation = useMutation({
-  //   mutationFn: async (data: InviteMemberFormData) => {
-  //     if (!activeOrganization) throw new Error("No active organization");
-
-  //     // Use the real invitation API
-  //     return await invitationsApi.sendInvitation({
-  //       email: data.email,
-  //       firstName: data.firstName,
-  //       lastName: data.lastName,
-  //       role: data.role,
-  //       organizationId: activeOrganization._id,
-  //     });
-  //   },
-  //   onSuccess: (result) => {
-  //     const userExists = result.userExists;
-  //     toast.success({
-  //       title: "Invitation Sent",
-  //       description: userExists
-  //         ? "Invitation sent to existing user. They can join this organization through their email."
-  //         : "Invitation sent to new user. They will receive an email to create their account and join the organization.",
-  //     });
-  //     setIsInviteDialogOpen(false);
-  //     form.reset();
-  //     queryClient.invalidateQueries({
-  //       queryKey: ["organization", activeOrganization?._id],
-  //     });
-  //   },
-  //   onError: (error: any) => {
-  //     toast.error({
-  //       title: "Invitation Failed",
-  //       description:
-  //         error.response?.data?.error ||
-  //         error.message ||
-  //         "Failed to send invitation.",
-  //     });
-  //   },
-  // });
-
-  // const removeMutation = useMutation({
-  //   mutationFn: async (memberId: string) => {
-  //     if (!activeOrganization) throw new Error("No active organization");
-  //     await removeMember(activeOrganization._id, memberId);
-  //   },
-  //   onSuccess: () => {
-  //     toast.success({
-  //       title: "Member Removed",
-  //       description: "Member has been removed from the organization.",
-  //     });
-  //     setMemberToRemove(null);
-  //     queryClient.invalidateQueries({
-  //       queryKey: ["organization", activeOrganization?._id],
-  //     });
-  //   },
-  //   onError: (error: any) => {
-  //     toast.error({
-  //       title: "Member Removal Failed",
-  //       description: error.message || "Failed to remove member.",
-  //     });
-  //   },
-  // });
 
   const onInviteSubmit = async (data: InviteMemberFormData) => {
     if (!organization?._id) {
@@ -232,32 +115,6 @@ export default function OrganizationMembers() {
       console.error("Failed to send invitation", e);
     }
   };
-
-  const handleRemoveMember = async () => {
-    if (memberToRemove) {
-      // await removeMutation.mutateAsync(memberToRemove._id);
-      console.log({ memberToRemove });
-    }
-  };
-
-  // const getRoleBadgeVariant = (role: string) => {
-  //   switch (role) {
-  //     case "owner":
-  //       return "default"; // Blue badge - highest authority
-  //     case "admin":
-  //       return "success"; // Green badge - management role
-  //     case "member":
-  //       return "warning"; // Yellow badge - active contributor
-  //     case "viewer":
-  //       return "outline"; // Subtle badge - read-only access
-  //     default:
-  //       return "outline";
-  //   }
-  // };
-
-  // const getRoleDisplayName = (role: string) => {
-  //   return role.charAt(0).toUpperCase() + role.slice(1);
-  // };
 
   // Determine which roles the current user can assign
   const getAssignableRoles = () => {
@@ -317,29 +174,6 @@ export default function OrganizationMembers() {
     }
   };
 
-  // if (!activeOrganization) {
-  //   return (
-  //     <div className="flex items-center justify-center h-64">
-  //       <div className="text-center">
-  //         <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-  //         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-  //           No Organization Selected
-  //         </h3>
-  //         <p className="text-gray-500 dark:text-gray-400 mt-2">
-  //           Please select an organization to manage members
-  //         </p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
-  // Note: All organization members can now view the member list
-  // Management actions (invite, remove, edit roles) are still restricted by canManageMembers
-
-  // const members = organizationDetails?.members || [];
-
-  // console.log({ organizationDetails });
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -348,9 +182,7 @@ export default function OrganizationMembers() {
             Organization Members
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            {/* {permissions.canManageMembers
-              ? `Manage members and their roles in ${activeOrganization.name}`
-              : `Members of ${activeOrganization.name}`} */}
+            Manage members and their roles in {organization?.name}
           </p>
         </div>
         <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
@@ -453,12 +285,6 @@ export default function OrganizationMembers() {
                     Cancel
                   </Button>
                   <Button type="submit">Send Invitation</Button>
-                  {/* <Button type="submit" disabled={inviteMutation.isPending}>
-                    {inviteMutation.isPending && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    Send Invitation
-                  </Button> */}
                 </DialogFooter>
               </form>
             </Form>
@@ -473,109 +299,6 @@ export default function OrganizationMembers() {
             People who have access to this organization
           </CardDescription>
         </CardHeader>
-        {/* <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : members.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {members.map((member) => (
-                  <TableRow key={member._id}>
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback>
-                            {getInitials(
-                              `${member.firstName} ${member.lastName}`
-                            )}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-gray-100">
-                            {member.firstName} {member.lastName}
-                          </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {member.email}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getRoleBadgeVariant(member.role)}>
-                        {getRoleDisplayName(member.role)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {member.joinedAt
-                          ? new Date(member.joinedAt).toLocaleDateString()
-                          : "N/A"}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>
-                            <Mail className="h-4 w-4 mr-2" />
-                            Send Message
-                          </DropdownMenuItem>
-                          {canManageRole(member.role as any) && (
-                            <DropdownMenuItem>
-                              <Shield className="h-4 w-4 mr-2" />
-                              Change Role
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-red-600 dark:text-red-400"
-                            onClick={() => setMemberToRemove(member)}
-                            disabled={
-                              member.role === "owner" ||
-                              !canManageRole(member.role as any)
-                            }
-                          >
-                            Remove Member
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-8">
-              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                No members yet
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
-                Start building your team by inviting members to your
-                organization
-              </p>
-              <Button onClick={() => setIsInviteDialogOpen(true)}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Invite First Member
-              </Button>
-            </div>
-          )}
-        </CardContent> */}
       </Card>
 
       {/* Pending Invitations */}
@@ -603,7 +326,9 @@ export default function OrganizationMembers() {
                     <div className="text-xs text-muted-foreground">
                       Role: {inv.role === "editor" ? "member" : inv.role}
                       {inv.expiresAt
-                        ? ` · Expires: ${new Date(inv.expiresAt).toLocaleString()}`
+                        ? ` · Expires: ${new Date(
+                            inv.expiresAt
+                          ).toLocaleString()}`
                         : ""}
                     </div>
                   </div>
@@ -647,7 +372,7 @@ export default function OrganizationMembers() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleRemoveMember}
+              onClick={() => console.log("Remove member")}
               className="bg-red-600 hover:bg-red-700"
             >
               Remove Member
