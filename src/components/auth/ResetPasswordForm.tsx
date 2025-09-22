@@ -8,20 +8,13 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
-import {
-  Lock,
-  ArrowLeft,
-  CheckCircle,
-  AlertCircle,
-  Shield,
-  Sparkles,
-} from "lucide-react";
+import { Lock, ArrowLeft, Shield, Sparkles } from "lucide-react";
+import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
 
 // Validation schema
 const resetPasswordSchema = z
@@ -51,20 +44,6 @@ export default function ResetPasswordForm({
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Password strength checker
-  const checkPasswordStrength = (password: string) => {
-    const checks = {
-      length: password.length >= 8,
-      hasLower: /[a-z]/.test(password),
-      hasUpper: /[A-Z]/.test(password),
-      hasNumber: /\d/.test(password),
-      hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-    };
-
-    const score = Object.values(checks).filter(Boolean).length;
-    return { checks, score };
-  };
-
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
@@ -74,7 +53,6 @@ export default function ResetPasswordForm({
   });
 
   const currentPassword = form.watch("password") || "";
-  const passwordStrength = checkPasswordStrength(currentPassword);
 
   const { mutate: resetPassword, isPending: isMutating } = useMutation({
     mutationFn: async (data: any) => {
@@ -224,61 +202,7 @@ export default function ResetPasswordForm({
 
                 {/* Password strength indicator */}
                 {currentPassword && (
-                  <div className="mt-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Password strength
-                      </span>
-                      <span
-                        className={`text-sm font-medium ${
-                          passwordStrength.score < 3
-                            ? "text-red-500"
-                            : passwordStrength.score < 5
-                            ? "text-yellow-500"
-                            : "text-green-500"
-                        }`}
-                      >
-                        {passwordStrength.score < 3
-                          ? "Weak"
-                          : passwordStrength.score < 5
-                          ? "Good"
-                          : "Strong"}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          passwordStrength.score < 3
-                            ? "bg-red-500"
-                            : passwordStrength.score < 5
-                            ? "bg-yellow-500"
-                            : "bg-green-500"
-                        }`}
-                        style={{
-                          width: `${(passwordStrength.score / 5) * 100}%`,
-                        }}
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 gap-1 text-xs">
-                      <div
-                        className={`flex items-center gap-2 ${
-                          passwordStrength.checks.length
-                            ? "text-green-600"
-                            : "text-gray-400"
-                        }`}
-                      >
-                        <CheckCircle className="w-3 h-3" />
-                        <span>At least 8 characters</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {fieldState.error && (
-                  <FormMessage className="flex items-center gap-2 mt-2">
-                    <AlertCircle className="w-4 h-4" />
-                    {fieldState.error.message}
-                  </FormMessage>
+                  <PasswordStrengthIndicator password={currentPassword} />
                 )}
               </FormItem>
             )}
@@ -302,12 +226,6 @@ export default function ResetPasswordForm({
                     {...field}
                   />
                 </FormControl>
-                {fieldState.error && (
-                  <FormMessage className="flex items-center gap-2 mt-2">
-                    <AlertCircle className="w-4 h-4" />
-                    {fieldState.error.message}
-                  </FormMessage>
-                )}
               </FormItem>
             )}
           />
@@ -321,7 +239,7 @@ export default function ResetPasswordForm({
               className="w-full font-semibold h-12 relative overflow-hidden group shadow-lg hover:shadow-xl transition-all duration-300"
               loading={isLoading}
               loadingText="Updating password..."
-              disabled={isLoading || passwordStrength.score < 3}
+              disabled={isLoading}
             >
               <span className="flex items-center justify-center gap-2">
                 <Shield className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />

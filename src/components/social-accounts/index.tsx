@@ -76,6 +76,7 @@ import {
   useConnectFacebook,
 } from "../../hooks/useSocialAccounts";
 import PlatformSelector from "./PlatformSelector";
+import { useConnectResultParams } from "../../hooks/useConnectResultParams";
 // import { hasValidSubscription } from "../../lib/access";
 import {
   Select,
@@ -85,20 +86,9 @@ import {
   SelectValue,
 } from "../ui/select";
 
-const socialAccountSchema = z
-  .object({
-    platform: z.string().min(1, "Select One Platform"),
-    instagramAccountType: z.string().optional(),
-  })
-  .refine(
-    (data) =>
-      data.platform !== "instagram" ||
-      (data.platform === "instagram" && data.instagramAccountType),
-    {
-      message: "Please select a login method for Instagram",
-      path: ["instagramAccountType"],
-    }
-  );
+const socialAccountSchema = z.object({
+  platform: z.string().min(1, "Select One Platform"),
+});
 
 type SocialAccountFormData = z.infer<typeof socialAccountSchema>;
 
@@ -175,8 +165,6 @@ export default function SocialAccounts() {
   );
   const organizationAccounts: any[] = organizationAccountsData?.items ?? [];
 
-  console.log({ shouldUseOrganizationAccounts });
-
   // Use the appropriate accounts and loading state
   const accounts: any[] = shouldUseOrganizationAccounts
     ? organizationAccounts
@@ -207,7 +195,6 @@ export default function SocialAccounts() {
     resolver: zodResolver(socialAccountSchema),
     defaultValues: {
       platform: "",
-      instagramAccountType: "",
     },
   });
 
@@ -223,11 +210,7 @@ export default function SocialAccounts() {
         connectLinkedIn();
         break;
       case "instagram": {
-        if (data.instagramAccountType === "facebook")
-          connectMeta({
-            platform: "instagram",
-          });
-        else connectInstagram();
+        connectInstagram();
         break;
       }
       case "facebook":
@@ -265,55 +248,30 @@ export default function SocialAccounts() {
     isConnectingFacebookPending ||
     isConnectingMetaPending;
 
+  const { hasResult, isSuccess, isError, code, message, clearParams } =
+    useConnectResultParams();
   useEffect(() => {
-    const fetchData = async () => {
-      const searchParams = new URLSearchParams(window.location.search);
-
-      // Legacy: ?success=true
-      if (searchParams.get("success") === "true") {
-        toast.success({
-          title: "Social Account Connected",
-          description: "Your social account has been connected successfully.",
-        });
-        window.history.replaceState({}, "", "/dashboard/accounts");
-        return;
-      }
-
-      // Legacy: ?error=someType
-      if (searchParams.get("error")) {
-        const message = searchParams.get("message");
-        // OAuth error will be displayed in the toast below
-        toast.error({
-          title: "Social Account Connection Failed",
-          description: message ?? "Failed to connect social account.",
-        });
-        window.history.replaceState({}, "", "/dashboard/accounts");
-        return;
-      }
-
-      // Instagram Graph-style: ?status=failed&message=...
-      if (searchParams.get("status") === "failed") {
-        const decodedMessage = decodeURIComponent(
-          searchParams.get("message") ?? ""
-        );
-        toast.error({
-          title: "Social Account Connection Failed",
-          description: decodedMessage ?? "Something went wrong.",
-        });
-        window.history.replaceState({}, "", "/dashboard/accounts");
-      }
-
-      if (searchParams.get("status") === "success") {
-        toast.success({
-          title: "Social Account Connected",
-          description: "Your social account has been connected successfully.",
-        });
-        window.history.replaceState({}, "", "/dashboard/accounts");
-      }
-    };
-
-    fetchData();
-  }, [location]);
+    if (!hasResult) return;
+    if (isSuccess) {
+      toast.success({
+        title: "Social Account Connected",
+        description: "Your social account has been connected successfully.",
+      });
+      clearParams("/dashboard/accounts");
+      return;
+    }
+    if (isError) {
+      const fallback =
+        code === "account_already_linked"
+          ? "This account is already linked in another organization. Disconnect there first, then try again."
+          : "Failed to connect social account. Please try again.";
+      toast.error({
+        title: "Social Account Connection Failed",
+        description: message || fallback,
+      });
+      clearParams("/dashboard/accounts");
+    }
+  }, [hasResult, isSuccess, isError, code, message, clearParams]);
 
   const getImageSrc = (account: any) => {
     if (account.metadata?.profileImageUrl) {
@@ -347,7 +305,7 @@ export default function SocialAccounts() {
         connectInstagram();
         break;
       case "tiktok":
-        refreshTiktokAccessToken(account.accountId, {
+        refreshTiktokAccessToken(account._id, {
           onSuccess: () => {
             refetchAccounts();
           },
@@ -372,7 +330,6 @@ export default function SocialAccounts() {
     }
   };
 
-  // console.log({ platformStats });
 
   const togglePlatformFilter = (platform: string) => {
     setSelectedPlatforms((prev) =>
@@ -567,11 +524,19 @@ export default function SocialAccounts() {
                             <CardDescription className="capitalize font-medium">
                               {account.platform}
                             </CardDescription>
-                            {account.metadata?.followers_count && (
+                            {account.metadata?.followerCount && (
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Users className="h-3 w-3" />
                                 <span>
-                                  {account.metadata.followers_count.toLocaleString()}
+                                  {account.metadata.followerCount.toLocaleString()}
+                                </span>
+                              </div>
+                            )}
+                            {account.metadata?.followingCount && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Users className="h-3 w-3" />
+                                <span>
+                                  {account.metadata.followingCount.toLocaleString()}
                                 </span>
                               </div>
                             )}
@@ -580,16 +545,7 @@ export default function SocialAccounts() {
                       </div>
 
                       <div className="flex flex-col items-end gap-2">
-                        <StatusBadge
-                          status={
-                            account.status === "active"
-                              ? "active"
-                              : account.status === "expired"
-                              ? "expired"
-                              : "inactive"
-                          }
-                          size="sm"
-                        />
+                        <StatusBadge status={account.status} size="sm" />
 
                         {/* Quick action menu */}
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -905,7 +861,11 @@ export default function SocialAccounts() {
                   <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 border border-green-500/20">
                     <Activity className="h-3 w-3 text-green-500 animate-pulse" />
                     <span className="text-xs font-medium text-green-600">
-                      {accounts?.length} Active
+                      {
+                        accounts.filter((acc: any) => acc.status === "active")
+                          .length
+                      }{" "}
+                      Active Accounts
                     </span>
                   </div>
                 </div>
@@ -1040,36 +1000,10 @@ export default function SocialAccounts() {
                   Cancel
                 </Button>
                 <div className="flex items-center gap-6">
-                  {form.watch("platform") === "instagram" && (
-                    <Select
-                      disabled={isLoading}
-                      value={form.watch("instagramAccountType")}
-                      onValueChange={(value) => {
-                        form.setValue("instagramAccountType", value);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Login Method" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="instagram" showIndicator>
-                          Instagram Login
-                        </SelectItem>
-                        <SelectItem value="facebook" showIndicator>
-                          Facebook Login
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
                   <Button
                     type="submit"
                     className="min-w-[140px]"
-                    disabled={
-                      isLoading ||
-                      !form.watch("platform") ||
-                      (form.watch("platform") === "instagram" &&
-                        !form.watch("instagramAccountType"))
-                    }
+                    disabled={isLoading || !form.watch("platform")}
                   >
                     {isLoading && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

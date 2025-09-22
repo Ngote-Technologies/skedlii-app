@@ -192,10 +192,10 @@ export const socialApi = {
     }
   },
 
-  refreshTikTokAccessToken: async ({ accountId }: { accountId: string }) => {
+  refreshTikTokAccessToken: async ({ id }: { id: string }) => {
     try {
       const response = await axiosInstance.get(
-        `/social-accounts/tiktok/refresh/${accountId}`
+        `/social-accounts/tiktok/reauth/start/${id}`
       );
       return response.data;
     } catch (error: any) {
@@ -455,7 +455,7 @@ export const socialApi = {
       content: string;
       targets: Array<{ platform: string; socialAccountId: string }>;
       media?: Array<{
-        type: 'image' | 'video';
+        type: "image" | "video";
         url: string;
         width?: number;
         height?: number;
@@ -488,7 +488,7 @@ export const socialApi = {
       content: string;
       targets: Array<{ platform: string; socialAccountId: string }>;
       media?: Array<{
-        type: 'image' | 'video';
+        type: "image" | "video";
         url: string;
         width?: number;
         height?: number;
