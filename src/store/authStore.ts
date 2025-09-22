@@ -445,8 +445,6 @@ export const useAuthStore = create<AuthState>()(
             );
           }
 
-          console.log({ data });
-
           set({
             user: data.user,
             organization: data.organization ?? null,

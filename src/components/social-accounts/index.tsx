@@ -165,8 +165,6 @@ export default function SocialAccounts() {
   );
   const organizationAccounts: any[] = organizationAccountsData?.items ?? [];
 
-  console.log({ shouldUseOrganizationAccounts });
-
   // Use the appropriate accounts and loading state
   const accounts: any[] = shouldUseOrganizationAccounts
     ? organizationAccounts
@@ -307,7 +305,7 @@ export default function SocialAccounts() {
         connectInstagram();
         break;
       case "tiktok":
-        refreshTiktokAccessToken(account.accountId, {
+        refreshTiktokAccessToken(account._id, {
           onSuccess: () => {
             refetchAccounts();
           },
@@ -332,7 +330,6 @@ export default function SocialAccounts() {
     }
   };
 
-  // console.log({ platformStats });
 
   const togglePlatformFilter = (platform: string) => {
     setSelectedPlatforms((prev) =>
@@ -527,11 +524,19 @@ export default function SocialAccounts() {
                             <CardDescription className="capitalize font-medium">
                               {account.platform}
                             </CardDescription>
-                            {account.metadata?.followers_count && (
+                            {account.metadata?.followerCount && (
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Users className="h-3 w-3" />
                                 <span>
-                                  {account.metadata.followers_count.toLocaleString()}
+                                  {account.metadata.followerCount.toLocaleString()}
+                                </span>
+                              </div>
+                            )}
+                            {account.metadata?.followingCount && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Users className="h-3 w-3" />
+                                <span>
+                                  {account.metadata.followingCount.toLocaleString()}
                                 </span>
                               </div>
                             )}

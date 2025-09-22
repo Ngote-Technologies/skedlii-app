@@ -153,11 +153,7 @@ export const useConnectYoutube = () => {
 export const useDeleteAccount = () => {
   return useMutation({
     mutationFn: async ({ id, platform }: { id: string; platform: string }) => {
-      const disconnectFn =
-        platform === "tiktok"
-          ? socialApi.disconnectTikTok
-          : socialApi.disconnectSocialAccount;
-      const response = await disconnectFn({
+      const response = await socialApi.disconnectSocialAccount({
         accountId: id,
       });
       return response;
@@ -208,8 +204,8 @@ export const useRefreshYoutubeAccessToken = () => {
 
 export const useRefreshTikTokAccessToken = () => {
   return useMutation({
-    mutationFn: async (accountId: string) => {
-      const response = await socialApi.refreshTikTokAccessToken({ accountId });
+    mutationFn: async (id: string) => {
+      const response = await socialApi.refreshTikTokAccessToken({ id });
       return response;
     },
     onError: (err: any) => {
