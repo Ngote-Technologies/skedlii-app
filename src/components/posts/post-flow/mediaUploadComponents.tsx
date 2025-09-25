@@ -19,6 +19,10 @@ export function MediaItemDisplayContent({
   readonly index: number;
   readonly isCover: boolean;
 }) {
+  const previewSrc =
+    item.type === "video"
+      ? item.thumbnailUrl ?? item.url
+      : item.url;
   return (
     <>
       <div className="absolute inset-0 bg-black/60 flex items-center justify-center pointer-events-none">
@@ -30,7 +34,7 @@ export function MediaItemDisplayContent({
           />
         ) : (
           <img
-            src={item.thumbnailUrl ?? ""} // Provide a fallback empty string for thumbnailUrl
+            src={previewSrc || ""} // Provide a fallback preview source for video items
             alt={`Media ${index + 1}`}
             className="w-full h-full object-cover"
           />

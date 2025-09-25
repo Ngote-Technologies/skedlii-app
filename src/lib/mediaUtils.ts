@@ -102,6 +102,7 @@ export const updateVideoThumbnailTime = async (
   if (itemIndex === -1 || media[itemIndex].type !== "video") return;
 
   const item = media[itemIndex];
+  if (!item.file) return;
   try {
     // For now, keep client-side thumbnail extraction for preview purposes
     const thumbnailUrl = await extractVideoThumbnail(item.file, time);
