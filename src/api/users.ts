@@ -1,6 +1,13 @@
 import axiosInstance from "./axios";
 import { User } from "../types";
 
+export type UpdateUserPayload = {
+  name?: string;
+  bio?: string | null;
+  avatarUrl?: string | null;
+  avatarPublicId?: string | null;
+};
+
 interface InviteUserRequest {
   email: string;
   firstName: string;
@@ -21,17 +28,12 @@ export const usersApi = {
     await axiosInstance.post("/invitations", data);
   },
 
-  updateUser: async (updates: FormData | Partial<User>): Promise<User> => {
-    try {
-      const response = await axiosInstance.patch(`/users/me/`, updates, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      return response.data;
-    } catch (error: any) {
-      return error;
-    }
+  updateUser: async (updates: UpdateUserPayload): Promise<User> => {
+    const payload = Object.fromEntries(
+      Object.entries(updates).filter(([, value]) => value !== undefined)
+    ) as UpdateUserPayload;
+    const response = await axiosInstance.patch(`/users/me`, payload);
+    return (response.data as { user: User }).user;
   },
 
   deleteUser: async (userId: string): Promise<void> => {

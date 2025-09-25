@@ -75,6 +75,8 @@ export interface User {
     | "canceled"
     | "expired"
     | "none";
+  bio?: string | null;
+  avatarPublicId?: string | null;
 }
 
 export interface AuthState {

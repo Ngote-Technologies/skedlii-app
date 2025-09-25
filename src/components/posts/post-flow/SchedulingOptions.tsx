@@ -9,12 +9,9 @@ import {
 import { Label } from "../../ui/label";
 import { Switch } from "../../ui/switch";
 import { Button } from "../../ui/button";
+import { Input } from "../../ui/input";
 import { Calendar } from "../../ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../../ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import { format, addDays, isToday, isAfter, isBefore } from "date-fns";
 import {
   Clock,
@@ -31,27 +28,8 @@ interface SchedulingOptionsProps {
 }
 
 // Get AM/PM time options
-const getTimeOptions = () => {
-  const options = [];
-
-  for (let hour = 0; hour < 24; hour++) {
-    const isPM = hour >= 12;
-    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-
-    for (let minute = 0; minute < 60; minute += 15) {
-      const formattedHour = displayHour.toString().padStart(2, "0");
-      const formattedMinute = minute.toString().padStart(2, "0");
-      const period = isPM ? "PM" : "AM";
-
-      options.push({
-        value: `${hour.toString().padStart(2, "0")}:${formattedMinute}`,
-        label: `${formattedHour}:${formattedMinute} ${period}`,
-      });
-    }
-  }
-
-  return options;
-};
+const isValidTimeValue = (value: string) =>
+  /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
 
 export default function SchedulingOptions({
   isScheduled,
@@ -63,9 +41,7 @@ export default function SchedulingOptions({
     scheduledDate ? format(scheduledDate, "HH:mm") : format(new Date(), "HH:mm")
   );
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
-
-  const timeOptions = getTimeOptions();
+  const [timeTouched, setTimeTouched] = useState(false);
 
   // Update scheduled date when component inputs change
   useEffect(() => {
@@ -76,11 +52,13 @@ export default function SchedulingOptions({
       setDate(new Date());
       setTime(format(new Date(), "HH:mm"));
     }
+    setTimeTouched(false);
   }, [scheduledDate]);
 
   // Combine date and time for the full scheduled date
   const getFullScheduledDate = () => {
     if (!date) return null;
+    if (!isValidTimeValue(time)) return null;
 
     const [hours, minutes] = time.split(":").map(Number);
     const newDate = new Date(date);
@@ -92,7 +70,16 @@ export default function SchedulingOptions({
   // Update scheduling state
   const updateScheduling = (scheduleEnabled: boolean) => {
     if (scheduleEnabled) {
-      const scheduledDateTime = getFullScheduledDate();
+      let scheduledDateTime = getFullScheduledDate();
+
+      if (!scheduledDateTime) {
+        const futureDate = new Date();
+        futureDate.setMinutes(futureDate.getMinutes() + 15);
+        setDate(futureDate);
+        setTime(format(futureDate, "HH:mm"));
+        setTimeTouched(false);
+        scheduledDateTime = futureDate;
+      }
 
       // Validate date is in the future
       if (scheduledDateTime && isBefore(scheduledDateTime, new Date())) {
@@ -102,7 +89,7 @@ export default function SchedulingOptions({
         setDate(futureDate);
         setTime(format(futureDate, "HH:mm"));
         onSchedulingChange(scheduleEnabled, futureDate);
-      } else {
+      } else if (scheduledDateTime) {
         onSchedulingChange(scheduleEnabled, scheduledDateTime);
       }
     } else {
@@ -140,29 +127,28 @@ export default function SchedulingOptions({
   // Handle time change
   const handleTimeChange = (newTime: string) => {
     setTime(newTime);
+    setTimeTouched(true);
 
-    if (date) {
-      const [hours, minutes] = newTime.split(":").map(Number);
-      const newDate = new Date(date);
-      newDate.setHours(hours, minutes, 0, 0);
+    if (!isValidTimeValue(newTime) || !date) return;
 
-      // Validate date is in the future
-      if (isBefore(newDate, new Date())) {
-        // If it's today but time is in the past, adjust to tomorrow
-        if (isToday(date)) {
-          const tomorrow = addDays(new Date(), 1);
-          tomorrow.setHours(hours, minutes, 0, 0);
-          setDate(tomorrow);
-          onSchedulingChange(isScheduled, tomorrow);
-        } else {
-          onSchedulingChange(isScheduled, newDate);
-        }
+    const [hours, minutes] = newTime.split(":").map(Number);
+    const newDate = new Date(date);
+    newDate.setHours(hours, minutes, 0, 0);
+
+    // Validate date is in the future
+    if (isBefore(newDate, new Date())) {
+      // If it's today but time is in the past, adjust to tomorrow
+      if (isToday(date)) {
+        const tomorrow = addDays(new Date(), 1);
+        tomorrow.setHours(hours, minutes, 0, 0);
+        setDate(tomorrow);
+        onSchedulingChange(isScheduled, tomorrow);
       } else {
         onSchedulingChange(isScheduled, newDate);
       }
+    } else {
+      onSchedulingChange(isScheduled, newDate);
     }
-
-    setIsTimePickerOpen(false);
   };
 
   // Quick buttons for common scheduling options
@@ -201,12 +187,14 @@ export default function SchedulingOptions({
 
     setDate(newDate);
     setTime(format(newDate, "HH:mm"));
+    setTimeTouched(false);
     onSchedulingChange(true, newDate);
 
-    // Close any open pickers
+    // Close date picker if open
     setIsDatePickerOpen(false);
-    setIsTimePickerOpen(false);
   };
+
+  const resolvedScheduledDate = getFullScheduledDate();
 
   return (
     <Card>
@@ -261,36 +249,22 @@ export default function SchedulingOptions({
 
               <div className="flex-1 space-y-2">
                 <Label htmlFor="scheduled-time">Time</Label>
-                <Popover
-                  open={isTimePickerOpen}
-                  onOpenChange={setIsTimePickerOpen}
-                >
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
-                    >
-                      <Clock className="mr-2 h-4 w-4" />
-                      {time
-                        ? format(getFullScheduledDate() || new Date(), "h:mm a")
-                        : "Select time"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0" align="start">
-                    <div className="h-[300px] overflow-y-auto p-2 w-[240px]">
-                      {timeOptions.map((option) => (
-                        <Button
-                          key={option.value}
-                          variant="ghost"
-                          className="w-full justify-start font-normal"
-                          onClick={() => handleTimeChange(option.value)}
-                        >
-                          {option.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="scheduled-time"
+                    type="time"
+                    className="pl-9"
+                    value={time}
+                    onChange={(event) => handleTimeChange(event.target.value)}
+                    step={60}
+                  />
+                </div>
+                {timeTouched && !isValidTimeValue(time) && (
+                  <p className="text-sm text-destructive">
+                    Please enter a valid time in 24-hour format.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -338,23 +312,30 @@ export default function SchedulingOptions({
 
             {date && time && (
               <div className="bg-muted/40 p-3 rounded-md text-center">
-                {scheduledDate &&
-                isAfter(getFullScheduledDate() || new Date(), new Date()) ? (
-                  <p className="text-sm">
-                    Your post will be published on{" "}
-                    <span className="font-medium">
-                      {format(getFullScheduledDate() || new Date(), "PPPP")}
-                    </span>{" "}
-                    at{" "}
-                    <span className="font-medium">
-                      {format(getFullScheduledDate() || new Date(), "h:mm a")}
-                    </span>
-                  </p>
-                ) : (
-                  <p className="text-sm text-amber-600 dark:text-amber-400">
-                    Please select a future date and time
-                  </p>
-                )}
+                {scheduledDate ? (
+                  resolvedScheduledDate ? (
+                    isAfter(resolvedScheduledDate, new Date()) ? (
+                      <p className="text-sm">
+                        Your post will be published on{" "}
+                        <span className="font-medium">
+                          {format(resolvedScheduledDate, "PPPP")}
+                        </span>{" "}
+                        at{" "}
+                        <span className="font-medium">
+                          {format(resolvedScheduledDate, "h:mm a")}
+                        </span>
+                      </p>
+                    ) : (
+                      <p className="text-sm text-amber-600 dark:text-amber-400">
+                        Please select a future date and time
+                      </p>
+                    )
+                  ) : (
+                    <p className="text-sm text-amber-600 dark:text-amber-400">
+                      Enter a valid time to schedule your post
+                    </p>
+                  )
+                ) : null}
               </div>
             )}
           </div>

@@ -452,7 +452,7 @@ export const socialApi = {
   // SSOT JSON: Immediate post (preferred)
   postNowSSOT: async (
     data: {
-      content: string;
+      content?: string;
       targets: Array<{ platform: string; socialAccountId: string }>;
       media?: Array<{
         type: "image" | "video";
@@ -464,6 +464,7 @@ export const socialApi = {
       }>;
       scheduleAt?: null;
       tiktokOptions?: Record<string, any>;
+      platformCaptions?: Record<string, string>;
     },
     config?: any
   ) => {
@@ -485,7 +486,7 @@ export const socialApi = {
   // SSOT JSON: Schedule post
   scheduleSSOT: async (
     data: {
-      content: string;
+      content?: string;
       targets: Array<{ platform: string; socialAccountId: string }>;
       media?: Array<{
         type: "image" | "video";
@@ -497,6 +498,7 @@ export const socialApi = {
       }>;
       scheduleAt: string;
       tiktokOptions?: Record<string, any>;
+      platformCaptions?: Record<string, string>;
     },
     config?: any
   ) => {

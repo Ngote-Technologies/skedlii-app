@@ -98,6 +98,52 @@ export const breadcrumbRoutes: BreadcrumbRoute[] = [
     ],
   },
 
+  {
+    pattern: /^\/dashboard\/drafts\/([^\/]+)$/,
+    segments: [
+      {
+        label: "Dashboard",
+        href: "/dashboard",
+        icon: <Home className="w-4 h-4" />,
+      },
+      {
+        label: "Drafts",
+        href: "/dashboard/drafts",
+        icon: <FileText className="w-4 h-4" />,
+      },
+      {
+        label: "Create Post",
+        href: "/dashboard/post-flow",
+        icon: <Plus className="w-4 h-4" />,
+      },
+      {
+        label: (data) => {
+          if (!data) return "Draft";
+          return (
+            data?.draft?.title || data?.title || "Draft"
+          );
+        },
+        queryKey: (params) => [`/post-drafts/${params[0]}`],
+        fallback: (id) => `Draft ${id.slice(0, 8)}...`,
+        icon: <FileText className="w-4 h-4" />,
+      },
+    ],
+  },
+  {
+    pattern: /^\/dashboard\/drafts$/,
+    segments: [
+      {
+        label: "Dashboard",
+        href: "/dashboard",
+        icon: <Home className="w-4 h-4" />,
+      },
+      {
+        label: "Drafts",
+        icon: <FileText className="w-4 h-4" />,
+      },
+    ],
+  },
+
   // Help articles: /dashboard/help/:articleId or any help sub-routes
   {
     pattern: /^\/dashboard\/help\/([^\/]+)$/,
