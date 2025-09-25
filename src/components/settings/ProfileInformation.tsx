@@ -59,34 +59,26 @@ const ProfileInformation = ({
     fileInputRef.current?.click();
   };
 
-  const handleFormSubmit = (formData: any) => {
-    console.log("Form data received:", formData);
-
+  const handleFormSubmit = async (formData: any) => {
     const submitData = new FormData();
 
     // Only add the specific fields we want
-    if (formData.firstName) {
-      submitData.append("firstName", formData.firstName);
-    }
-    if (formData.lastName) {
-      submitData.append("lastName", formData.lastName);
+    if (formData.name) {
+      submitData.append("name", formData.name);
     }
     if (formData.bio) {
       submitData.append("bio", formData.bio);
     }
+    if (formData.avatar) {
+      submitData.append("avatar", formData.avatar);
+    }
 
     // Add avatar file if selected
     if (selectedFile) {
-      console.log("Adding avatar file:", selectedFile.name);
       submitData.append("avatar", selectedFile);
     }
 
-    // Debug: Log what we're sending
-    for (let [key, value] of submitData.entries()) {
-      console.log("FormData entry:", key, value);
-    }
-
-    onProfileSubmit(submitData);
+    await onProfileSubmit(submitData);
   };
   return (
     <Card className="relative overflow-hidden bg-gradient-to-br from-background to-muted/30 border-border/50">
@@ -177,12 +169,12 @@ const ProfileInformation = ({
               <div className="flex-1 space-y-4">
                 <FormField
                   control={profileForm.control}
-                  name="firstName"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex items-center gap-2 text-sm font-medium">
                         <User className="h-4 w-4 text-primary" />
-                        First Name
+                        Name
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -204,7 +196,7 @@ const ProfileInformation = ({
                   )}
                 />
 
-                <FormField
+                {/* <FormField
                   control={profileForm.control}
                   name="lastName"
                   render={({ field }) => (
@@ -231,7 +223,7 @@ const ProfileInformation = ({
                       <FormMessage />
                     </FormItem>
                   )}
-                />
+                /> */}
 
                 <FormField
                   control={profileForm.control}

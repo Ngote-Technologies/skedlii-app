@@ -8,13 +8,12 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { apiRequest } from "../../lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
-import { Mail, ArrowLeft, Send, CheckCircle, AlertCircle } from "lucide-react";
+import { Mail, ArrowLeft, Send, CheckCircle } from "lucide-react";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -77,7 +76,6 @@ export default function ForgotPasswordForm({
   if (isSubmitted) {
     return (
       <div className="text-center py-8 space-y-6 animate-in fade-in duration-500">
-        {/* Enhanced success icon with animation */}
         <div className="relative mx-auto w-20 h-20 mb-6">
           <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-600 rounded-full opacity-20 animate-pulse"></div>
           <div className="relative flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-400 to-green-600 rounded-full">
@@ -85,7 +83,6 @@ export default function ForgotPasswordForm({
           </div>
         </div>
 
-        {/* Enhanced success message */}
         <div className="space-y-3">
           <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
             Check your email
@@ -99,7 +96,6 @@ export default function ForgotPasswordForm({
           </p>
         </div>
 
-        {/* Enhanced action buttons */}
         <div className="space-y-3">
           <Button
             variant="gradient"
@@ -123,7 +119,6 @@ export default function ForgotPasswordForm({
 
   return (
     <div className="space-y-6">
-      {/* Enhanced header section */}
       <div className="text-center space-y-3">
         <div className="mx-auto w-12 h-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
           <Mail className="w-6 h-6 text-white" />
@@ -139,7 +134,6 @@ export default function ForgotPasswordForm({
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-          {/* Enhanced email field */}
           <FormField
             control={form.control}
             name="email"
@@ -157,17 +151,10 @@ export default function ForgotPasswordForm({
                     {...field}
                   />
                 </FormControl>
-                {fieldState.error && (
-                  <FormMessage className="flex items-center gap-2 mt-2">
-                    <AlertCircle className="w-4 h-4" />
-                    {fieldState.error.message}
-                  </FormMessage>
-                )}
               </FormItem>
             )}
           />
 
-          {/* Enhanced action buttons */}
           <div className="space-y-4 pt-2">
             <Button
               type="submit"
@@ -183,23 +170,10 @@ export default function ForgotPasswordForm({
                 {isLoading ? "Sending..." : "Send Reset Link"}
               </span>
             </Button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
-              onClick={onBack}
-            >
-              <span className="flex items-center justify-center gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Back to login
-              </span>
-            </Button>
           </div>
         </form>
       </Form>
 
-      {/* Enhanced help text */}
       <div className="text-center">
         <p className="text-xs text-gray-500 dark:text-gray-500 max-w-xs mx-auto leading-relaxed">
           Remember your password?{" "}

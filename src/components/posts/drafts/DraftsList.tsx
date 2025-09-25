@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../ui/table";
-import { ScrollArea } from "../../ui/scroll-area";
+import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
 import { Loader2, FileText, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "../../../lib/utils";
@@ -97,7 +97,7 @@ const DraftsList = () => {
     }
 
     return (
-      <ScrollArea className="max-h-[60vh]">
+      <ScrollArea className="h-[60vh] w-full pr-4">
         <Table>
           <TableHeader>
             <TableRow>
@@ -180,6 +180,7 @@ const DraftsList = () => {
             })}
           </TableBody>
         </Table>
+        <ScrollBar orientation="vertical" />
       </ScrollArea>
     );
   };
