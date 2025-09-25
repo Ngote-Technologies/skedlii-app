@@ -107,8 +107,12 @@ export default function PostFlow() {
 
   // Check if we can proceed to the next step
   const canProceedToCaption = selectedAccounts.length > 0;
-  const canProceedToMedia =
-    canProceedToCaption && globalCaption.trim().length > 0;
+  const hasAnyCaption =
+    globalCaption.trim().length > 0 ||
+    Object.values(platformCaptions || {}).some(
+      (caption) => caption.trim().length > 0
+    );
+  const canProceedToMedia = canProceedToCaption && hasAnyCaption;
 
   const {
     handleSaveDraft,
@@ -161,14 +165,18 @@ export default function PostFlow() {
       {};
     setPlatformCaptions({ ...captionsSource });
 
-    const targetsSource = Array.isArray(draft.targets) && draft.targets.length
-      ? draft.targets
-      : revision.targets || [];
+    const targetsSource =
+      Array.isArray(draft.targets) && draft.targets.length
+        ? draft.targets
+        : revision.targets || [];
     const restoredAccountIds = Array.from(
-      new Set(
+      new Set<string>(
         (targetsSource || [])
           .map((target: any) => target?.socialAccountId)
-          .filter((id: any) => typeof id === "string" && id.length > 0)
+          .filter(
+            (id: unknown): id is string =>
+              typeof id === "string" && id.length > 0
+          )
       )
     );
     setSelectedAccounts(restoredAccountIds);
@@ -277,7 +285,7 @@ export default function PostFlow() {
       label: "Write Caption",
       icon: Type,
       description: "Create your content",
-      completed: globalCaption.trim().length > 0,
+      completed: hasAnyCaption,
       active: activeTab === "caption",
       disabled: isSubmitting || !canProceedToCaption,
     },
@@ -325,7 +333,11 @@ export default function PostFlow() {
           <div className="flex items-center gap-3">
             {lastSavedAt && (
               <span className="text-xs text-muted-foreground">
-                Draft saved {lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                Draft saved{" "}
+                {lastSavedAt.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </span>
             )}
             <Button
@@ -342,7 +354,10 @@ export default function PostFlow() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => currentDraftId && navigate(`/dashboard/drafts/${currentDraftId}`)}
+              onClick={() =>
+                currentDraftId &&
+                navigate(`/dashboard/drafts/${currentDraftId}`)
+              }
               disabled={!currentDraftId}
             >
               <Eye className="mr-2 h-4 w-4" />
@@ -688,39 +703,39 @@ export default function PostFlow() {
                 </Button>
 
                 <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-                  <Button
-                    variant={isScheduled ? "outline" : "gradient"}
-                    onClick={handlePostNow}
-                    disabled={isSubmitting}
-                    className="min-w-[140px] w-full md:w-auto shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    {isSubmitting && pendingAction === "post" ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Send className="h-4 w-4 mr-2" />
-                    )}
-                    {isSubmitting && pendingAction === "post"
-                      ? "Publishing..."
-                      : "Post Now"}
-                  </Button>
-
-                  <Button
-                    variant={isScheduled ? "gradient" : "outline"}
-                    onClick={handleSchedulePost}
-                    disabled={
-                      isSubmitting || !isScheduled || !scheduledDate
-                    }
-                    className="min-w-[140px] w-full md:w-auto shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    {isSubmitting && pendingAction === "schedule" ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Clock className="h-4 w-4 mr-2" />
-                    )}
-                    {isSubmitting && pendingAction === "schedule"
-                      ? "Scheduling..."
-                      : "Schedule Post"}
-                  </Button>
+                  {isScheduled ? (
+                    <Button
+                      variant={isScheduled ? "gradient" : "outline"}
+                      onClick={handleSchedulePost}
+                      disabled={isSubmitting || !isScheduled || !scheduledDate}
+                      className="min-w-[140px] w-full md:w-auto shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      {isSubmitting && pendingAction === "schedule" ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Clock className="h-4 w-4 mr-2" />
+                      )}
+                      {isSubmitting && pendingAction === "schedule"
+                        ? "Scheduling..."
+                        : "Schedule Post"}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant={isScheduled ? "outline" : "gradient"}
+                      onClick={handlePostNow}
+                      disabled={isSubmitting}
+                      className="min-w-[140px] w-full md:w-auto shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      {isSubmitting && pendingAction === "post" ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Send className="h-4 w-4 mr-2" />
+                      )}
+                      {isSubmitting && pendingAction === "post"
+                        ? "Publishing..."
+                        : "Post Now"}
+                    </Button>
+                  )}
                 </div>
               </div>
             </TabsContent>

@@ -54,10 +54,19 @@ interface UsePostSubmissionParams {
 
 type PendingAction = "save" | "post" | "schedule" | null;
 
+type ValidationResult = {
+  selectedAccountsData: Account[];
+  captionsByPlatform: Record<string, string>;
+  globalCaption: string;
+};
+
 const sanitizePlatformCaptions = (captions: Record<string, string>) => {
   if (!captions) return {} as Record<string, string>;
   const entries = Object.entries(captions)
-    .map(([platform, caption]) => [platform.toLowerCase(), caption?.trim?.() ?? ""])
+    .map(([platform, caption]) => [
+      platform.toLowerCase(),
+      caption?.trim?.() ?? "",
+    ])
     .filter(([, caption]) => caption.length > 0);
   return Object.fromEntries(entries) as Record<string, string>;
 };
@@ -166,14 +175,20 @@ export function usePostSubmission({
   const computeIdempotencyKey = (
     targets: Array<{ socialAccountId: string }>,
     mediaPayload: PostDraftMediaPayload[],
-    scheduleAt: string | null
+    scheduleAt: string | null,
+    captionsByPlatform: Record<string, string>
   ) => {
+    const trimmedGlobal = globalCaption.trim();
+    const sortedCaptions = Object.entries(captionsByPlatform || {})
+      .map(([platform, caption]) => [platform, caption.trim()])
+      .sort((a, b) => a[0].localeCompare(b[0]));
     const baseString = JSON.stringify({
       orgId: organization?._id,
-      content: globalCaption,
+      content: trimmedGlobal,
       targets: targets.map((t) => t.socialAccountId).sort(),
       media: mediaPayload.map((m) => m.ref || m.url).sort(),
       scheduleAt,
+      platformCaptions: sortedCaptions,
     });
 
     const base64 =
@@ -191,7 +206,7 @@ export function usePostSubmission({
     return "mixed" as const;
   };
 
-  const validatePostingInputs = () => {
+  const validatePostingInputs = (): ValidationResult | null => {
     if (selectedAccounts.length === 0) {
       toast.error({
         title: "No Account Selected",
@@ -200,10 +215,17 @@ export function usePostSubmission({
       return null;
     }
 
-    if (globalCaption.trim().length === 0) {
+    const sanitizedCaptions = sanitizePlatformCaptions(platformCaptions);
+    const trimmedGlobal = globalCaption.trim();
+
+    if (
+      trimmedGlobal.length === 0 &&
+      Object.keys(sanitizedCaptions).length === 0
+    ) {
       toast.error({
         title: "Caption Required",
-        description: "Caption cannot be empty.",
+        description:
+          "Add a global caption or at least one platform-specific caption.",
       });
       return null;
     }
@@ -239,7 +261,36 @@ export function usePostSubmission({
       return null;
     }
 
-    return { selectedAccountsData };
+    const captionViolations = selectedAccountsData.filter((account) => {
+      const platformKey = String(account.platform || "").toLowerCase();
+      const override = sanitizedCaptions[platformKey];
+      const resolved = (override && override.trim()) || trimmedGlobal;
+      return !resolved || resolved.length === 0;
+    });
+
+    if (captionViolations.length) {
+      const platformsNeedingCaption = Array.from(
+        new Set(
+          captionViolations.map((acc) =>
+            String(acc.platform || "").toLowerCase()
+          )
+        )
+      ).filter(Boolean);
+      toast.error({
+        title: "Caption Missing",
+        description:
+          platformsNeedingCaption.length > 0
+            ? `Add a caption for ${platformsNeedingCaption.join(", ")}.`
+            : "Add a caption for each selected account.",
+      });
+      return null;
+    }
+
+    return {
+      selectedAccountsData,
+      captionsByPlatform: sanitizedCaptions,
+      globalCaption: trimmedGlobal,
+    };
   };
 
   const saveDraftInternal = async () => {
@@ -261,7 +312,11 @@ export function usePostSubmission({
 
     setCurrentDraftId(response.draft._id);
     setLastSavedAt(new Date());
-    return { draft: response.draft, mediaPayload, platformCaptions: sanitizedCaptions };
+    return {
+      draft: response.draft,
+      mediaPayload,
+      platformCaptions: sanitizedCaptions,
+    };
   };
 
   const handleSaveDraft = async () => {
@@ -303,7 +358,12 @@ export function usePostSubmission({
         socialAccountId: acc._id,
       }));
 
-      const idempotencyKey = computeIdempotencyKey(targets, mediaPayload, null);
+      const idempotencyKey = computeIdempotencyKey(
+        targets,
+        mediaPayload,
+        null,
+        validated.captionsByPlatform
+      );
 
       const tiktokOptionsPayload: Record<string, any> = {};
       for (const acc of validated.selectedAccountsData) {
@@ -323,11 +383,12 @@ export function usePostSubmission({
 
       await socialApi.postNowSSOT(
         {
-          content: globalCaption,
+          content: validated.globalCaption,
           targets,
           media: formattedMedia,
           scheduleAt: null,
           tiktokOptions: tiktokOptionsPayload,
+          platformCaptions: validated.captionsByPlatform,
         },
         { headers: { "Idempotency-Key": idempotencyKey } }
       );
@@ -387,7 +448,8 @@ export function usePostSubmission({
       const idempotencyKey = computeIdempotencyKey(
         targets,
         mediaPayload,
-        scheduleAtIso
+        scheduleAtIso,
+        validated.captionsByPlatform
       );
 
       const tiktokOptionsPayload: Record<string, any> = {};
@@ -408,11 +470,12 @@ export function usePostSubmission({
 
       await socialApi.scheduleSSOT(
         {
-          content: globalCaption,
+          content: validated.globalCaption,
           targets,
           media: formattedMedia,
           scheduleAt: scheduleAtIso,
           tiktokOptions: tiktokOptionsPayload,
+          platformCaptions: validated.captionsByPlatform,
         },
         { headers: { "Idempotency-Key": idempotencyKey } }
       );
