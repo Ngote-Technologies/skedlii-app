@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Building,
+  FileText,
 } from "lucide-react";
 import { useAuth } from "../store/hooks";
 import { useMemo } from "react";
@@ -109,6 +110,13 @@ export default function DashboardSidebar({
         badge: !hasValidSub ? "Team" : null,
         premium: true,
         show: true, // Show but may be disabled
+      },
+      {
+        icon: <FileText size={18} />,
+        label: "Drafts",
+        href: "/dashboard/drafts",
+        badge: null,
+        show: true,
       },
       {
         icon: <Folder size={18} />,

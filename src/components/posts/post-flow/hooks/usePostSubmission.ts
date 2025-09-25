@@ -1,5 +1,12 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "../../../../hooks/use-toast";
+import postDraftsApi, {
+  CreatePostDraftPayload,
+  DraftTargetPayload,
+  PostDraftMediaPayload,
+  PlatformName,
+} from "../../../../api/postDrafts";
 import socialApi from "../../../../api/socialApi";
 import { uploadToCloudinary } from "../../../../api/upload";
 import { useAuth } from "../../../../store/hooks";
@@ -10,6 +17,16 @@ import {
 import { TikTokOptions, isValidTikTokOptions } from "../TikTokSettingsDrawer";
 import { MediaItem } from "../MediaUpload";
 
+const PLATFORM_VALUES: PlatformName[] = [
+  "twitter",
+  "linkedin",
+  "instagram",
+  "threads",
+  "tiktok",
+  "youtube",
+  "facebook",
+];
+
 interface Account {
   _id: string;
   accountId: string;
@@ -18,6 +35,7 @@ interface Account {
   platform: string;
   platformId: string;
   avatar?: string;
+  teamId?: string;
 }
 
 interface UsePostSubmissionParams {
@@ -31,7 +49,18 @@ interface UsePostSubmissionParams {
   isScheduled: boolean;
   scheduledDate: Date | null;
   setIsSubmitting: (v: boolean) => void;
+  initialDraftId?: string | null;
 }
+
+type PendingAction = "save" | "post" | "schedule" | null;
+
+const sanitizePlatformCaptions = (captions: Record<string, string>) => {
+  if (!captions) return {} as Record<string, string>;
+  const entries = Object.entries(captions)
+    .map(([platform, caption]) => [platform.toLowerCase(), caption?.trim?.() ?? ""])
+    .filter(([, caption]) => caption.length > 0);
+  return Object.fromEntries(entries) as Record<string, string>;
+};
 
 export function usePostSubmission({
   selectedAccounts,
@@ -44,60 +73,131 @@ export function usePostSubmission({
   isScheduled,
   scheduledDate,
   setIsSubmitting,
+  initialDraftId = null,
 }: UsePostSubmissionParams) {
   const navigate = useNavigate();
   const { organization } = useAuth();
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(
+    initialDraftId ?? null
+  );
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
-  // Build SSOT media array; upload local files to Cloudinary when needed
+  useEffect(() => {
+    if (initialDraftId) {
+      setCurrentDraftId(initialDraftId);
+    } else if (initialDraftId === null) {
+      setCurrentDraftId(null);
+    }
+  }, [initialDraftId]);
+
+  const isRecognizedPlatform = (value: string): value is PlatformName => {
+    const normalized = value.toLowerCase() as PlatformName;
+    return PLATFORM_VALUES.includes(normalized);
+  };
+
+  const buildDraftTargets = (): DraftTargetPayload[] => {
+    const targets: DraftTargetPayload[] = [];
+    for (const accountId of selectedAccounts) {
+      const account = socialAccounts.find((acc) => acc._id === accountId);
+      if (!account) continue;
+      let platformValue = String(account.platform || "").toLowerCase();
+      if (platformValue === "x") {
+        platformValue = "twitter";
+      }
+      if (!isRecognizedPlatform(platformValue)) continue;
+      const target: DraftTargetPayload = {
+        platform: platformValue as PlatformName,
+        socialAccountId: account._id,
+      };
+      if (account.teamId) {
+        target.teamId = String(account.teamId);
+      }
+      targets.push(target);
+    }
+    return targets;
+  };
+
   const buildSSOTMedia = async (items: MediaItem[]) => {
-    const result: Array<{
-      type: "image" | "video";
-      url: string;
-      width?: number;
-      height?: number;
-      durationSec?: number;
-      ref?: string;
-    }> = [];
+    const result: PostDraftMediaPayload[] = [];
 
     for (const item of items) {
       let url = item.url;
-      let ref: string | undefined = undefined;
+      let ref = item.ref;
+      let width = item.width;
+      let height = item.height;
+      let durationSec = item.durationSec;
 
-      // Upload if we still have a blob URL or no publicId
-      const needsUpload = /^blob:/.test(url);
-      if (needsUpload) {
-        const uploaded = await uploadToCloudinary(item.file);
-        if (!uploaded) throw new Error("Cloudinary upload failed");
-        url = uploaded.url;
-        // our upload helper returns id as the publicId
-        ref = uploaded.id;
+      if (item.file) {
+        const needsUpload = /^blob:/.test(url);
+        if (needsUpload) {
+          const uploaded = await uploadToCloudinary(item.file);
+          if (!uploaded) throw new Error("Cloudinary upload failed");
+          url = uploaded.url;
+          ref = uploaded.id;
+        }
+
+        const dims =
+          item.type === "image"
+            ? await getImageDimensions(item.file)
+            : await getMediaDimensions(item.file);
+        width = dims?.width ?? width;
+        height = dims?.height ?? height;
+        durationSec = (dims as any)?.duration ?? durationSec;
       }
 
-      const dims =
-        item.type === "image"
-          ? await getImageDimensions(item.file)
-          : await getMediaDimensions(item.file);
+      if (!url) {
+        continue;
+      }
 
       result.push({
         type: item.type,
         url,
-        width: dims?.width,
-        height: dims?.height,
-        // durationSec best-effort from getMediaDimensions for videos
-        durationSec: (dims as any)?.duration ?? undefined,
+        width,
+        height,
+        durationSec,
         ref,
       });
     }
+
     return result;
   };
 
-  const handleSubmit = async () => {
+  const computeIdempotencyKey = (
+    targets: Array<{ socialAccountId: string }>,
+    mediaPayload: PostDraftMediaPayload[],
+    scheduleAt: string | null
+  ) => {
+    const baseString = JSON.stringify({
+      orgId: organization?._id,
+      content: globalCaption,
+      targets: targets.map((t) => t.socialAccountId).sort(),
+      media: mediaPayload.map((m) => m.ref || m.url).sort(),
+      scheduleAt,
+    });
+
+    const base64 =
+      typeof window !== "undefined" && window.btoa
+        ? window.btoa(unescape(encodeURIComponent(baseString)))
+        : Buffer.from(baseString).toString("base64");
+
+    return base64.slice(0, 128);
+  };
+
+  const ensureSingleMediaType = () => {
+    const mediaTypes = Array.from(new Set(media.map((item) => item.type)));
+    if (media.length === 0) return "text" as const;
+    if (mediaTypes.length === 1) return mediaTypes[0] as "image" | "video";
+    return "mixed" as const;
+  };
+
+  const validatePostingInputs = () => {
     if (selectedAccounts.length === 0) {
       toast.error({
         title: "No Account Selected",
         description: "Select at least one account to post to.",
       });
-      return;
+      return null;
     }
 
     if (globalCaption.trim().length === 0) {
@@ -105,153 +205,241 @@ export function usePostSubmission({
         title: "Caption Required",
         description: "Caption cannot be empty.",
       });
-      return;
+      return null;
     }
 
     const selectedAccountsData = socialAccounts.filter((account) =>
       selectedAccounts.includes(account._id)
     );
+
     const platforms = Array.from(
       new Set(selectedAccountsData.map((account) => account.platform))
     );
 
-    const allValid = Object.entries(tiktokAccountOptions).every(
+    const allValidTikTok = Object.entries(tiktokAccountOptions).every(
       ([id, opts]) =>
         filledTikTokAccounts.includes(id) && isValidTikTokOptions(opts)
     );
 
-    if (platforms.includes("tiktok") && !allValid) {
+    if (platforms.includes("tiktok") && !allValidTikTok) {
       toast.warning({
         title: "TikTok Settings Incomplete",
-        description: "Go to media tab, select TikTok Settings and fill out all required fields to complete your post.",
+        description:
+          "Go to media tab, select TikTok Settings and fill out all required fields to complete your post.",
       });
-      return;
+      return null;
     }
 
-    setIsSubmitting(true);
-
-    const targets = selectedAccountsData.map((acc) => ({
-      platform: acc.platform,
-      socialAccountId: acc._id,
-    }));
-
-    const mediaTypes = Array.from(new Set(media.map((item) => item.type)));
-
-    let postType: "image" | "video" | "text" | "mixed";
-
-    if (media.length === 0) {
-      postType = "text";
-    } else if (mediaTypes.length === 1) {
-      postType = mediaTypes[0] as any;
-    } else {
-      postType = "mixed";
-    }
-
-    if (postType === "mixed") {
+    const mediaType = ensureSingleMediaType();
+    if (mediaType === "mixed") {
       toast.error({
         title: "Unsupported Media Combination",
         description: "Please upload only images or only videos, not both.",
       });
-      setIsSubmitting(false);
-      return;
+      return null;
     }
 
-    // Prepare SSOT media (uploads to Cloudinary if needed)
-    const ssotMedia = await buildSSOTMedia(media);
+    return { selectedAccountsData };
+  };
 
-    // Compute Idempotency-Key (simple stable key from payload)
-    const baseString = JSON.stringify({
-      orgId: organization?._id,
+  const saveDraftInternal = async () => {
+    const mediaPayload = await buildSSOTMedia(media);
+    const sanitizedCaptions = sanitizePlatformCaptions(platformCaptions);
+    const targetsPayload = buildDraftTargets();
+
+    const draftPayload: CreatePostDraftPayload = {
+      title: globalCaption.trim().slice(0, 80) || undefined,
       content: globalCaption,
-      targets: targets.map((t) => t.socialAccountId).sort(),
-      media: ssotMedia.map((m) => m.ref || m.url).sort(),
-      scheduleAt: isScheduled && scheduledDate
-        ? new Date(scheduledDate).toISOString()
-        : null,
-    });
-    // Base64-encode to a stable, ASCII-safe key
-    const base64 = typeof window !== 'undefined' && window.btoa
-      ? window.btoa(unescape(encodeURIComponent(baseString)))
-      : Buffer.from(baseString).toString('base64');
-    const idemKey = base64.slice(0, 128);
+      media: mediaPayload,
+      platformCaptions: sanitizedCaptions,
+      targets: targetsPayload,
+    };
+
+    const response = currentDraftId
+      ? await postDraftsApi.update(currentDraftId, draftPayload)
+      : await postDraftsApi.create(draftPayload);
+
+    setCurrentDraftId(response.draft._id);
+    setLastSavedAt(new Date());
+    return { draft: response.draft, mediaPayload, platformCaptions: sanitizedCaptions };
+  };
+
+  const handleSaveDraft = async () => {
+    try {
+      setPendingAction("save");
+      setIsSubmitting(true);
+      await saveDraftInternal();
+      toast.success({
+        title: "Draft Saved",
+        description: "Your draft has been saved.",
+      });
+    } catch (err: any) {
+      console.error("Save draft error:", err);
+      toast.error({
+        title: "Failed to Save Draft",
+        description: err.message || "Please try again.",
+      });
+    } finally {
+      setPendingAction(null);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePostNow = async () => {
+    const validated = validatePostingInputs();
+    if (!validated) return;
 
     try {
-      // Simulate progress
-      await new Promise((res) => setTimeout(res, 500));
-      toast.loading({ title: "Processing", description: "Preparing your content..." });
+      setPendingAction("post");
+      setIsSubmitting(true);
+      toast.loading({
+        title: "Processing",
+        description: "Preparing your content...",
+      });
 
-      if (media.length > 0) {
-        await new Promise((res) => setTimeout(res, 1000));
-        toast.loading({
-          title: "Processing",
-          description: "Warming up your hashtags...",
-        });
-      }
+      const mediaPayload = await buildSSOTMedia(media);
+      const targets = validated.selectedAccountsData.map((acc) => ({
+        platform: acc.platform,
+        socialAccountId: acc._id,
+      }));
 
-      await new Promise((res) => setTimeout(res, 1500));
+      const idempotencyKey = computeIdempotencyKey(targets, mediaPayload, null);
 
-      if (isScheduled && scheduledDate) {
-        toast.loading({
-          title: "Processing",
-          description: "Skedlii is lining up your post...",
-        });
-      } else {
-        toast.loading({
-          title: "Processing",
-          description: "Queueing your awesomeness...",
-        });
-      }
-
-      // Build optional TikTok options map keyed by socialAccountId
       const tiktokOptionsPayload: Record<string, any> = {};
-      for (const acc of selectedAccountsData) {
+      for (const acc of validated.selectedAccountsData) {
         if (acc.platform === "tiktok" && tiktokAccountOptions[acc._id]) {
           tiktokOptionsPayload[acc._id] = tiktokAccountOptions[acc._id];
         }
       }
 
-      if (isScheduled && scheduledDate) {
-        await socialApi.scheduleSSOT(
-          {
-            content: globalCaption,
-            targets,
-            media: ssotMedia,
-            scheduleAt: new Date(scheduledDate).toISOString(),
-            tiktokOptions: tiktokOptionsPayload,
-          },
-          { headers: { "Idempotency-Key": idemKey } }
-        );
-      } else {
-        await socialApi.postNowSSOT(
-          {
-            content: globalCaption,
-            targets,
-            media: ssotMedia,
-            scheduleAt: null,
-            tiktokOptions: tiktokOptionsPayload,
-          },
-          { headers: { "Idempotency-Key": idemKey } }
-        );
-      }
+      const formattedMedia = mediaPayload.map((item) => ({
+        type: item.type,
+        url: item.url ?? "",
+        width: item.width,
+        height: item.height,
+        durationSec: item.durationSec,
+        ref: item.ref,
+      }));
+
+      await socialApi.postNowSSOT(
+        {
+          content: globalCaption,
+          targets,
+          media: formattedMedia,
+          scheduleAt: null,
+          tiktokOptions: tiktokOptionsPayload,
+        },
+        { headers: { "Idempotency-Key": idempotencyKey } }
+      );
 
       toast.success({
-        title: "Success",
-        description: isScheduled
-          ? "Your post has been scheduled!"
-          : "Your post has been published!",
+        title: "Post Published",
+        description: "Your post has been published!",
       });
-
-      navigate(`/dashboard/${isScheduled ? "scheduled" : "posts"}`);
+      navigate("/dashboard/posts");
     } catch (err: any) {
-      console.error("Submission error:", err);
+      console.error("Post now error:", err);
       toast.error({
-        title: "Post Submission Failed",
+        title: "Failed to Publish",
         description: err.message || "Please try again.",
       });
     } finally {
+      setPendingAction(null);
       setIsSubmitting(false);
     }
   };
 
-  return { handleSubmit };
+  const handleSchedulePost = async () => {
+    if (!isScheduled) {
+      toast.error({
+        title: "Enable Scheduling",
+        description: "Turn on scheduling before scheduling a post.",
+      });
+      return;
+    }
+
+    if (!scheduledDate) {
+      toast.error({
+        title: "Schedule Time Required",
+        description: "Select a future date and time to schedule your post.",
+      });
+      return;
+    }
+
+    const validated = validatePostingInputs();
+    if (!validated) return;
+
+    try {
+      setPendingAction("schedule");
+      setIsSubmitting(true);
+      toast.loading({
+        title: "Processing",
+        description: "Scheduling your post...",
+      });
+
+      const mediaPayload = await buildSSOTMedia(media);
+      const targets = validated.selectedAccountsData.map((acc) => ({
+        platform: acc.platform,
+        socialAccountId: acc._id,
+      }));
+
+      const scheduleAtIso = new Date(scheduledDate).toISOString();
+      const idempotencyKey = computeIdempotencyKey(
+        targets,
+        mediaPayload,
+        scheduleAtIso
+      );
+
+      const tiktokOptionsPayload: Record<string, any> = {};
+      for (const acc of validated.selectedAccountsData) {
+        if (acc.platform === "tiktok" && tiktokAccountOptions[acc._id]) {
+          tiktokOptionsPayload[acc._id] = tiktokAccountOptions[acc._id];
+        }
+      }
+
+      const formattedMedia = mediaPayload.map((item) => ({
+        type: item.type,
+        url: item.url ?? "",
+        width: item.width,
+        height: item.height,
+        durationSec: item.durationSec,
+        ref: item.ref,
+      }));
+
+      await socialApi.scheduleSSOT(
+        {
+          content: globalCaption,
+          targets,
+          media: formattedMedia,
+          scheduleAt: scheduleAtIso,
+          tiktokOptions: tiktokOptionsPayload,
+        },
+        { headers: { "Idempotency-Key": idempotencyKey } }
+      );
+
+      toast.success({
+        title: "Post Scheduled",
+        description: "Your post has been scheduled!",
+      });
+      navigate("/dashboard/scheduled");
+    } catch (err: any) {
+      console.error("Schedule post error:", err);
+      toast.error({
+        title: "Failed to Schedule",
+        description: err.message || "Please try again.",
+      });
+    } finally {
+      setPendingAction(null);
+      setIsSubmitting(false);
+    }
+  };
+
+  return {
+    handleSaveDraft,
+    handlePostNow,
+    handleSchedulePost,
+    currentDraftId,
+    pendingAction,
+    lastSavedAt,
+  };
 }

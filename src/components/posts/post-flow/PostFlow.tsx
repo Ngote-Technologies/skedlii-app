@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "../../ui/button";
 import {
   Card,
@@ -19,9 +20,12 @@ import {
   Calendar,
   Check,
   ChevronRight,
+  Eye,
 } from "lucide-react";
 import { cn } from "../../../lib/utils";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../store/hooks";
+import postDraftsApi from "../../../api/postDrafts";
 import { MediaItem } from "./MediaUpload";
 import TikTokSettingsDrawer, {
   isValidTikTokOptions,
@@ -41,9 +45,11 @@ import {
 } from "../../../services/postFlow";
 import { handleMediaChange, handleSchedulingChange } from "../../../lib/utils";
 import { useGetOrganizationSocialAccounts } from "../../../hooks/useSocialAccounts";
+import { toast } from "../../../hooks/use-toast";
 
 export default function PostFlow() {
   const { organization } = useAuth();
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("accounts");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,21 +74,50 @@ export default function PostFlow() {
   const [tiktokCreatorInfoMap, setTiktokCreatorInfoMap] = useState<
     Record<string, any>
   >({});
+  const [hasInitializedDraft, setHasInitializedDraft] = useState(false);
 
   const {
     data: organizationAccounts = [],
     isLoading: isFetchingOrganizationAccounts,
   } = useGetOrganizationSocialAccounts(organization?._id || "");
-  const socialAccounts: any[] = organizationAccounts.items;
+  const socialAccounts: any[] = (organizationAccounts as any)?.items ?? [];
 
-  const isLoading = isFetchingOrganizationAccounts;
+  const [searchParams] = useSearchParams();
+  const rawDraftId = searchParams.get("draftId");
+  const draftId =
+    rawDraftId && rawDraftId !== "null" && rawDraftId !== "undefined"
+      ? rawDraftId
+      : null;
+
+  const {
+    data: draftResponse,
+    isLoading: isDraftLoading,
+    isError: isDraftError,
+    error: draftError,
+  } = useQuery({
+    queryKey: ["/post-drafts", draftId],
+    queryFn: () => postDraftsApi.get(draftId!),
+    enabled: Boolean(draftId),
+  });
+
+  const draft = draftResponse?.draft;
+
+  const isLoading =
+    isFetchingOrganizationAccounts || Boolean(draftId && isDraftLoading);
 
   // Check if we can proceed to the next step
   const canProceedToCaption = selectedAccounts.length > 0;
   const canProceedToMedia =
     canProceedToCaption && globalCaption.trim().length > 0;
 
-  const { handleSubmit } = usePostSubmission({
+  const {
+    handleSaveDraft,
+    handlePostNow,
+    handleSchedulePost,
+    pendingAction,
+    currentDraftId,
+    lastSavedAt,
+  } = usePostSubmission({
     selectedAccounts,
     globalCaption,
     platformCaptions,
@@ -93,7 +128,94 @@ export default function PostFlow() {
     isScheduled,
     scheduledDate,
     setIsSubmitting,
+    initialDraftId: draftId,
   });
+
+  useEffect(() => {
+    setHasInitializedDraft(false);
+    setSelectedAccounts([]);
+    setGlobalCaption("");
+    setPlatformCaptions({});
+    setMedia([]);
+    setIsScheduled(false);
+    setScheduledDate(null);
+    setTiktokAccountOptions({});
+    setFilledTikTokAccounts([]);
+  }, [draftId]);
+
+  useEffect(() => {
+    if (!draftId || !draft || hasInitializedDraft) return;
+
+    const revision = draft.currentRevision || {};
+    const baseContent =
+      typeof revision.content === "string"
+        ? revision.content
+        : typeof draft.content === "string"
+        ? draft.content
+        : "";
+    setGlobalCaption(baseContent);
+
+    const captionsSource =
+      (revision.platformCaptions as Record<string, string> | undefined) ??
+      (draft.platformCaptions as Record<string, string> | undefined) ??
+      {};
+    setPlatformCaptions({ ...captionsSource });
+
+    const targetsSource = Array.isArray(draft.targets) && draft.targets.length
+      ? draft.targets
+      : revision.targets || [];
+    const restoredAccountIds = Array.from(
+      new Set(
+        (targetsSource || [])
+          .map((target: any) => target?.socialAccountId)
+          .filter((id: any) => typeof id === "string" && id.length > 0)
+      )
+    );
+    setSelectedAccounts(restoredAccountIds);
+
+    const revisionMedia = Array.isArray(revision.media) ? revision.media : [];
+    const restoredMedia: MediaItem[] = revisionMedia
+      .map((item: any, index: number) => {
+        if (!item) return null;
+        const url = item.url ? String(item.url) : "";
+        const type = item.type === "video" ? "video" : "image";
+        const id =
+          (item.ref && String(item.ref)) ||
+          (url ? `${url}-${index}` : `draft-media-${index}`);
+        const thumbnail = item.thumbnailUrl
+          ? String(item.thumbnailUrl)
+          : undefined;
+        return {
+          id,
+          url,
+          type,
+          file: undefined,
+          ref: item.ref ? String(item.ref) : undefined,
+          width: item.width,
+          height: item.height,
+          durationSec: item.durationSec,
+          thumbnailUrl: thumbnail ?? (url || undefined),
+        } as MediaItem;
+      })
+      .filter(Boolean) as MediaItem[];
+
+    setMedia(restoredMedia);
+    setIsScheduled(draft.status === "scheduled");
+    setHasInitializedDraft(true);
+  }, [draftId, draft, hasInitializedDraft]);
+
+  useEffect(() => {
+    if (isDraftError && draftError) {
+      const message =
+        (draftError as any)?.response?.data?.message ||
+        (draftError as Error)?.message ||
+        "Unable to load draft.";
+      toast.error({
+        title: "Failed to load draft",
+        description: message,
+      });
+    }
+  }, [isDraftError, draftError]);
 
   useInitializeTikTokDrawer({
     selectedAccounts,
@@ -199,6 +321,33 @@ export default function PostFlow() {
             <p className="text-muted-foreground">
               Compose and schedule your content across multiple platforms
             </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {lastSavedAt && (
+              <span className="text-xs text-muted-foreground">
+                Draft saved {lastSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
+            <Button
+              variant="outline"
+              onClick={handleSaveDraft}
+              disabled={isSubmitting}
+            >
+              {isSubmitting && pendingAction === "save" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              Save Draft
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => currentDraftId && navigate(`/dashboard/drafts/${currentDraftId}`)}
+              disabled={!currentDraftId}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              View Draft
+            </Button>
           </div>
         </div>
 
@@ -541,32 +690,34 @@ export default function PostFlow() {
                 <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                   <Button
                     variant={isScheduled ? "outline" : "gradient"}
-                    onClick={handleSubmit}
-                    disabled={isSubmitting || isScheduled}
+                    onClick={handlePostNow}
+                    disabled={isSubmitting}
                     className="min-w-[140px] w-full md:w-auto shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    {isSubmitting && !isScheduled ? (
+                    {isSubmitting && pendingAction === "post" ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     ) : (
                       <Send className="h-4 w-4 mr-2" />
                     )}
-                    {isSubmitting && !isScheduled
+                    {isSubmitting && pendingAction === "post"
                       ? "Publishing..."
                       : "Post Now"}
                   </Button>
 
                   <Button
                     variant={isScheduled ? "gradient" : "outline"}
-                    onClick={handleSubmit}
-                    disabled={isSubmitting || !isScheduled || !scheduledDate}
+                    onClick={handleSchedulePost}
+                    disabled={
+                      isSubmitting || !isScheduled || !scheduledDate
+                    }
                     className="min-w-[140px] w-full md:w-auto shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    {isSubmitting && isScheduled ? (
+                    {isSubmitting && pendingAction === "schedule" ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     ) : (
-                      <Save className="h-4 w-4 mr-2" />
+                      <Clock className="h-4 w-4 mr-2" />
                     )}
-                    {isSubmitting && isScheduled
+                    {isSubmitting && pendingAction === "schedule"
                       ? "Scheduling..."
                       : "Schedule Post"}
                   </Button>
