@@ -27,15 +27,6 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-md p-8">
         <ForgotPasswordForm onBack={() => navigate("/login")} />
       </div>
-
-      <p className="mt-6 text-center text-sm">
-        Remember your password?{" "}
-        <Link to="/login">
-          <span className="text-primary-600 dark:text-primary-400 hover:underline">
-            Log in
-          </span>
-        </Link>
-      </p>
     </div>
   );
 }

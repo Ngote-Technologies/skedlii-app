@@ -28,8 +28,8 @@ import { Badge } from "../components/ui/badge";
 import { useDynamicBreadcrumbs } from "../hooks/useDynamicBreadcrumbs";
 
 export default function DashboardHeader() {
-  const { user, logout, canManageBilling } = useAuth();
-  const { canConnectSocialAccounts } = useAccessControl();
+  const { user, logout, canManageBilling, subscriptionInfo } = useAuth();
+  const { canConnectSocialAccounts, hasValidSubscription } = useAccessControl();
   const location = useLocation();
 
   const mobileMenuOpen = useMobileMenuStore(
@@ -109,11 +109,11 @@ export default function DashboardHeader() {
                 <Avatar className="h-9 w-9">
                   <AvatarImage
                     src={user?.avatar ?? ""}
-                    alt={user?.firstName ?? ""}
+                    alt={user?.name ?? ""}
                   />
                   <AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300">
-                    {user?.firstName
-                      ? getInitials(`${user.firstName} ${user.lastName || ""}`)
+                    {user?.name
+                      ? getInitials(`${user.name}`)
                       : user?.username?.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -123,18 +123,12 @@ export default function DashboardHeader() {
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
                   <p className="font-medium">
-                    {user?.firstName
-                      ? `${user.firstName} ${user.lastName || ""}`.trim()
-                      : user?.username}
+                    {user?.name ? `${user.name}` : user?.username}
                   </p>
                   <p className="text-xs text-muted-foreground">{user?.email}</p>
-                  {user?.billing?.paymentStatus && (
-                    <Badge variant="outline" className="text-xs w-fit">
-                      {user.billing.paymentStatus === "active"
-                        ? "Team Plan"
-                        : "Free Plan"}
-                    </Badge>
-                  )}
+                  <Badge variant="outline" className="text-xs w-fit capitalize">
+                    {subscriptionInfo?.subscriptionTier || "Free "} Plan
+                  </Badge>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
