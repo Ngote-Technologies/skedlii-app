@@ -45,6 +45,12 @@ const ScheduledPosts = React.lazy(
 const PostFlow = React.lazy(
   () => import("../components/posts/post-flow/PostFlow")
 );
+const DraftsList = React.lazy(
+  () => import("../components/posts/drafts/DraftsList")
+);
+const DraftDetail = React.lazy(
+  () => import("../components/posts/drafts/DraftDetail")
+);
 const Billing = React.lazy(() => import("../components/billing"));
 const HelpSupport = React.lazy(() => import("../components/help-support"));
 const PostCreate = React.lazy(
@@ -141,6 +147,8 @@ const AppRoutes = () => {
                 <Route path="post-flow" element={<PostFlow />} />
                 <Route path="posts" element={<Posts />} />
                 <Route path="scheduled" element={<ScheduledPosts />} />
+                <Route path="drafts" element={<DraftsList />} />
+                <Route path="drafts/:draftId" element={<DraftDetail />} />
                 <Route path="settings" element={<UserSettings />} />
                 <Route path="billing" element={<Billing />} />
                 <Route path="help" element={<HelpSupport />} />

@@ -4,7 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
-import { usersApi } from "../../api/users";
+import { usersApi, UpdateUserPayload } from "../../api/users";
+import { uploadToCloudinary } from "../../api/upload";
 import { useToast } from "../../hooks/use-toast";
 import { useAuth } from "../../store/hooks";
 import { Button } from "../ui/button";
@@ -35,8 +36,8 @@ import {
 import { Input } from "../ui/input";
 
 const profileSchema = z.object({
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
+  name: z.string().optional(),
+  bio: z.string().optional(),
   email: z.string().optional(),
 });
 
@@ -88,10 +89,11 @@ export default function UserSettings() {
     },
   });
 
-  const { mutate: updateProfile, isPending: isUpdatingProfile } = useMutation({
-    mutationFn: async (data: FormData | ProfileFormData) => {
-      return await usersApi.updateUser(data);
-    },
+  const { mutateAsync: updateProfile, isPending: isUpdatingProfile } =
+    useMutation({
+      mutationFn: async (data: UpdateUserPayload) => {
+        return await usersApi.updateUser(data);
+      },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/users/me"] });
       toast.success({
@@ -135,8 +137,8 @@ export default function UserSettings() {
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      firstName: user?.firstName ?? "",
-      lastName: user?.lastName ?? "",
+      name: user?.name ?? "",
+      bio: user?.bio ?? "",
       email: user?.email ?? "",
     },
   });
@@ -150,17 +152,53 @@ export default function UserSettings() {
     },
   });
 
-  function onProfileSubmit(data: FormData | ProfileFormData) {
-    if (data instanceof FormData) {
-      // Remove email from FormData if present
-      if (data.has("email")) {
-        data.delete("email");
+  async function onProfileSubmit(data: FormData | ProfileFormData) {
+    try {
+      const payload: UpdateUserPayload = {};
+
+      if (data instanceof FormData) {
+        for (const [key, value] of data.entries()) {
+          if (key === "email") continue;
+          if (value instanceof File) {
+            if (value.size === 0) continue;
+            const uploaded = await uploadToCloudinary(value);
+            if (uploaded) {
+              payload.avatarUrl = uploaded.url;
+              payload.avatarPublicId = uploaded.id;
+            }
+          } else if (typeof value === "string") {
+            if (key === "name") {
+              const trimmedName = value.trim();
+              if (trimmedName.length > 0) {
+                payload.name = trimmedName;
+              }
+            } else if (key === "bio") {
+              const trimmed = value.trim();
+              payload.bio = trimmed.length > 0 ? trimmed : null;
+            }
+          }
+        }
+      } else {
+        if (data.name) {
+          payload.name = data.name.trim();
+        }
+        if (data.bio !== undefined) {
+          const trimmed = (data.bio ?? "").trim();
+          payload.bio = trimmed.length > 0 ? trimmed : null;
+        }
       }
-      updateProfile(data);
-    } else {
-      // Handle regular form data (fallback)
-      if (data.email) delete data.email;
-      updateProfile(data);
+
+      if (Object.keys(payload).length === 0) {
+        return;
+      }
+
+      await updateProfile(payload);
+    } catch (error: any) {
+      toast.error({
+        title: "Profile Update Failed",
+        description:
+          error?.message || "Unable to update your profile. Please try again.",
+      });
     }
   }
 

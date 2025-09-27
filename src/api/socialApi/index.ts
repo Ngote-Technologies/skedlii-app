@@ -192,10 +192,10 @@ export const socialApi = {
     }
   },
 
-  refreshTikTokAccessToken: async ({ accountId }: { accountId: string }) => {
+  refreshTikTokAccessToken: async ({ id }: { id: string }) => {
     try {
       const response = await axiosInstance.get(
-        `/social-accounts/tiktok/refresh/${accountId}`
+        `/social-accounts/tiktok/reauth/start/${id}`
       );
       return response.data;
     } catch (error: any) {
@@ -452,10 +452,10 @@ export const socialApi = {
   // SSOT JSON: Immediate post (preferred)
   postNowSSOT: async (
     data: {
-      content: string;
+      content?: string;
       targets: Array<{ platform: string; socialAccountId: string }>;
       media?: Array<{
-        type: 'image' | 'video';
+        type: "image" | "video";
         url: string;
         width?: number;
         height?: number;
@@ -464,6 +464,7 @@ export const socialApi = {
       }>;
       scheduleAt?: null;
       tiktokOptions?: Record<string, any>;
+      platformCaptions?: Record<string, string>;
     },
     config?: any
   ) => {
@@ -485,10 +486,10 @@ export const socialApi = {
   // SSOT JSON: Schedule post
   scheduleSSOT: async (
     data: {
-      content: string;
+      content?: string;
       targets: Array<{ platform: string; socialAccountId: string }>;
       media?: Array<{
-        type: 'image' | 'video';
+        type: "image" | "video";
         url: string;
         width?: number;
         height?: number;
@@ -497,6 +498,7 @@ export const socialApi = {
       }>;
       scheduleAt: string;
       tiktokOptions?: Record<string, any>;
+      platformCaptions?: Record<string, string>;
     },
     config?: any
   ) => {

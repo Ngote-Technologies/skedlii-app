@@ -177,15 +177,6 @@ const Billing = () => {
   }) as { data: any };
   const invoices = (invoicesResp?.data as any[]) || [];
 
-  console.log({ plans });
-
-  // const displayedPlans = plans.map((plan) => ({
-  //   ...plan,
-  //   displayPrice:
-  //     billingInterval === "yearly" ? plan.priceYearly : plan.priceMonthly,
-  //   displayPeriod: billingInterval,
-  // }));
-
   // Handlers
   const handleCancelSubscription = useCallback(() => {
     cancelSubscription.mutate();
@@ -255,8 +246,6 @@ const Billing = () => {
         subscriptionInfo?.subscriptionTier || undefined,
         plan.id
       );
-
-      console.log({ action });
 
       if (action === "upgrade") {
         setPendingUpgrade({
@@ -343,26 +332,24 @@ const Billing = () => {
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="text-center">
-                    <div className="text-sm font-bold text-foreground">
-                      {(() => {
-                        const paid = invoices.filter((i) => i.status === "paid");
-                        const last = paid.length ? paid[0] : null;
-                        if (!last) return "$0";
-                        const amt = (last.amount_paid ?? 0) / 100;
-                        try {
-                          return new Intl.NumberFormat(undefined, {
-                            style: "currency",
-                            currency: (last.currency || "usd").toUpperCase(),
-                            maximumFractionDigits: 2,
-                          }).format(amt);
-                        } catch {
-                          return `$${amt.toFixed(2)}`;
-                        }
-                      })()}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Last Payment
-                    </div>
+              <div className="text-sm font-bold text-foreground">
+                {(() => {
+                  const paid = invoices.filter((i) => i.status === "paid");
+                  const last = paid.length ? paid[0] : null;
+                  if (!last) return "$0";
+                  const amt = (last.amount_paid ?? 0) / 100;
+                  try {
+                    return new Intl.NumberFormat(undefined, {
+                      style: "currency",
+                      currency: (last.currency || "usd").toUpperCase(),
+                      maximumFractionDigits: 2,
+                    }).format(amt);
+                  } catch {
+                    return `$${amt.toFixed(2)}`;
+                  }
+                })()}
+              </div>
+              <div className="text-xs text-muted-foreground">Last Payment</div>
             </div>
           </div>
         </div>

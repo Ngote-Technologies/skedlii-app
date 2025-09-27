@@ -51,7 +51,7 @@ import {
 export interface MediaItem {
   id: string;
   url: string; // This might be a local URL (blob) initially, then Cloudinary URL
-  file: File; // The actual file object
+  file?: File; // The actual file object when available
   type: "image" | "video";
   thumbnailTime?: number;
   thumbnailUrl?: string;
@@ -59,6 +59,10 @@ export interface MediaItem {
   uploadProgress?: number;
   error?: string;
   processedUrl?: string; // URL after backend processing
+  width?: number;
+  height?: number;
+  durationSec?: number;
+  ref?: string;
 }
 
 // Define or extend MediaUploadProps here for clarity, assuming it's not strictly from mediaUploadComponents.tsx for now

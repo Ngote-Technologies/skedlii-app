@@ -445,8 +445,6 @@ export const useAuthStore = create<AuthState>()(
             );
           }
 
-          console.log({ data });
-
           set({
             user: data.user,
             organization: data.organization ?? null,
@@ -456,10 +454,10 @@ export const useAuthStore = create<AuthState>()(
             // Enhanced authentication context
             userRole,
             userType,
-            subscriptionInfo: data.subscriptionInfo,
+            // subscriptionInfo: data.subscriptionInfo,
 
             // Use backend-computed permissions directly (single source of truth)
-            ...data.computedPermissions,
+            // ...data.computedPermissions,
           });
         } catch (error: any) {
           set({ error: error.message, isLoading: false });

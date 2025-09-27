@@ -40,7 +40,15 @@ export interface ComputedPermissions {
 export interface SubscriptionInfo {
   hasValidSubscription: boolean;
   subscriptionTier: "free" | "team" | "enterprise" | null;
-  subscriptionStatus: "active" | "canceled" | "past_due" | "trialing" | "incomplete" | "unpaid" | "inactive" | null;
+  subscriptionStatus:
+    | "active"
+    | "canceled"
+    | "past_due"
+    | "trialing"
+    | "incomplete"
+    | "unpaid"
+    | "inactive"
+    | null;
   billingCycle: "monthly" | "yearly" | null;
   subscriptionId: string | null;
   customerId: string | null;
@@ -110,16 +118,6 @@ export interface GetMeResponseV2 {
 }
 
 export interface RegisterData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  userType: "individual" | "organization";
-  organizationName?: string;
-}
-
-// V2 Register Data (simplified structure)
-export interface RegisterDataV2 {
   name: string;
   email: string;
   password: string;
@@ -154,99 +152,129 @@ export interface AuthEventsResponseV2 {
 
 // V2-specific API methods
 const authApiV2 = {
-  loginUser: async (credentials: { email: string; password: string }): Promise<LoginResponseV2> => {
-    console.log('[DEBUG] V2 Auth: Making login request with credentials:', { email: credentials.email });
-    
-    const apiClient = getApiClient('v2');
-    console.log('[DEBUG] V2 Auth: API client baseURL:', apiClient.defaults.baseURL);
-    
+  loginUser: async (credentials: {
+    email: string;
+    password: string;
+  }): Promise<LoginResponseV2> => {
+    console.log("[DEBUG] V2 Auth: Making login request with credentials:", {
+      email: credentials.email,
+    });
+
+    const apiClient = getApiClient("v2");
+    console.log(
+      "[DEBUG] V2 Auth: API client baseURL:",
+      apiClient.defaults.baseURL
+    );
+
     try {
-      const response = await apiClient.post<LoginResponseV2>('/auth/login', credentials);
-      console.log('[DEBUG] V2 Auth: Login response received:', { status: response.status, hasData: !!response.data });
-      
+      const response = await apiClient.post<LoginResponseV2>(
+        "/auth/login",
+        credentials
+      );
+      console.log("[DEBUG] V2 Auth: Login response received:", {
+        status: response.status,
+        hasData: !!response.data,
+      });
+
       // Store both tokens for V2
       localStorage.setItem("auth_token", response.data.accessToken);
       localStorage.setItem("refresh_token", response.data.refreshToken);
-      
+
       return response.data;
     } catch (error: any) {
-      console.error('[DEBUG] V2 Auth: Login request failed:', {
+      console.error("[DEBUG] V2 Auth: Login request failed:", {
         message: error.message,
         status: error.response?.status,
         statusText: error.response?.statusText,
-        data: error.response?.data
+        data: error.response?.data,
       });
       throw error;
     }
   },
 
-  registerUser: async (userData: RegisterDataV2): Promise<LoginResponseV2> => {
-    const apiClient = getApiClient('v2');
-    const response = await apiClient.post<LoginResponseV2>('/auth/register', userData);
-    
+  registerUser: async (userData: RegisterData): Promise<LoginResponseV2> => {
+    const apiClient = getApiClient("v2");
+    const response = await apiClient.post<LoginResponseV2>(
+      "/auth/register",
+      userData
+    );
+
     // Store both tokens for V2
     localStorage.setItem("auth_token", response.data.accessToken);
     localStorage.setItem("refresh_token", response.data.refreshToken);
-    
+
     return response.data;
   },
 
   getCurrentUser: async (): Promise<GetMeResponseV2> => {
-    const apiClient = getApiClient('v2');
-    const response = await apiClient.get<GetMeResponseV2>('/auth/me');
+    const apiClient = getApiClient("v2");
+    const response = await apiClient.get<GetMeResponseV2>("/auth/me");
     return response.data;
   },
 
-  refreshPermissions: async (organizationId?: string): Promise<PermissionContext> => {
-    const apiClient = getApiClient('v2');
-    const response = await apiClient.post<PermissionContext>('/auth/refresh-permissions', {
-      organizationId
-    });
+  refreshPermissions: async (
+    organizationId?: string
+  ): Promise<PermissionContext> => {
+    const apiClient = getApiClient("v2");
+    const response = await apiClient.post<PermissionContext>(
+      "/auth/refresh-permissions",
+      {
+        organizationId,
+      }
+    );
     return response.data;
   },
 
-  refreshTokens: async (): Promise<{ accessToken: string; refreshToken: string } | null> => {
+  refreshTokens: async (): Promise<{
+    accessToken: string;
+    refreshToken: string;
+  } | null> => {
     const refreshToken = localStorage.getItem("refresh_token");
-    
+
     if (!refreshToken) {
       console.warn("[DEBUG] No refresh token available");
       return null;
     }
-    
+
     try {
-      const apiClient = getApiClient('v2');
-      const response = await apiClient.post<{ accessToken: string; refreshToken: string }>('/auth/refresh', {
-        refreshToken
+      const apiClient = getApiClient("v2");
+      const response = await apiClient.post<{
+        accessToken: string;
+        refreshToken: string;
+      }>("/auth/refresh", {
+        refreshToken,
       });
-      
+
       // Update stored tokens
       localStorage.setItem("auth_token", response.data.accessToken);
       localStorage.setItem("refresh_token", response.data.refreshToken);
-      
+
       return response.data;
     } catch (error: any) {
       console.error("[DEBUG] Token refresh failed:", error);
-      
+
       // If refresh fails, clear all tokens and force re-login
       localStorage.removeItem("auth_token");
       localStorage.removeItem("refresh_token");
-      
+
       return null;
     }
   },
 
   logout: async (): Promise<void> => {
     const refreshToken = localStorage.getItem("refresh_token");
-    
+
     if (refreshToken) {
       try {
-        const apiClient = getApiClient('v2');
-        await apiClient.post('/auth/logout', { refreshToken });
+        const apiClient = getApiClient("v2");
+        await apiClient.post("/auth/logout", { refreshToken });
       } catch (error) {
-        console.warn("[DEBUG] V2 logout API call failed, proceeding with local cleanup");
+        console.warn(
+          "[DEBUG] V2 logout API call failed, proceeding with local cleanup"
+        );
       }
     }
-    
+
     // Clear all tokens
     localStorage.removeItem("auth_token");
     localStorage.removeItem("refresh_token");
@@ -256,53 +284,59 @@ const authApiV2 = {
   },
 
   forgotPassword: async (data: ForgotPasswordRequestV2): Promise<void> => {
-    console.log('[DEBUG] V2 Auth: Making forgot password request for:', data.email);
-    
-    const apiClient = getApiClient('v2');
-    
+    console.log(
+      "[DEBUG] V2 Auth: Making forgot password request for:",
+      data.email
+    );
+
+    const apiClient = getApiClient("v2");
+
     try {
       // V2 API returns 204 No Content for security (no info leakage)
-      await apiClient.post('/auth/forgot-password', data);
-      console.log('[DEBUG] V2 Auth: Forgot password request completed');
+      await apiClient.post("/auth/forgot-password", data);
+      console.log("[DEBUG] V2 Auth: Forgot password request completed");
     } catch (error: any) {
-      console.error('[DEBUG] V2 Auth: Forgot password request failed:', {
+      console.error("[DEBUG] V2 Auth: Forgot password request failed:", {
         message: error.message,
         status: error.response?.status,
-        data: error.response?.data
+        data: error.response?.data,
       });
       throw error;
     }
   },
 
   resetPassword: async (data: ResetPasswordRequestV2): Promise<void> => {
-    console.log('[DEBUG] V2 Auth: Making reset password request for:', data.email);
-    
-    const apiClient = getApiClient('v2');
-    
+    console.log(
+      "[DEBUG] V2 Auth: Making reset password request for:",
+      data.email
+    );
+
+    const apiClient = getApiClient("v2");
+
     try {
       // V2 API returns 204 No Content on success
-      await apiClient.post('/auth/reset-password', data);
-      console.log('[DEBUG] V2 Auth: Reset password request completed');
+      await apiClient.post("/auth/reset-password", data);
+      console.log("[DEBUG] V2 Auth: Reset password request completed");
     } catch (error: any) {
-      console.error('[DEBUG] V2 Auth: Reset password request failed:', {
+      console.error("[DEBUG] V2 Auth: Reset password request failed:", {
         message: error.message,
         status: error.response?.status,
-        data: error.response?.data
+        data: error.response?.data,
       });
       throw error;
     }
   },
 
   deleteAccount: async (): Promise<void> => {
-    console.log('[DEBUG] V2 Auth: Making delete account request');
-    
-    const apiClient = getApiClient('v2');
-    
+    console.log("[DEBUG] V2 Auth: Making delete account request");
+
+    const apiClient = getApiClient("v2");
+
     try {
       // V2 API DELETE /auth/me
-      await apiClient.delete('/auth/me');
-      console.log('[DEBUG] V2 Auth: Account deletion completed');
-      
+      await apiClient.delete("/auth/me");
+      console.log("[DEBUG] V2 Auth: Account deletion completed");
+
       // Clear all local data after successful deletion
       localStorage.removeItem("auth_token");
       localStorage.removeItem("refresh_token");
@@ -310,29 +344,33 @@ const authApiV2 = {
       localStorage.removeItem("skedlii-team-storage");
       localStorage.removeItem("skedlii-theme");
     } catch (error: any) {
-      console.error('[DEBUG] V2 Auth: Account deletion failed:', {
+      console.error("[DEBUG] V2 Auth: Account deletion failed:", {
         message: error.message,
         status: error.response?.status,
-        data: error.response?.data
+        data: error.response?.data,
       });
       throw error;
     }
   },
 
   getAuthEvents: async (limit = 50): Promise<AuthEventsResponseV2> => {
-    console.log('[DEBUG] V2 Auth: Getting auth events, limit:', limit);
-    
-    const apiClient = getApiClient('v2');
-    
+    console.log("[DEBUG] V2 Auth: Getting auth events, limit:", limit);
+
+    const apiClient = getApiClient("v2");
+
     try {
-      const response = await apiClient.get<AuthEventsResponseV2>(`/auth/events?limit=${limit}`);
-      console.log('[DEBUG] V2 Auth: Auth events received:', { count: response.data.items.length });
+      const response = await apiClient.get<AuthEventsResponseV2>(
+        `/auth/events?limit=${limit}`
+      );
+      console.log("[DEBUG] V2 Auth: Auth events received:", {
+        count: response.data.items.length,
+      });
       return response.data;
     } catch (error: any) {
-      console.error('[DEBUG] V2 Auth: Auth events request failed:', {
+      console.error("[DEBUG] V2 Auth: Auth events request failed:", {
         message: error.message,
         status: error.response?.status,
-        data: error.response?.data
+        data: error.response?.data,
       });
       throw error;
     }
@@ -364,14 +402,18 @@ const authApiV1 = {
     return response;
   },
 
-  refreshPermissions: async (organizationId?: string): Promise<{
+  refreshPermissions: async (
+    organizationId?: string
+  ): Promise<{
     organizationId: string | null;
     computedPermissions: any;
     subscriptionInfo: any;
     userRole: string;
     userType: string;
   }> => {
-    const response = await apiRequest("POST", "/auth/refresh-permissions", { organizationId });
+    const response = await apiRequest("POST", "/auth/refresh-permissions", {
+      organizationId,
+    });
     return response;
   },
 
@@ -403,7 +445,9 @@ const authApiV1 = {
 
   // V1 doesn't have auth events, return empty array
   getAuthEvents: async (_limit = 50): Promise<AuthEventsResponseV2> => {
-    console.warn("[DEBUG] V1 API: Auth events not supported, returning empty array");
+    console.warn(
+      "[DEBUG] V1 API: Auth events not supported, returning empty array"
+    );
     return { items: [] };
   },
 };
@@ -411,78 +455,67 @@ const authApiV1 = {
 // Adaptive auth API that switches between V1 and V2
 export const authApi = {
   loginUser: async (credentials: any) => {
-    const useV2 = useV2Api('auth');
-    
-    if (useV2) {
-      // Transform V1 format to V2 format if needed
-      const v2Credentials = {
-        email: credentials.email,
-        password: credentials.password,
-      };
-      return authApiV2.loginUser(v2Credentials);
-    } else {
-      return authApiV1.loginUser(credentials);
-    }
+    return authApiV2.loginUser(credentials);
   },
 
   registerUser: async (userData: RegisterData) => {
-    const useV2 = useV2Api('auth');
-    
-    if (useV2) {
-      // Transform V1 format to V2 format
-      const v2UserData: RegisterDataV2 = {
-        name: `${userData.firstName} ${userData.lastName}`.trim(),
-        email: userData.email,
-        password: userData.password,
-      };
-      return authApiV2.registerUser(v2UserData);
-    } else {
-      return authApiV1.registerUser(userData);
-    }
+    return authApiV2.registerUser(userData);
   },
 
   getCurrentUser: async () => {
-    const useV2 = useV2Api('auth');
+    const useV2 = useV2Api("auth");
     return useV2 ? authApiV2.getCurrentUser() : authApiV1.getCurrentUser();
   },
 
   refreshPermissions: async (organizationId?: string) => {
-    const useV2 = useV2Api('auth');
-    return useV2 ? authApiV2.refreshPermissions(organizationId) : authApiV1.refreshPermissions(organizationId);
+    const useV2 = useV2Api("auth");
+    return useV2
+      ? authApiV2.refreshPermissions(organizationId)
+      : authApiV1.refreshPermissions(organizationId);
   },
 
   logout: async (): Promise<void> => {
-    const useV2 = useV2Api('auth');
+    const useV2 = useV2Api("auth");
     return useV2 ? authApiV2.logout() : authApiV1.logout();
   },
 
   // Forgot password functionality
   forgotPassword: async (data: { email: string }) => {
-    const useV2 = useV2Api('auth');
-    return useV2 ? authApiV2.forgotPassword(data) : authApiV1.forgotPassword(data);
+    const useV2 = useV2Api("auth");
+    return useV2
+      ? authApiV2.forgotPassword(data)
+      : authApiV1.forgotPassword(data);
   },
 
   // Reset password functionality
-  resetPassword: async (data: { token: string; email: string; newPassword: string }) => {
-    const useV2 = useV2Api('auth');
-    return useV2 ? authApiV2.resetPassword(data) : authApiV1.resetPassword(data);
+  resetPassword: async (data: {
+    token: string;
+    email: string;
+    newPassword: string;
+  }) => {
+    const useV2 = useV2Api("auth");
+    return useV2
+      ? authApiV2.resetPassword(data)
+      : authApiV1.resetPassword(data);
   },
 
   // Delete account functionality
   deleteAccount: async () => {
-    const useV2 = useV2Api('auth');
+    const useV2 = useV2Api("auth");
     return useV2 ? authApiV2.deleteAccount() : authApiV1.deleteAccount();
   },
 
   // Get auth events (V2 feature, V1 returns empty)
   getAuthEvents: async (limit = 50) => {
-    const useV2 = useV2Api('auth');
-    return useV2 ? authApiV2.getAuthEvents(limit) : authApiV1.getAuthEvents(limit);
+    const useV2 = useV2Api("auth");
+    return useV2
+      ? authApiV2.getAuthEvents(limit)
+      : authApiV1.getAuthEvents(limit);
   },
 
   // V2-specific refresh token functionality
   refreshTokens: async () => {
-    const useV2 = useV2Api('auth');
+    const useV2 = useV2Api("auth");
     if (useV2) {
       return authApiV2.refreshTokens();
     }
