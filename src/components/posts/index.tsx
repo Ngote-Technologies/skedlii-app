@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "../ui/button";
@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Play,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "../../store/hooks";
 import {
@@ -28,7 +29,7 @@ import {
   CardContent,
   CardFooter,
 } from "../ui/card";
-import { StatusBadge } from "../ui/badge";
+import { StatusBadge, type StatusBadgeProps } from "../ui/badge";
 import { formatDate, getSocialIcon } from "../../lib/utils";
 import { getPlatformSimpleTextColor } from "../../lib/platformUtils";
 import { Skeleton } from "../ui/skeleton";
@@ -57,6 +58,17 @@ import {
   SelectValue,
 } from "../ui/select";
 import { useAccessControl } from "../../hooks/useAccessControl";
+import { useImmediateScheduledPosts } from "../../hooks/useImmediateScheduledPosts";
+
+const formatPlatformLabel = (platform?: string) => {
+  if (!platform) return "Platform";
+  return platform
+    .toString()
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+};
 
 // Media Carousel Component
 const MediaCarousel = ({
@@ -194,6 +206,53 @@ const Posts = () => {
   const postItems: any[] =
     (posts?.items as any[]) || (posts as any)?.data || [];
 
+  const {
+    data: immediateTargets = [],
+    isLoading: isLoadingImmediate,
+    isFetching: isFetchingImmediate,
+  } = useImmediateScheduledPosts(isAuthenticated);
+
+  const pendingPosts = immediateTargets.map((target) => {
+    const rawPlatform = (target.platformName || "").toString().toLowerCase();
+    const platformLabel = formatPlatformLabel(target.platformName || "");
+    return {
+      _id: target.id,
+      content: target.caption || target.content || "",
+      mediaUrls: Array.isArray(target.mediaUrls) ? target.mediaUrls : [],
+      mediaType: target.mediaType || "text",
+      platform: rawPlatform,
+      status: (target.status || "pending").toLowerCase(),
+      metadata: {
+        accountName: `${platformLabel} Publishing`,
+        platform: rawPlatform,
+        accountId: target.accountId,
+        scheduledPostId: target.scheduledPostId,
+        immediate: true,
+        lastError: target.lastError,
+        postUrl: target.postUrl,
+      },
+      createdAt: target.createdAt,
+      scheduledFor: target.scheduledFor,
+      socialAccountId: target.accountId,
+      __isImmediatePending: true,
+    };
+  });
+
+  const combinedPosts = [...pendingPosts, ...postItems];
+
+  const previousPendingCount = useRef<number>(pendingPosts.length);
+
+  useEffect(() => {
+    if (
+      previousPendingCount.current > 0 &&
+      pendingPosts.length === 0 &&
+      !isFetchingImmediate
+    ) {
+      refetchPosts();
+    }
+    previousPendingCount.current = pendingPosts.length;
+  }, [pendingPosts.length, isFetchingImmediate, refetchPosts]);
+
   const useDeletePost = () => {
     return useMutation({
       mutationFn: async ({
@@ -276,7 +335,8 @@ const Posts = () => {
     isLoadingPosts ||
     isLoadingCollections ||
     isDeletingPending ||
-    isAddingToCollection;
+    isAddingToCollection ||
+    isLoadingImmediate;
 
   if (isLoading) {
     return (
@@ -348,7 +408,7 @@ const Posts = () => {
     );
   }
 
-  if (!postItems?.length) {
+  if (!combinedPosts?.length) {
     return (
       <div className="flex flex-col items-center justify-center space-y-6 h-[60vh]">
         <div className="rounded-full bg-gradient-to-br from-primary/10 to-primary/5 p-6 shadow-lg">
@@ -415,12 +475,66 @@ const Posts = () => {
               published
             </p>
           </div>
-          <div className="text-xs text-muted-foreground">Latest activity</div>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span>Latest activity</span>
+            {(pendingPosts.length > 0 || isFetchingImmediate) && (
+              <span className="flex items-center gap-1 text-blue-600 dark:text-blue-300">
+                <Loader2
+                  className={`h-3 w-3 ${
+                    isFetchingImmediate ? "animate-spin" : ""
+                  }`}
+                />
+                {pendingPosts.length} publishing
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-          {postItems?.map((post: any) => {
-            const platform = post.platform?.toLowerCase() ?? "";
+          {combinedPosts.map((post: any) => {
+            const rawPlatform = (
+              post.platform ??
+              post.metadata?.platform ??
+              ""
+            ).toString();
+            const platform = rawPlatform.toLowerCase();
+            const platformLabel = formatPlatformLabel(rawPlatform);
+            const isImmediate = Boolean(post.__isImmediatePending);
+            const statusValue =
+              post.status === "posted" || post.status === "published"
+                ? "published"
+                : (post.status || "pending").toLowerCase();
+            const immediateStatus = isImmediate
+              ? statusValue === "failed"
+                ? {
+                    className:
+                      "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300",
+                    icon: (
+                      <AlertCircle className="mt-0.5 h-3.5 w-3.5 text-red-500 dark:text-red-300" />
+                    ),
+                    text: post.metadata?.lastError
+                      ? `Publishing failed: ${post.metadata.lastError}`
+                      : "Publishing failed.",
+                  }
+                : {
+                    className:
+                      "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-200",
+                    icon: (
+                      <Loader2 className="mt-0.5 h-3.5 w-3.5 animate-spin text-blue-500 dark:text-blue-200" />
+                    ),
+                    text: `Publishing to ${platformLabel}...`,
+                  }
+              : null;
+            const timestampValue = isImmediate
+              ? post.scheduledFor || post.createdAt || post.updatedAt
+              : post.publishedDate ?? post.postedAt ?? post.createdAt;
+            const timestampLabel = isImmediate ? "Queued" : "Published";
+            const timestampFormat = isImmediate
+              ? "MMM d, yyyy h:mm a"
+              : "MMM d, yyyy";
+            const formattedTimestamp = timestampValue
+              ? formatDate(timestampValue, timestampFormat)
+              : null;
 
             return (
               <Card
@@ -498,7 +612,9 @@ const Posts = () => {
                             "Unknown Account"}
                         </CardTitle>
                         <CardDescription className="text-xs capitalize text-muted-foreground">
-                          {platform}
+                          {platformLabel.toLowerCase() === "platform"
+                            ? "Unknown platform"
+                            : platformLabel}
                         </CardDescription>
                       </div>
                     </div>
@@ -518,84 +634,81 @@ const Posts = () => {
                         </div>
                       )}
                       <StatusBadge
-                        status={
-                          post.status === "posted" ||
-                          post.status === "published"
-                            ? "published"
-                            : post.status
-                        }
+                        status={statusValue as StatusBadgeProps["status"]}
                         size="sm"
                       />
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                          >
-                            <MoreVertical className="h-3.5 w-3.5" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          {hasValidSubscription && (
-                            <DropdownMenuItem
-                              onClick={() => handleEditPost(post._id)}
-                              disabled={["published", "posted"].includes(
-                                post.status
-                              )}
-                              className="text-xs"
+                      {!isImmediate && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
                             >
-                              <Edit2 className="mr-2 h-3.5 w-3.5" />
-                              <span>Edit</span>
-                            </DropdownMenuItem>
-                          )}
-                          {hasValidSubscription && (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                setCollectionConfig({
-                                  ...collectionConfig,
-                                  postId: post._id,
-                                  isOpen: true,
-                                })
-                              }
-                              disabled={
-                                !["posted", "published"].includes(post.status)
-                              }
-                              className="text-xs"
-                            >
-                              <Folder className="mr-2 h-3.5 w-3.5" />
-                              <span>Add to Collection</span>
-                            </DropdownMenuItem>
-                          )}
-                          {hasValidSubscription && (
-                            <DropdownMenuItem
-                              onClick={() => handleViewAnalytics(post._id)}
-                              disabled={
-                                !["posted", "published"].includes(post.status)
-                              }
-                              className="text-xs"
-                            >
-                              <BarChart2 className="mr-2 h-3.5 w-3.5" />
-                              <span>View Analytics</span>
-                            </DropdownMenuItem>
-                          )}
-                          {hasValidSubscription && (
-                            <DropdownMenuItem
-                              className="text-xs text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-                              onClick={() =>
-                                setDeleteConfig({
-                                  id: post._id,
-                                  isOpen: true,
-                                  postAccountId: post.socialAccountId,
-                                })
-                              }
-                            >
-                              <Trash2 className="mr-2 h-3.5 w-3.5" />
-                              <span>Delete</span>
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                              <MoreVertical className="h-3.5 w-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            {hasValidSubscription && (
+                              <DropdownMenuItem
+                                onClick={() => handleEditPost(post._id)}
+                                disabled={["published", "posted"].includes(
+                                  post.status
+                                )}
+                                className="text-xs"
+                              >
+                                <Edit2 className="mr-2 h-3.5 w-3.5" />
+                                <span>Edit</span>
+                              </DropdownMenuItem>
+                            )}
+                            {hasValidSubscription && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  setCollectionConfig({
+                                    ...collectionConfig,
+                                    postId: post._id,
+                                    isOpen: true,
+                                  })
+                                }
+                                disabled={
+                                  !["posted", "published"].includes(post.status)
+                                }
+                                className="text-xs"
+                              >
+                                <Folder className="mr-2 h-3.5 w-3.5" />
+                                <span>Add to Collection</span>
+                              </DropdownMenuItem>
+                            )}
+                            {hasValidSubscription && (
+                              <DropdownMenuItem
+                                onClick={() => handleViewAnalytics(post._id)}
+                                disabled={
+                                  !["posted", "published"].includes(post.status)
+                                }
+                                className="text-xs"
+                              >
+                                <BarChart2 className="mr-2 h-3.5 w-3.5" />
+                                <span>View Analytics</span>
+                              </DropdownMenuItem>
+                            )}
+                            {hasValidSubscription && (
+                              <DropdownMenuItem
+                                className="text-xs text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                                onClick={() =>
+                                  setDeleteConfig({
+                                    id: post._id,
+                                    isOpen: true,
+                                    postAccountId: post.socialAccountId,
+                                  })
+                                }
+                              >
+                                <Trash2 className="mr-2 h-3.5 w-3.5" />
+                                <span>Delete</span>
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                   </div>
                 </CardHeader>
@@ -622,19 +735,21 @@ const Posts = () => {
                       />
                     </div>
                   )}
+                  {immediateStatus && (
+                    <div
+                      className={`mb-3 flex items-start gap-2 rounded-md px-3 py-2 text-xs ${immediateStatus.className}`}
+                    >
+                      {immediateStatus.icon}
+                      <span className="leading-5">{immediateStatus.text}</span>
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter className="flex flex-col space-y-3 pt-0 px-6 pb-6">
                   <div className="flex justify-between items-center w-full">
                     <div className="flex flex-col space-y-1">
                       <span className="text-xs text-muted-foreground flex items-center space-x-1">
                         <span>
-                          Published{" "}
-                          {formatDate(
-                            post.publishedDate ??
-                              post.postedAt ??
-                              post.createdAt,
-                            "MMM d, yyyy"
-                          )}
+                          {timestampLabel} {formattedTimestamp ?? "—"}
                         </span>
                       </span>
                       {post.collection && (
@@ -650,7 +765,7 @@ const Posts = () => {
                       )}
                     </div>
                     <div className="flex space-x-1">
-                      {hasValidSubscription && (
+                      {!isImmediate && hasValidSubscription && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -664,7 +779,7 @@ const Posts = () => {
                           <BarChart2 className="h-4 w-4" />
                         </Button>
                       )}
-                      {hasValidSubscription && (
+                      {!isImmediate && hasValidSubscription && (
                         <Button
                           variant="ghost"
                           size="icon"
