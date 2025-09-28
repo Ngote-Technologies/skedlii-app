@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
 import { cn } from "../../lib/utils";
 
@@ -147,6 +147,7 @@ interface StatusBadgeProps extends Omit<BadgeProps, "variant"> {
     | "rejected"
     | "draft"
     | "published"
+    | "publishing"
     | "archived"
     | "expired"
     | "paid"
@@ -176,6 +177,8 @@ const StatusBadge = React.forwardRef<HTMLDivElement, StatusBadgeProps>(
         case "pending":
         case "draft":
           return "warning";
+        case "publishing":
+          return "info";
         case "busy":
         case "failed":
           return "info";
@@ -206,6 +209,10 @@ const StatusBadge = React.forwardRef<HTMLDivElement, StatusBadgeProps>(
         case "expired":
         case "failed":
           return <div className={cn(iconClass, "bg-red-400")} />;
+        case "publishing":
+          return (
+            <Loader2 className="h-3 w-3 animate-spin text-white" />
+          );
         default:
           return null;
       }
