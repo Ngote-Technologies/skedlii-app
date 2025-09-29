@@ -467,6 +467,7 @@ const Billing = () => {
                 billing={subscriptionInfo}
                 handleUpgradeDowngrade={handleUpgradeDowngrade}
                 canManageBilling={canManageBilling}
+                hasValidSubscription={subscriptionInfo?.hasValidSubscription}
               />
             </CardContent>
           </Card>

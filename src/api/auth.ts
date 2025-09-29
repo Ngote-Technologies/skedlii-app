@@ -39,7 +39,8 @@ export interface ComputedPermissions {
 
 export interface SubscriptionInfo {
   hasValidSubscription: boolean;
-  subscriptionTier: "free" | "team" | "enterprise" | null;
+  subscriptionTier: "free" | "team" | "enterprise" | "creator" | "trial" | null;
+  selectedTier: "creator" | "team" | "enterprise" | null;
   subscriptionStatus:
     | "active"
     | "canceled"
@@ -56,11 +57,13 @@ export interface SubscriptionInfo {
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   trialEnd: string | null;
+  isTrial: boolean;
+  hasUsedTrial: boolean;
   planLimits: {
-    maxSocialAccounts: number;
-    maxTeamMembers: number;
-    maxScheduledPosts: number;
-    maxPostsPerMonth: number;
+    maxSocialAccounts: number | "unlimited";
+    maxTeamMembers: number | "unlimited";
+    maxScheduledPosts: number | "unlimited";
+    maxPostsPerMonth: number | "unlimited";
     analyticsRetentionDays: number;
     aiCreditsPerMonth: number;
   };
