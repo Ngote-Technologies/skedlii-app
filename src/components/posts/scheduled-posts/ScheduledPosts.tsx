@@ -52,10 +52,8 @@ export default function ScheduledPosts() {
     if (!selectedDate) setSelectedDate(new Date());
   }, [selectedDate]);
 
-  // Get posts
   const { data: scheduledResp, isLoading: isFetchingScheduledPosts } = useQuery(
     {
-      // Only show truly scheduled items
       queryKey: ["/scheduled-posts?mode=scheduled"],
     }
   ) as {
@@ -63,7 +61,6 @@ export default function ScheduledPosts() {
     isLoading: boolean;
   };
 
-  // Normalize API response shape
   const scheduledItems: any[] =
     ((scheduledResp as any)?.items as any[]) ||
     ((scheduledResp as any)?.data as any[]) ||
@@ -71,25 +68,27 @@ export default function ScheduledPosts() {
 
   const visibleItems = hideCanceled
     ? scheduledItems.filter((post: any) => {
-        const platforms: any[] = Array.isArray(post.platforms) ? post.platforms : [];
+        const platforms: any[] = Array.isArray(post.platforms)
+          ? post.platforms
+          : [];
         const hasActive = platforms.some(
           (p: any) => p?.status === "pending" || p?.status === "publishing"
         );
         const isCanceled = Boolean(post.canceledAt);
-        // Hide posts that were canceled and have no active targets left
         if (isCanceled && !hasActive) return false;
         return true;
       })
     : scheduledItems;
 
-  // Delete post mutation
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
     mutationFn: async (id: number) => {
       return await apiRequest("DELETE", `/scheduled-posts/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/scheduled-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["/scheduled-posts?mode=scheduled"] });
+      queryClient.invalidateQueries({
+        queryKey: ["/scheduled-posts?mode=scheduled"],
+      });
       toast({
         title: "Post deleted",
         description: "The post has been deleted successfully",
@@ -106,14 +105,15 @@ export default function ScheduledPosts() {
     },
   });
 
-  // Cancel scheduled post mutation
   const { mutate: cancelPost } = useMutation({
     mutationFn: async (id: string) => {
       return await apiRequest("POST", `/scheduled-posts/${id}/cancel`);
     },
     onSuccess: (res: any) => {
       queryClient.invalidateQueries({ queryKey: ["/scheduled-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["/scheduled-posts?mode=scheduled"] });
+      queryClient.invalidateQueries({
+        queryKey: ["/scheduled-posts?mode=scheduled"],
+      });
       const removed = Array.isArray(res?.jobResults)
         ? res.jobResults.filter((r: any) => r.removed).length
         : undefined;
@@ -127,7 +127,11 @@ export default function ScheduledPosts() {
     },
     onError: (err: any) => {
       const msg = err?.message || "Failed to cancel the post.";
-      toast({ title: "Cancel failed", description: msg, variant: "destructive" });
+      toast({
+        title: "Cancel failed",
+        description: msg,
+        variant: "destructive",
+      });
     },
   });
 
@@ -145,7 +149,6 @@ export default function ScheduledPosts() {
     });
   };
 
-  // Group posts by date for showing on the calendar
   const getPostsByDate = () => {
     const postsByDate: Record<string, number> = {};
 
@@ -177,7 +180,6 @@ export default function ScheduledPosts() {
 
   return (
     <div className="space-y-8">
-      {/* Enhanced Header */}
       <div className="flex flex-col sm:flex-row justify-between gap-6">
         <div className="flex items-center space-x-4">
           <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
@@ -194,7 +196,6 @@ export default function ScheduledPosts() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Stats Summary */}
           <div className="hidden sm:flex items-center gap-4 px-4 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
             <div className="text-center">
               <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
@@ -263,7 +264,6 @@ export default function ScheduledPosts() {
 
         <TabsContent value="calendar" className="space-y-4">
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Enhanced Calendar Card */}
             <Card className="lg:w-[350px] border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
               <CardHeader>
                 <div className="flex items-center space-x-3">
@@ -289,12 +289,10 @@ export default function ScheduledPosts() {
                         scheduleHasPostsForDate(new Date(date)),
                     }}
                     modifiersClassNames={{
-                      // Small dot indicator for days that have posts
                       hasPost:
                         "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:h-1.5 after:w-1.5 after:rounded-full after:bg-blue-500 dark:after:bg-blue-400",
                     }}
                     classNames={{
-                      // Make today visually distinct (ring) from hasPost dot and selection
                       day_today:
                         "rounded-md outline-none ring-2 ring-primary/70 dark:ring-primary/60",
                     }}
@@ -302,7 +300,6 @@ export default function ScheduledPosts() {
                   />
                 </div>
 
-                {/* Calendar legend */}
                 <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                   <div className="flex items-center gap-2 text-sm">
                     <div className="w-3 h-3 rounded bg-gradient-to-r from-blue-500 to-purple-500"></div>
@@ -314,7 +311,6 @@ export default function ScheduledPosts() {
               </CardContent>
             </Card>
 
-            {/* Enhanced Posts Card */}
             <div className="flex-1">
               <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
                 <CardHeader>
@@ -348,7 +344,6 @@ export default function ScheduledPosts() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {/* Mobile/stacked: natural height (no scroll container) */}
                   <div className="block lg:hidden">
                     {getScheduledPostCalendarView({
                       isFetchingScheduledPosts,
@@ -358,7 +353,6 @@ export default function ScheduledPosts() {
                       navigate,
                     })}
                   </div>
-                  {/* Desktop side-by-side: fixed height scroll */}
                   <div className="hidden lg:block">
                     <ScrollArea className="h-[65vh] pr-2">
                       {getScheduledPostCalendarView({
@@ -405,7 +399,6 @@ export default function ScheduledPosts() {
               </div>
             </CardHeader>
             <CardContent>
-              {/* Mobile/stacked: natural height */}
               <div className="block lg:hidden">
                 {getScheduledPostListView(
                   isFetchingScheduledPosts,
@@ -415,7 +408,6 @@ export default function ScheduledPosts() {
                   navigate
                 )}
               </div>
-              {/* Desktop side-by-side: fixed height scroll */}
               <div className="hidden lg:block">
                 <ScrollArea className="h-[70vh] pr-2">
                   {getScheduledPostListView(
@@ -432,7 +424,6 @@ export default function ScheduledPosts() {
         </TabsContent>
       </Tabs>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

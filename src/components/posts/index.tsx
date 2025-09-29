@@ -556,25 +556,9 @@ const Posts = () => {
                             alt="Profile"
                             className="h-10 w-10 rounded-full object-cover border-2 border-gray-100 dark:border-gray-700"
                             onError={(e) => {
-                              console.log(
-                                "Profile image failed for platform:",
-                                platform,
-                                "URL:",
-                                e.currentTarget.src
-                              );
-                              // Replace with fallback background
                               e.currentTarget.style.display = "none";
                             }}
-                            onLoad={(e) => {
-                              console.log(
-                                "Profile image loaded for platform:",
-                                platform,
-                                "URL:",
-                                e.currentTarget.src
-                              );
-                            }}
                           />
-                          {/* Fallback icon - always rendered but conditionally visible */}
                           <div
                             className={`absolute inset-0 h-10 w-10 rounded-full border-2 border-gray-100 dark:border-gray-700 flex items-center justify-center ${getPlatformSimpleTextColor(
                               platform

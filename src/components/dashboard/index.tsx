@@ -120,7 +120,6 @@ export default function DashboardPage() {
   return (
     <main className="flex-1 overflow-auto">
       <div className="max-w-7xl mx-auto">
-        {/* Enhanced Upgrade Banner */}
         {!hasValidSubscription && (
           <Card className="mb-6 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50">
             <CardContent className="flex items-center justify-between p-4">
@@ -153,7 +152,6 @@ export default function DashboardPage() {
         )}
 
         <div className="space-y-8">
-          {/* Enhanced Welcome Section */}
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 to-purple-500/10 rounded-3xl blur-3xl"></div>
             <Card className="relative border-0 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-900/80 dark:to-gray-800/80 backdrop-blur-sm shadow-sm">
@@ -201,7 +199,6 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* Enhanced Analytics Cards with Micro-interactions */}
           {summaryLoading ? (
             <DashboardStatsSkeleton />
           ) : (
@@ -281,7 +278,6 @@ export default function DashboardPage() {
                   return (
                     <Link to={to} key={label} className="group">
                       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 shadow-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 group-hover:scale-[1.02] group-hover:-translate-y-1 group-active:scale-[0.98]">
-                        {/* Background gradient */}
                         <div
                           className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}
                         ></div>
@@ -337,7 +333,6 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Quick Actions Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <Card className="lg:col-span-2 border-0 shadow-sm">
               <CardHeader>
@@ -423,7 +418,6 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Activity Status */}
             <Card className="border-0 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
@@ -633,7 +627,6 @@ export default function DashboardPage() {
             </TabsContent>
           </Tabs>
 
-          {/* Enhanced Connected Accounts Section */}
           <Card className="border-0 shadow-lg">
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

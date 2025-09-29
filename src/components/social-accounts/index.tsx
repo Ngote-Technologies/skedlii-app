@@ -43,7 +43,6 @@ import {
   Eye,
   Calendar,
   AlertCircle,
-  // Zap,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -77,7 +76,6 @@ import {
 } from "../../hooks/useSocialAccounts";
 import PlatformSelector from "./PlatformSelector";
 import { useConnectResultParams } from "../../hooks/useConnectResultParams";
-// import { hasValidSubscription } from "../../lib/access";
 import {
   Select,
   SelectContent,
@@ -92,7 +90,6 @@ const socialAccountSchema = z.object({
 
 type SocialAccountFormData = z.infer<typeof socialAccountSchema>;
 
-// Team Assignment Dropdown Component
 interface TeamAssignmentDropdownProps {
   currentTeamId?: string;
   availableTeams: Team[];
@@ -330,7 +327,6 @@ export default function SocialAccounts() {
     }
   };
 
-
   const togglePlatformFilter = (platform: string) => {
     setSelectedPlatforms((prev) =>
       prev.includes(platform)
@@ -393,7 +389,6 @@ export default function SocialAccounts() {
             </Button>
           </div>
 
-          {/* Enhanced Platform Filter Pills */}
           {platformStats?.uniquePlatforms?.length > 1 && (
             <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30 p-4 border border-border/50 backdrop-blur-sm">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
@@ -473,7 +468,6 @@ export default function SocialAccounts() {
                   key={account._id}
                   className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 border-border/50 bg-gradient-to-br from-background to-muted/30"
                 >
-                  {/* Animated Background Gradient */}
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                   <CardHeader className="relative pb-2">
@@ -502,7 +496,6 @@ export default function SocialAccounts() {
                             </div>
                           )}
 
-                          {/* Health indicator dot */}
                           <div
                             className={`absolute top-0 right-0 h-3 w-3 rounded-full border-2 border-background ${
                               account.status === "active"
@@ -547,7 +540,6 @@ export default function SocialAccounts() {
                       <div className="flex flex-col items-end gap-2">
                         <StatusBadge status={account.status} size="sm" />
 
-                        {/* Quick action menu */}
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                           <Button
                             variant="ghost"
@@ -568,7 +560,6 @@ export default function SocialAccounts() {
                     </div>
                   </CardHeader>
                   <CardContent className="relative space-y-3">
-                    {/* Account Statistics */}
                     {(account.metadata?.followers_count ||
                       account.metadata?.following_count ||
                       account.metadata?.posts_count) && (
@@ -609,7 +600,6 @@ export default function SocialAccounts() {
                       </div>
                     )}
 
-                    {/* Account Details */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">
@@ -655,7 +645,6 @@ export default function SocialAccounts() {
                       )}
                     </div>
 
-                    {/* Performance Indicators */}
                     <div className="flex items-center gap-2 pt-2 border-t border-border/50">
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <TrendingUp className="h-3 w-3 text-green-500" />
@@ -735,7 +724,6 @@ export default function SocialAccounts() {
                         </TooltipProvider>
                       </div>
 
-                      {/* Action Buttons */}
                       <div className="flex items-center gap-2">
                         {account.status === "expired" && (
                           <TooltipProvider>
@@ -849,7 +837,6 @@ export default function SocialAccounts() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Enhanced Header with Statistics */}
           <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 p-6 backdrop-blur-sm border border-border/50">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
             <div className="relative flex flex-col sm:flex-row justify-between gap-4">
@@ -892,7 +879,6 @@ export default function SocialAccounts() {
                     </div>
                   )}
 
-                {/* Quick Stats */}
                 <div className="flex items-center gap-4 pt-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="h-4 w-4 text-primary" />

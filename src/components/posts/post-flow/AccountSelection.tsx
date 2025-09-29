@@ -32,23 +32,19 @@ export default function AccountSelection({
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredAccounts, setFilteredAccounts] = useState<any[]>(accounts);
 
-  // When accounts change, update filtered accounts
   useEffect(() => {
     filterAccounts(activeTab, searchQuery);
   }, [accounts, activeTab, searchQuery]);
 
-  // Filter accounts based on tab and search query
   const filterAccounts = (tab: string, query: string) => {
     let filtered = accounts;
 
-    // Filter by platform
     if (tab !== "all") {
       filtered = filtered.filter(
         (account) => account.platform.toLowerCase() === tab.toLowerCase()
       );
     }
 
-    // Filter by search query
     if (query.trim() !== "") {
       const lowerQuery = query.toLowerCase();
       filtered = filtered.filter(
@@ -61,20 +57,17 @@ export default function AccountSelection({
     setFilteredAccounts(filtered);
   };
 
-  // Handle tab change
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     filterAccounts(tab, searchQuery);
   };
 
-  // Handle search query change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     filterAccounts(activeTab, query);
   };
 
-  // Toggle account selection
   const toggleAccount = (accountId: string) => {
     if (selectedAccounts.includes(accountId)) {
       onSelectionChange(selectedAccounts.filter((id) => id !== accountId));
@@ -101,7 +94,6 @@ export default function AccountSelection({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Enhanced Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -120,7 +112,6 @@ export default function AccountSelection({
           )}
         </div>
 
-        {/* Enhanced Platform Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <div className="overflow-x-auto scrollbar-hide">
             <TabsList className="w-max min-w-full bg-gray-50 dark:bg-gray-800/50 p-1 rounded-xl mb-6 flex-nowrap">
@@ -299,7 +290,6 @@ export default function AccountSelection({
             </TabsList>
           </div>
 
-          {/* Enhanced Account Grid */}
           {filteredAccounts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredAccounts.map((account) => {
@@ -315,7 +305,6 @@ export default function AccountSelection({
                     )}
                     onClick={() => toggleAccount(account._id)}
                   >
-                    {/* Selection indicator */}
                     <div className="absolute top-3 right-3">
                       <div
                         className={cn(
@@ -330,7 +319,6 @@ export default function AccountSelection({
                     </div>
 
                     <div className="flex items-start gap-3">
-                      {/* Platform Icon */}
                       <div className="relative">
                         <div
                           className={cn(
@@ -341,7 +329,6 @@ export default function AccountSelection({
                         >
                           {getPlatformIcon(account.platform)}
                         </div>
-                        {/* Status indicator */}
                         <div
                           className={cn(
                             "absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white",
@@ -352,7 +339,6 @@ export default function AccountSelection({
                         />
                       </div>
 
-                      {/* Account Info */}
                       <div className="flex-1 min-w-0 text-left">
                         <div className="font-semibold text-gray-900 dark:text-white truncate text-base">
                           @{account.accountName}
@@ -383,7 +369,6 @@ export default function AccountSelection({
           )}
         </Tabs>
 
-        {/* Enhanced Selection Summary */}
         {selectedAccounts.length > 0 && (
           <Card className="border-0 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
             <CardContent className="p-4">

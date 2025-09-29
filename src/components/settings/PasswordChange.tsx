@@ -20,20 +20,19 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Progress } from "../ui/progress";
-import { 
-  EyeIcon, 
-  EyeOffIcon, 
-  Loader2, 
-  Shield, 
-  Lock, 
-  CheckCircle2, 
+import {
+  EyeIcon,
+  EyeOffIcon,
+  Loader2,
+  Shield,
+  Lock,
+  CheckCircle2,
   AlertCircle,
   Key,
   Save,
-  Zap
+  Zap,
 } from "lucide-react";
 
-// Password strength calculator
 const calculatePasswordStrength = (password: string) => {
   let strength = 0;
   const checks = {
@@ -43,17 +42,21 @@ const calculatePasswordStrength = (password: string) => {
     numbers: /\d/.test(password),
     special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\?]/.test(password),
   };
-  
+
   strength = Object.values(checks).filter(Boolean).length;
-  
+
   const getStrengthInfo = () => {
-    if (strength === 0) return { label: "Very Weak", color: "bg-red-500", percentage: 0 };
-    if (strength <= 2) return { label: "Weak", color: "bg-red-400", percentage: 25 };
-    if (strength === 3) return { label: "Fair", color: "bg-orange-400", percentage: 50 };
-    if (strength === 4) return { label: "Good", color: "bg-yellow-400", percentage: 75 };
+    if (strength === 0)
+      return { label: "Very Weak", color: "bg-red-500", percentage: 0 };
+    if (strength <= 2)
+      return { label: "Weak", color: "bg-red-400", percentage: 25 };
+    if (strength === 3)
+      return { label: "Fair", color: "bg-orange-400", percentage: 50 };
+    if (strength === 4)
+      return { label: "Good", color: "bg-yellow-400", percentage: 75 };
     return { label: "Strong", color: "bg-green-500", percentage: 100 };
   };
-  
+
   return { strength, checks, ...getStrengthInfo() };
 };
 
@@ -82,9 +85,8 @@ const PasswordChange = ({
   const passwordStrength = calculatePasswordStrength(newPassword);
   return (
     <Card className="relative overflow-hidden bg-gradient-to-br from-background to-muted/30 border-border/50">
-      {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
-      
+
       <CardHeader className="relative">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
@@ -92,7 +94,9 @@ const PasswordChange = ({
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-xl font-bold">Password Security</CardTitle>
+              <CardTitle className="text-xl font-bold">
+                Password Security
+              </CardTitle>
               <Badge variant="secondary" className="flex items-center gap-1">
                 <Shield className="h-3 w-3" />
                 <span className="text-xs">Protected</span>
@@ -104,7 +108,7 @@ const PasswordChange = ({
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="relative">
         <Form {...passwordForm}>
           <form
@@ -167,11 +171,15 @@ const PasswordChange = ({
                     <Shield className="h-4 w-4 text-green-600" />
                     New Password
                     {newPassword && (
-                      <Badge 
-                        variant={passwordStrength.strength >= 4 ? "default" : "secondary"}
+                      <Badge
+                        variant={
+                          passwordStrength.strength >= 4
+                            ? "default"
+                            : "secondary"
+                        }
                         className={`ml-auto text-xs ${
-                          passwordStrength.strength >= 4 
-                            ? "bg-green-500 text-white" 
+                          passwordStrength.strength >= 4
+                            ? "bg-green-500 text-white"
                             : passwordStrength.strength >= 3
                             ? "bg-yellow-500 text-white"
                             : "bg-red-500 text-white"
@@ -207,31 +215,40 @@ const PasswordChange = ({
                       </span>
                     </Button>
                   </div>
-                  
-                  {/* Password Strength Indicator */}
+
                   {newPassword && (
                     <div className="space-y-3 mt-3">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Password Strength</span>
-                          <span className={`font-medium ${
-                            passwordStrength.strength >= 4 ? 'text-green-600' :
-                            passwordStrength.strength >= 3 ? 'text-yellow-600' : 'text-red-600'
-                          }`}>
+                          <span className="text-muted-foreground">
+                            Password Strength
+                          </span>
+                          <span
+                            className={`font-medium ${
+                              passwordStrength.strength >= 4
+                                ? "text-green-600"
+                                : passwordStrength.strength >= 3
+                                ? "text-yellow-600"
+                                : "text-red-600"
+                            }`}
+                          >
                             {passwordStrength.label}
                           </span>
                         </div>
-                        <Progress 
-                          value={passwordStrength.percentage} 
+                        <Progress
+                          value={passwordStrength.percentage}
                           className="h-2"
                         />
                       </div>
-                      
-                      {/* Security Requirements */}
+
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className={`flex items-center gap-1 ${
-                          passwordStrength.checks.length ? 'text-green-600' : 'text-muted-foreground'
-                        }`}>
+                        <div
+                          className={`flex items-center gap-1 ${
+                            passwordStrength.checks.length
+                              ? "text-green-600"
+                              : "text-muted-foreground"
+                          }`}
+                        >
                           {passwordStrength.checks.length ? (
                             <CheckCircle2 className="h-3 w-3" />
                           ) : (
@@ -239,9 +256,13 @@ const PasswordChange = ({
                           )}
                           8+ characters
                         </div>
-                        <div className={`flex items-center gap-1 ${
-                          passwordStrength.checks.uppercase ? 'text-green-600' : 'text-muted-foreground'
-                        }`}>
+                        <div
+                          className={`flex items-center gap-1 ${
+                            passwordStrength.checks.uppercase
+                              ? "text-green-600"
+                              : "text-muted-foreground"
+                          }`}
+                        >
                           {passwordStrength.checks.uppercase ? (
                             <CheckCircle2 className="h-3 w-3" />
                           ) : (
@@ -249,9 +270,13 @@ const PasswordChange = ({
                           )}
                           Uppercase
                         </div>
-                        <div className={`flex items-center gap-1 ${
-                          passwordStrength.checks.lowercase ? 'text-green-600' : 'text-muted-foreground'
-                        }`}>
+                        <div
+                          className={`flex items-center gap-1 ${
+                            passwordStrength.checks.lowercase
+                              ? "text-green-600"
+                              : "text-muted-foreground"
+                          }`}
+                        >
                           {passwordStrength.checks.lowercase ? (
                             <CheckCircle2 className="h-3 w-3" />
                           ) : (
@@ -259,9 +284,13 @@ const PasswordChange = ({
                           )}
                           Lowercase
                         </div>
-                        <div className={`flex items-center gap-1 ${
-                          passwordStrength.checks.numbers ? 'text-green-600' : 'text-muted-foreground'
-                        }`}>
+                        <div
+                          className={`flex items-center gap-1 ${
+                            passwordStrength.checks.numbers
+                              ? "text-green-600"
+                              : "text-muted-foreground"
+                          }`}
+                        >
                           {passwordStrength.checks.numbers ? (
                             <CheckCircle2 className="h-3 w-3" />
                           ) : (
@@ -272,9 +301,10 @@ const PasswordChange = ({
                       </div>
                     </div>
                   )}
-                  
+
                   <FormDescription className="text-xs text-muted-foreground">
-                    Use a strong password with a mix of letters, numbers, and symbols
+                    Use a strong password with a mix of letters, numbers, and
+                    symbols
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -328,23 +358,22 @@ const PasswordChange = ({
               )}
             />
 
-            {/* Enhanced Footer */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border/50">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Zap className="h-4 w-4 text-orange-500" />
                 <span>Password will be encrypted and secured</span>
               </div>
-              
+
               <div className="flex items-center gap-3">
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   variant="outline"
                   className="border-border/50"
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isChangingPassword || passwordStrength.strength < 3}
                   className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
                 >

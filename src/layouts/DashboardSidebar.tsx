@@ -192,7 +192,6 @@ export default function DashboardSidebar({
   ]);
 
   const handleNavigation = () => {
-    console.log("handleNavigationClicked");
     if (closeMenu && isMobile) {
       closeMenu();
     }
