@@ -62,7 +62,6 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
   const password = form.watch("password");
 
   const onSubmit = async (data: RegisterFormData) => {
-    console.log("[DEBUG] Registering user with data:", data);
     setIsLoading(true);
     try {
       const { confirmPassword, ...rest } = data;

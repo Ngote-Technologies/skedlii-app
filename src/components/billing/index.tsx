@@ -185,7 +185,6 @@ const Billing = () => {
 
   const handlePreviewSuccess = useCallback(
     (data: any) => {
-      // Handle direct error response
       if (data?.error) {
         toast.error({
           title: "Preview Error",
@@ -194,23 +193,15 @@ const Billing = () => {
         return;
       }
 
-      // Check if this is preview data (has amountDue, billingInfo, etc.)
       if (data && (data.amountDue !== undefined || data.billingInfo)) {
-        console.log("Setting preview data:", data);
         setUpgradePreviewData(data);
         setShowUpgradeDialog(true);
       } else {
-        // This might be a direct subscription update response
-        console.log("Direct subscription update:", data);
-
-        // Refresh subscription data without full user fetch
         const refreshData = async () => {
           try {
             const activeOrgId = user?.defaultOrganizationId;
             await refreshPermissions(activeOrgId);
           } catch (error) {
-            console.error("Failed to refresh subscription:", error);
-            // Fallback to full user fetch only if needed
             await fetchUserData();
           }
         };
@@ -309,7 +300,6 @@ const Billing = () => {
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Header */}
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-background to-muted/30 border border-border/50 p-6">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
         <div className="relative flex items-center justify-between">
@@ -322,7 +312,6 @@ const Billing = () => {
             </p>
           </div>
 
-          {/* Quick Stats */}
           <div className="hidden md:flex items-center gap-4">
             <div className="text-center">
               <div className="text-sm font-bold text-foreground">
@@ -425,7 +414,6 @@ const Billing = () => {
                   </div>
                 </div>
 
-                {/* Billing Toggle */}
                 <div className="flex items-center justify-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
                   <span
                     className={`text-sm transition-all duration-200 ${
@@ -467,6 +455,7 @@ const Billing = () => {
                 billing={subscriptionInfo}
                 handleUpgradeDowngrade={handleUpgradeDowngrade}
                 canManageBilling={canManageBilling}
+                hasValidSubscription={subscriptionInfo?.hasValidSubscription}
               />
             </CardContent>
           </Card>

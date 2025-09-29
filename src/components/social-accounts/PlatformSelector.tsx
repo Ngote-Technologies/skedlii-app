@@ -34,7 +34,6 @@ export default function PlatformSelector({
           </div>
         </div>
 
-        {/* Enhanced Platform Grid */}
         <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-muted/30 to-muted/20 p-4 border border-border/50">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
           <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[300px] overflow-y-auto pr-2">
@@ -55,12 +54,10 @@ export default function PlatformSelector({
                     platform.comingSoon && "opacity-50 cursor-not-allowed"
                   )}
                 >
-                  {/* Background gradient for selected */}
                   {isSelected && (
                     <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl" />
                   )}
 
-                  {/* Platform Icon */}
                   <div className="relative mb-2">
                     <platform.logo
                       className={cn(
@@ -70,13 +67,11 @@ export default function PlatformSelector({
                       )}
                     />
 
-                    {/* Active indicator */}
                     {isSelected && (
                       <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-background animate-pulse" />
                     )}
                   </div>
 
-                  {/* Platform Name */}
                   <span
                     className={cn(
                       "text-sm font-semibold transition-colors",
@@ -86,7 +81,6 @@ export default function PlatformSelector({
                     {platform.name}
                   </span>
 
-                  {/* Feature indicators for available platforms */}
                   {!platform.comingSoon && (
                     <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Users className="h-3 w-3 text-muted-foreground" />
@@ -95,7 +89,6 @@ export default function PlatformSelector({
                     </div>
                   )}
 
-                  {/* Coming Soon Badge */}
                   {platform.comingSoon && (
                     <div className="absolute -top-1 -right-1 px-2 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-bold rounded-full transform rotate-12 shadow-md">
                       <Clock className="h-2 w-2 inline mr-1" />
@@ -103,7 +96,6 @@ export default function PlatformSelector({
                     </div>
                   )}
 
-                  {/* Selection indicator */}
                   {isSelected && (
                     <div className="absolute bottom-2 right-2">
                       <FaCheckCircle className="h-4 w-4 text-green-500" />
@@ -118,11 +110,9 @@ export default function PlatformSelector({
 
       {selectedConfig && (
         <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-background to-muted/50 border border-border/50 p-6 shadow-sm">
-          {/* Background gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
 
           <div className="relative space-y-4">
-            {/* Platform Header */}
             <div className="flex items-center gap-3 pb-3 border-b border-border/50">
               <div
                 className={`p-2 rounded-lg ${selectedConfig.theme.bg} border ${selectedConfig.theme.border}`}
@@ -147,7 +137,6 @@ export default function PlatformSelector({
               </div>
             </div>
 
-            {/* Permissions Section */}
             {selectedConfig.permissions.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -172,7 +161,6 @@ export default function PlatformSelector({
               </div>
             )}
 
-            {/* Constraints Section */}
             {selectedConfig.constraints && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -194,7 +182,6 @@ export default function PlatformSelector({
               </div>
             )}
 
-            {/* Documentation Link */}
             {selectedConfig.platformDocsUrl && (
               <div className="pt-2 border-t border-border/50">
                 <a

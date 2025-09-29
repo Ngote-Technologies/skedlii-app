@@ -48,11 +48,9 @@ export default function DashboardLayout() {
     <>
       <SkipLinks />
       <div className="h-screen flex flex-col bg-gray-50/50 dark:bg-gray-900/50">
-        {/* Enhanced Header */}
         <DashboardHeader />
 
         <div className="flex-1 flex overflow-hidden relative">
-          {/* Enhanced Sidebar Container */}
           <div className="hidden lg:block relative">
             <DashboardSidebar
               collapsed={sidebarCollapsed}
@@ -60,14 +58,12 @@ export default function DashboardLayout() {
             />
           </div>
 
-          {/* Enhanced Main Content Area */}
           <main
             className={cn(
               "flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out",
               sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
             )}
           >
-            {/* Page Content Container */}
             <div
               ref={mainContentRef}
               data-dashboard-content
@@ -77,7 +73,6 @@ export default function DashboardLayout() {
                 key={location.pathname}
                 className="min-h-full p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8"
               >
-                {/* Content Wrapper with enhanced page transitions */}
                 <div id="main-content" className="max-w-7xl mx-auto">
                   <Suspense fallback={<PageLoadingSkeleton />}>
                     <AnimatedPage animation="fade" className="space-y-6">
@@ -89,7 +84,6 @@ export default function DashboardLayout() {
             </div>
           </main>
 
-          {/* Mobile Overlay */}
           {mobileMenuOpen && (
             <div
               className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden animate-in fade-in duration-200"
@@ -100,7 +94,6 @@ export default function DashboardLayout() {
           )}
         </div>
 
-        {/* Mobile Bottom Navigation */}
         <MobileBottomNav />
       </div>
     </>
