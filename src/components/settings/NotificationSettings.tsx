@@ -8,19 +8,19 @@ import {
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Switch } from "../ui/switch";
-import { 
-  Bell, 
-  Mail, 
-  MessageSquare, 
-  Users, 
-  Shield, 
-  Clock, 
+import {
+  Bell,
+  Mail,
+  MessageSquare,
+  Users,
+  Shield,
+  Clock,
   CheckCircle2,
   Settings,
   Save,
   Sparkles,
   Smartphone,
-  Monitor
+  Monitor,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -32,19 +32,18 @@ const NotificationSettings = () => {
     accountSecurity: true,
     pushNotifications: false,
     browserNotifications: true,
-    weeklyDigest: 'weekly',
+    weeklyDigest: "weekly",
     marketingEmails: false,
   });
 
   const updateSetting = (key: string, value: boolean | string) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
     <Card className="relative overflow-hidden bg-gradient-to-br from-background to-muted/30 border-border/50">
-      {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
-      
+
       <CardHeader className="relative">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20">
@@ -52,28 +51,32 @@ const NotificationSettings = () => {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-xl font-bold">Notification Preferences</CardTitle>
+              <CardTitle className="text-xl font-bold">
+                Notification Preferences
+              </CardTitle>
               <Badge variant="secondary" className="flex items-center gap-1">
                 <Settings className="h-3 w-3" />
                 <span className="text-xs">Customizable</span>
               </Badge>
             </div>
             <CardDescription className="mt-1">
-              Control how and when you receive notifications across all platforms
+              Control how and when you receive notifications across all
+              platforms
             </CardDescription>
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="relative space-y-6">
-        {/* Essential Notifications */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-4">
             <Mail className="h-4 w-4 text-primary" />
             <h3 className="text-lg font-semibold">Essential Notifications</h3>
-            <Badge variant="outline" className="text-xs">Required</Badge>
+            <Badge variant="outline" className="text-xs">
+              Required
+            </Badge>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
               <div className="flex items-center gap-3">
@@ -83,7 +86,9 @@ const NotificationSettings = () => {
                 <div>
                   <h4 className="font-medium flex items-center gap-2">
                     Email Notifications
-                    {settings.emailNotifications && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                    {settings.emailNotifications && (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    )}
                   </h4>
                   <p className="text-sm text-muted-foreground">
                     Receive important updates about your account
@@ -92,7 +97,9 @@ const NotificationSettings = () => {
               </div>
               <Switch
                 checked={settings.emailNotifications}
-                onCheckedChange={(checked) => updateSetting('emailNotifications', checked)}
+                onCheckedChange={(checked) =>
+                  updateSetting("emailNotifications", checked)
+                }
               />
             </div>
 
@@ -104,7 +111,9 @@ const NotificationSettings = () => {
                 <div>
                   <h4 className="font-medium flex items-center gap-2">
                     Post Publishing
-                    {settings.postPublishing && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                    {settings.postPublishing && (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    )}
                   </h4>
                   <p className="text-sm text-muted-foreground">
                     Get notified when your posts are published or fail
@@ -113,7 +122,9 @@ const NotificationSettings = () => {
               </div>
               <Switch
                 checked={settings.postPublishing}
-                onCheckedChange={(checked) => updateSetting('postPublishing', checked)}
+                onCheckedChange={(checked) =>
+                  updateSetting("postPublishing", checked)
+                }
               />
             </div>
 
@@ -125,7 +136,9 @@ const NotificationSettings = () => {
                 <div>
                   <h4 className="font-medium flex items-center gap-2">
                     Team Invitations
-                    {settings.teamInvitations && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                    {settings.teamInvitations && (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    )}
                   </h4>
                   <p className="text-sm text-muted-foreground">
                     Receive notifications about team invites and updates
@@ -134,7 +147,9 @@ const NotificationSettings = () => {
               </div>
               <Switch
                 checked={settings.teamInvitations}
-                onCheckedChange={(checked) => updateSetting('teamInvitations', checked)}
+                onCheckedChange={(checked) =>
+                  updateSetting("teamInvitations", checked)
+                }
               />
             </div>
 
@@ -146,7 +161,10 @@ const NotificationSettings = () => {
                 <div>
                   <h4 className="font-medium flex items-center gap-2">
                     Account Security
-                    <Badge variant="secondary" className="text-xs bg-orange-500/10 text-orange-600">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs bg-orange-500/10 text-orange-600"
+                    >
                       Recommended
                     </Badge>
                   </h4>
@@ -157,20 +175,23 @@ const NotificationSettings = () => {
               </div>
               <Switch
                 checked={settings.accountSecurity}
-                onCheckedChange={(checked) => updateSetting('accountSecurity', checked)}
+                onCheckedChange={(checked) =>
+                  updateSetting("accountSecurity", checked)
+                }
               />
             </div>
           </div>
         </div>
 
-        {/* Platform Notifications */}
         <div className="space-y-4 pt-4 border-t border-border/50">
           <div className="flex items-center gap-2 mb-4">
             <Smartphone className="h-4 w-4 text-primary" />
             <h3 className="text-lg font-semibold">Platform Preferences</h3>
-            <Badge variant="outline" className="text-xs">Optional</Badge>
+            <Badge variant="outline" className="text-xs">
+              Optional
+            </Badge>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
               <div className="flex items-center gap-3">
@@ -186,7 +207,9 @@ const NotificationSettings = () => {
               </div>
               <Switch
                 checked={settings.pushNotifications}
-                onCheckedChange={(checked) => updateSetting('pushNotifications', checked)}
+                onCheckedChange={(checked) =>
+                  updateSetting("pushNotifications", checked)
+                }
               />
             </div>
 
@@ -204,31 +227,38 @@ const NotificationSettings = () => {
               </div>
               <Switch
                 checked={settings.browserNotifications}
-                onCheckedChange={(checked) => updateSetting('browserNotifications', checked)}
+                onCheckedChange={(checked) =>
+                  updateSetting("browserNotifications", checked)
+                }
               />
             </div>
           </div>
         </div>
 
-        {/* Digest Settings */}
         <div className="space-y-4 pt-4 border-t border-border/50">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="h-4 w-4 text-primary" />
             <h3 className="text-lg font-semibold">Summary Digest</h3>
           </div>
-          
+
           <div className="p-4 rounded-lg bg-muted/30 border border-border/50">
-            <p className="text-sm font-medium mb-3">How often should we send you a summary?</p>
+            <p className="text-sm font-medium mb-3">
+              How often should we send you a summary?
+            </p>
             <div className="flex flex-wrap gap-2">
-              {['daily', 'weekly', 'monthly', 'never'].map((frequency) => (
+              {["daily", "weekly", "monthly", "never"].map((frequency) => (
                 <Button
                   key={frequency}
-                  variant={settings.weeklyDigest === frequency ? "default" : "outline"}
+                  variant={
+                    settings.weeklyDigest === frequency ? "default" : "outline"
+                  }
                   size="sm"
-                  onClick={() => updateSetting('weeklyDigest', frequency)}
-                  className={settings.weeklyDigest === frequency ? 
-                    "bg-gradient-to-r from-primary to-purple-500 text-white" : 
-                    ""}
+                  onClick={() => updateSetting("weeklyDigest", frequency)}
+                  className={
+                    settings.weeklyDigest === frequency
+                      ? "bg-gradient-to-r from-primary to-purple-500 text-white"
+                      : ""
+                  }
                 >
                   {frequency.charAt(0).toUpperCase() + frequency.slice(1)}
                 </Button>
@@ -237,24 +267,18 @@ const NotificationSettings = () => {
           </div>
         </div>
       </CardContent>
-      
-      {/* Enhanced Footer */}
+
       <div className="relative flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-border/50">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Sparkles className="h-4 w-4 text-blue-500" />
           <span>Settings are saved automatically</span>
         </div>
-        
+
         <div className="flex items-center gap-3">
-          <Button 
-            variant="outline"
-            className="border-border/50"
-          >
+          <Button variant="outline" className="border-border/50">
             Reset to Default
           </Button>
-          <Button 
-            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
-          >
+          <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200">
             <Save className="mr-2 h-4 w-4" />
             Save Preferences
           </Button>

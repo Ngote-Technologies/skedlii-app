@@ -62,7 +62,6 @@ const ProfileInformation = ({
   const handleFormSubmit = async (formData: any) => {
     const submitData = new FormData();
 
-    // Only add the specific fields we want
     if (formData.name) {
       submitData.append("name", formData.name);
     }
@@ -73,7 +72,6 @@ const ProfileInformation = ({
       submitData.append("avatar", formData.avatar);
     }
 
-    // Add avatar file if selected
     if (selectedFile) {
       submitData.append("avatar", selectedFile);
     }
@@ -82,7 +80,6 @@ const ProfileInformation = ({
   };
   return (
     <Card className="relative overflow-hidden bg-gradient-to-br from-background to-muted/30 border-border/50">
-      {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
 
       <CardHeader className="relative">
@@ -118,7 +115,6 @@ const ProfileInformation = ({
             className="space-y-6"
           >
             <div className="flex flex-col lg:flex-row gap-6">
-              {/* Avatar Section */}
               <div className="flex flex-col items-center space-y-4 lg:w-1/3">
                 <div className="relative group">
                   <div className="h-24 w-24 rounded-full bg-gradient-to-r from-primary to-purple-500 p-1">
@@ -165,7 +161,6 @@ const ProfileInformation = ({
                 </div>
               </div>
 
-              {/* Form Fields */}
               <div className="flex-1 space-y-4">
                 <FormField
                   control={profileForm.control}
@@ -195,35 +190,6 @@ const ProfileInformation = ({
                     </FormItem>
                   )}
                 />
-
-                {/* <FormField
-                  control={profileForm.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                        <User className="h-4 w-4 text-primary" />
-                        Last Name
-                      </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            placeholder="Your last name"
-                            className="pl-4 pr-10 border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-all duration-200"
-                            {...field}
-                          />
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            <Edit3 className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        </div>
-                      </FormControl>
-                      <FormDescription className="text-xs text-muted-foreground">
-                        Your last name helps complete your professional profile
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                /> */}
 
                 <FormField
                   control={profileForm.control}
@@ -267,7 +233,6 @@ const ProfileInformation = ({
               </div>
             </div>
 
-            {/* Enhanced Footer */}
             <div className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-6 border-t border-border/50">
               <div className="flex items-center gap-3">
                 <Button

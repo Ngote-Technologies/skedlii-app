@@ -39,7 +39,8 @@ export interface ComputedPermissions {
 
 export interface SubscriptionInfo {
   hasValidSubscription: boolean;
-  subscriptionTier: "free" | "team" | "enterprise" | null;
+  subscriptionTier: "free" | "team" | "enterprise" | "creator" | "trial" | null;
+  selectedTier: "creator" | "team" | "enterprise" | null;
   subscriptionStatus:
     | "active"
     | "canceled"
@@ -56,11 +57,13 @@ export interface SubscriptionInfo {
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   trialEnd: string | null;
+  isTrial: boolean;
+  hasUsedTrial: boolean;
   planLimits: {
-    maxSocialAccounts: number;
-    maxTeamMembers: number;
-    maxScheduledPosts: number;
-    maxPostsPerMonth: number;
+    maxSocialAccounts: number | "unlimited";
+    maxTeamMembers: number | "unlimited";
+    maxScheduledPosts: number | "unlimited";
+    maxPostsPerMonth: number | "unlimited";
     analyticsRetentionDays: number;
     aiCreditsPerMonth: number;
   };
@@ -156,25 +159,13 @@ const authApiV2 = {
     email: string;
     password: string;
   }): Promise<LoginResponseV2> => {
-    console.log("[DEBUG] V2 Auth: Making login request with credentials:", {
-      email: credentials.email,
-    });
-
     const apiClient = getApiClient("v2");
-    console.log(
-      "[DEBUG] V2 Auth: API client baseURL:",
-      apiClient.defaults.baseURL
-    );
 
     try {
       const response = await apiClient.post<LoginResponseV2>(
         "/auth/login",
         credentials
       );
-      console.log("[DEBUG] V2 Auth: Login response received:", {
-        status: response.status,
-        hasData: !!response.data,
-      });
 
       // Store both tokens for V2
       localStorage.setItem("auth_token", response.data.accessToken);
@@ -182,12 +173,6 @@ const authApiV2 = {
 
       return response.data;
     } catch (error: any) {
-      console.error("[DEBUG] V2 Auth: Login request failed:", {
-        message: error.message,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-      });
       throw error;
     }
   },
@@ -284,17 +269,11 @@ const authApiV2 = {
   },
 
   forgotPassword: async (data: ForgotPasswordRequestV2): Promise<void> => {
-    console.log(
-      "[DEBUG] V2 Auth: Making forgot password request for:",
-      data.email
-    );
-
     const apiClient = getApiClient("v2");
 
     try {
       // V2 API returns 204 No Content for security (no info leakage)
       await apiClient.post("/auth/forgot-password", data);
-      console.log("[DEBUG] V2 Auth: Forgot password request completed");
     } catch (error: any) {
       console.error("[DEBUG] V2 Auth: Forgot password request failed:", {
         message: error.message,
@@ -306,17 +285,11 @@ const authApiV2 = {
   },
 
   resetPassword: async (data: ResetPasswordRequestV2): Promise<void> => {
-    console.log(
-      "[DEBUG] V2 Auth: Making reset password request for:",
-      data.email
-    );
-
     const apiClient = getApiClient("v2");
 
     try {
       // V2 API returns 204 No Content on success
       await apiClient.post("/auth/reset-password", data);
-      console.log("[DEBUG] V2 Auth: Reset password request completed");
     } catch (error: any) {
       console.error("[DEBUG] V2 Auth: Reset password request failed:", {
         message: error.message,
@@ -328,14 +301,11 @@ const authApiV2 = {
   },
 
   deleteAccount: async (): Promise<void> => {
-    console.log("[DEBUG] V2 Auth: Making delete account request");
-
     const apiClient = getApiClient("v2");
 
     try {
       // V2 API DELETE /auth/me
       await apiClient.delete("/auth/me");
-      console.log("[DEBUG] V2 Auth: Account deletion completed");
 
       // Clear all local data after successful deletion
       localStorage.removeItem("auth_token");
@@ -354,17 +324,12 @@ const authApiV2 = {
   },
 
   getAuthEvents: async (limit = 50): Promise<AuthEventsResponseV2> => {
-    console.log("[DEBUG] V2 Auth: Getting auth events, limit:", limit);
-
     const apiClient = getApiClient("v2");
 
     try {
       const response = await apiClient.get<AuthEventsResponseV2>(
         `/auth/events?limit=${limit}`
       );
-      console.log("[DEBUG] V2 Auth: Auth events received:", {
-        count: response.data.items.length,
-      });
       return response.data;
     } catch (error: any) {
       console.error("[DEBUG] V2 Auth: Auth events request failed:", {

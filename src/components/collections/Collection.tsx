@@ -5,7 +5,17 @@ import { apiRequest } from "../../lib/queryClient";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
-import { ArrowLeft, Edit, Share2, FolderOpen, FileText, Calendar, Clock, Sparkles, ExternalLink } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit,
+  Share2,
+  FolderOpen,
+  FileText,
+  Calendar,
+  Clock,
+  Sparkles,
+  ExternalLink,
+} from "lucide-react";
 import { formatDate } from "../../lib/utils";
 import { Skeleton } from "../ui/skeleton";
 
@@ -15,15 +25,10 @@ export default function Collection() {
 
   const [collectionPosts, setCollectionPosts] = useState<any[]>([]);
 
-  // Get collections
-  const {
-    data: collection,
-    isLoading: isLoadingCollection,
-    // refetch: refetchCollection,
-  } = useQuery({
+  const { data: collection, isLoading: isLoadingCollection } = useQuery({
     queryKey: [`/collections/collection/${collectionId}`],
     queryFn: () => apiRequest("GET", `/collections/collection/${collectionId}`),
-  }) as { data: any; isLoading: boolean; refetch: any };
+  }) as { data: any; isLoading: boolean };
 
   useEffect(() => {
     if (!collectionId) {
@@ -49,7 +54,6 @@ export default function Collection() {
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Header Navigation */}
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"
@@ -61,30 +65,40 @@ export default function Collection() {
           Back to Collections
         </Button>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-200 dark:hover:border-blue-800">
+          <Button
+            variant="outline"
+            size="sm"
+            className="hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-200 dark:hover:border-blue-800"
+          >
             <Share2 className="h-4 w-4 mr-2" />
             Share
           </Button>
-          <Button variant="outline" size="sm" className="hover:bg-green-50 dark:hover:bg-green-950/20 hover:border-green-200 dark:hover:border-green-800">
+          <Button
+            variant="outline"
+            size="sm"
+            className="hover:bg-green-50 dark:hover:bg-green-950/20 hover:border-green-200 dark:hover:border-green-800"
+          >
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Button>
         </div>
       </div>
 
-      {/* Enhanced Collection Header */}
-      <Card className="relative overflow-hidden border-border/50" variant="elevated">
+      <Card
+        className="relative overflow-hidden border-border/50"
+        variant="elevated"
+      >
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/60 to-primary/30" />
         <div className="absolute top-4 right-4 opacity-5">
           <Sparkles className="h-16 w-16" />
         </div>
-        
+
         <CardHeader className="relative pb-6">
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20">
               <FolderOpen className="h-8 w-8 text-primary" />
             </div>
-            
+
             <div className="flex-1 space-y-3">
               <div>
                 <CardTitle className="text-3xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent mb-2">
@@ -96,13 +110,13 @@ export default function Collection() {
                   </p>
                 )}
               </div>
-              
-              {/* Enhanced Statistics */}
+
               <div className="flex flex-wrap items-center gap-6">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">
-                    {collection.items?.length ?? 0} post{(collection.items?.length ?? 0) !== 1 ? "s" : ""}
+                    {collection.items?.length ?? 0} post
+                    {(collection.items?.length ?? 0) !== 1 ? "s" : ""}
                   </span>
                   {(collection.items?.length ?? 0) > 0 && (
                     <Badge variant="success" className="text-xs">
@@ -110,18 +124,23 @@ export default function Collection() {
                     </Badge>
                   )}
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    Created {formatDate(new Date(collection.createdAt), "MMM d, yyyy")}
+                    Created{" "}
+                    {formatDate(new Date(collection.createdAt), "MMM d, yyyy")}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    Last updated {formatDate(new Date(collection.updatedAt || collection.createdAt), "MMM d")}
+                    Last updated{" "}
+                    {formatDate(
+                      new Date(collection.updatedAt || collection.createdAt),
+                      "MMM d"
+                    )}
                   </span>
                 </div>
               </div>
@@ -130,13 +149,13 @@ export default function Collection() {
         </CardHeader>
       </Card>
 
-      {/* Enhanced Posts Grid */}
       {collectionPosts.length > 0 ? (
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold">Collection Posts</h2>
             <Badge variant="outline" className="text-sm">
-              {collectionPosts.length} item{collectionPosts.length !== 1 ? 's' : ''}
+              {collectionPosts.length} item
+              {collectionPosts.length !== 1 ? "s" : ""}
             </Badge>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -153,7 +172,8 @@ export default function Collection() {
             </div>
             <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
             <p className="text-muted-foreground mb-4 max-w-sm">
-              This collection is empty. Start adding posts to organize your content.
+              This collection is empty. Start adding posts to organize your
+              content.
             </p>
             <Button variant="outline" size="sm">
               <FileText className="h-4 w-4 mr-2" />
@@ -169,7 +189,6 @@ export default function Collection() {
 function CollectionSkeleton() {
   return (
     <div className="space-y-6">
-      {/* Header Navigation Skeleton */}
       <div className="flex items-center justify-between">
         <Skeleton className="h-10 w-40" />
         <div className="flex gap-2">
@@ -177,21 +196,23 @@ function CollectionSkeleton() {
           <Skeleton className="h-10 w-16" />
         </div>
       </div>
-      
-      {/* Collection Header Card Skeleton */}
-      <Card className="relative overflow-hidden border-border/50" variant="elevated">
+
+      <Card
+        className="relative overflow-hidden border-border/50"
+        variant="elevated"
+      >
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/30 to-primary/20 animate-pulse" />
-        
+
         <CardHeader className="pb-6">
           <div className="flex items-start gap-4">
             <Skeleton className="h-14 w-14 rounded-xl" />
-            
+
             <div className="flex-1 space-y-3">
               <div>
                 <Skeleton className="h-9 w-72 mb-2" />
                 <Skeleton className="h-6 w-96 max-w-full" />
               </div>
-              
+
               <div className="flex flex-wrap items-center gap-6">
                 <Skeleton className="h-5 w-24" />
                 <Skeleton className="h-5 w-32" />
@@ -202,7 +223,6 @@ function CollectionSkeleton() {
         </CardHeader>
       </Card>
 
-      {/* Posts Section Skeleton */}
       <div>
         <div className="flex items-center justify-between mb-6">
           <Skeleton className="h-7 w-40" />
@@ -244,33 +264,31 @@ function PostCard({ post, index }: { readonly post: any; index: number }) {
     post.metadata?.socialPost?.username ??
     "Unknown";
 
-  // Platform-specific styling
   const getPlatformColor = (platform: string) => {
     switch (platform?.toLowerCase()) {
-      case 'twitter':
-        return 'text-blue-500 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800';
-      case 'linkedin':
-        return 'text-blue-700 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800';
-      case 'facebook':
-        return 'text-blue-600 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800';
-      case 'instagram':
-        return 'text-pink-500 bg-pink-50 dark:bg-pink-950/20 border-pink-200 dark:border-pink-800';
+      case "twitter":
+        return "text-blue-500 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800";
+      case "linkedin":
+        return "text-blue-700 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800";
+      case "facebook":
+        return "text-blue-600 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800";
+      case "instagram":
+        return "text-pink-500 bg-pink-50 dark:bg-pink-950/20 border-pink-200 dark:border-pink-800";
       default:
-        return 'text-muted-foreground bg-muted/50 border-border';
+        return "text-muted-foreground bg-muted/50 border-border";
     }
   };
 
   return (
-    <Card 
+    <Card
       className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] cursor-pointer border-border/50"
       variant="elevated"
       style={{ animationDelay: `${index * 100}ms` }}
     >
       <CardContent className="p-4 space-y-3">
-        {/* Platform Header */}
         <div className="flex items-center justify-between">
-          <Badge 
-            variant="outline" 
+          <Badge
+            variant="outline"
             className={`text-xs capitalize ${getPlatformColor(platform)}`}
           >
             {platform}
@@ -284,7 +302,6 @@ function PostCard({ post, index }: { readonly post: any; index: number }) {
           </Button>
         </div>
 
-        {/* Profile Section */}
         <div className="flex items-center gap-3">
           {profileImage ? (
             <img
@@ -307,14 +324,12 @@ function PostCard({ post, index }: { readonly post: any; index: number }) {
           </div>
         </div>
 
-        {/* Content */}
         <div className="space-y-2">
           <p className="text-sm leading-relaxed line-clamp-3 group-hover:text-foreground transition-colors duration-200">
             {content}
           </p>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
           <div className="flex items-center gap-2">
             <FileText className="h-3 w-3 text-muted-foreground" />

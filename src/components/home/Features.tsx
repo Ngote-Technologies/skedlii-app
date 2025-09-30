@@ -133,7 +133,6 @@ export default function Features() {
 
   return (
     <section id="features" className="py-24 relative">
-      {/* Enhanced Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div
           className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-primary-100/50 dark:bg-primary-900/20 blur-3xl animate-pulse"
@@ -191,17 +190,13 @@ export default function Features() {
               onMouseEnter={() => setHoveredCard(index)}
               onMouseLeave={() => setHoveredCard(null)}
             >
-              {/* Animated Gradient Background */}
               <div
                 className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-all duration-500`}
               />
-
-              {/* Glowing Border Effect */}
               <div
                 className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-20 transition-all duration-500 blur-xl`}
               />
 
-              {/* Status Badge */}
               {feature.status === "coming-soon" && (
                 <div className="absolute top-4 right-4">
                   <div className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700">
@@ -211,21 +206,17 @@ export default function Features() {
                 </div>
               )}
 
-              {/* Animated Icon Container */}
               <div className="relative mb-6 transform group-hover:scale-110 transition-all duration-300">
                 <div
                   className={`w-16 h-16 flex items-center justify-center rounded-xl bg-gradient-to-br ${feature.color} text-white shadow-lg group-hover:shadow-xl relative overflow-hidden`}
                 >
-                  {/* Icon Background Animation */}
                   <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-full transition-transform duration-700" />
 
-                  {/* Icon with Animation */}
                   <div className="relative transform group-hover:rotate-12 transition-transform duration-300">
                     {feature.icon}
                   </div>
                 </div>
 
-                {/* Floating Sparkles */}
                 {hoveredCard === index && (
                   <div className="absolute inset-0 pointer-events-none">
                     {[...Array(3)].map((_, i) => (
@@ -246,7 +237,6 @@ export default function Features() {
                 )}
               </div>
 
-              {/* Content */}
               <div className="relative">
                 <h3 className="text-xl font-bold mb-3 font-heading group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
                   {feature.title}
@@ -255,7 +245,6 @@ export default function Features() {
                   {feature.description}
                 </p>
 
-                {/* Preview Text - Shows on Hover */}
                 {feature.preview && (
                   <div
                     className={`transition-all duration-500 overflow-hidden ${
@@ -273,7 +262,6 @@ export default function Features() {
                   </div>
                 )}
 
-                {/* Benefits List */}
                 {feature.benefits && (
                   <div
                     className={`transition-all duration-500 overflow-hidden ${
@@ -301,7 +289,6 @@ export default function Features() {
                   </div>
                 )}
 
-                {/* Action Button - Appears on Hover */}
                 <div
                   className={`transition-all duration-300 ${
                     hoveredCard === index
@@ -326,7 +313,6 @@ export default function Features() {
           ))}
         </div>
 
-        {/* Enhanced Bottom CTA */}
         <div className="mt-20 text-center animate-in slide-in-from-bottom-4 duration-700 delay-1000">
           <div className="max-w-2xl mx-auto">
             <div
@@ -338,10 +324,8 @@ export default function Features() {
                 border: "1px solid rgba(255,255,255,0.1)",
               }}
             >
-              {/* Animated Background */}
               <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 via-secondary-500/10 to-primary-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-              {/* Floating Elements */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 {[...Array(6)].map((_, i) => (
                   <div
