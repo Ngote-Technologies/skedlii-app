@@ -6,7 +6,18 @@ import {
   CardHeader,
   CardTitle,
 } from "../../ui/card";
-import { Image, Upload, X, AlertTriangle, ImageIcon, Video, Plus, CloudUpload, Camera, Smartphone } from "lucide-react";
+import {
+  Image,
+  Upload,
+  X,
+  AlertTriangle,
+  ImageIcon,
+  Video,
+  Plus,
+  CloudUpload,
+  Camera,
+  Smartphone,
+} from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { Button } from "../../ui/button";
 import { Label } from "../../ui/label";
@@ -29,9 +40,8 @@ import {
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import {
   DraggableOverlayItem,
-  // MediaUploadProps, // Assuming this will be updated or defined elsewhere to include selectedPlatforms
   SortableMediaItem,
-} from "./mediaUploadComponents"; // Assuming MediaUploadProps is in here
+} from "./mediaUploadComponents";
 import {
   handleDragCancel,
   handleDragEnd,
@@ -47,25 +57,22 @@ import {
   updateVideoThumbnailTime,
 } from "../../../lib/mediaUtils";
 
-// Define MediaItem if not already available from props (adjust as per actual type)
 export interface MediaItem {
   id: string;
-  url: string; // This might be a local URL (blob) initially, then Cloudinary URL
-  file?: File; // The actual file object when available
+  url: string;
+  file?: File;
   type: "image" | "video";
   thumbnailTime?: number;
   thumbnailUrl?: string;
-  // Add other relevant properties like uploadProgress, error, etc.
   uploadProgress?: number;
   error?: string;
-  processedUrl?: string; // URL after backend processing
+  processedUrl?: string;
   width?: number;
   height?: number;
   durationSec?: number;
   ref?: string;
 }
 
-// Define or extend MediaUploadProps here for clarity, assuming it's not strictly from mediaUploadComponents.tsx for now
 export interface MediaUploadProps {
   media: MediaItem[];
   onChange: (media: MediaItem[]) => void;
@@ -85,15 +92,15 @@ export default function MediaUpload({
 }: Readonly<MediaUploadProps>) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mediaActiveTab, setMediaActiveTab] = useState<string>("upload");
-  const [isUploading, setIsUploading] = useState<boolean>(false); // This might represent uploading to our backend now
-  const [uploadProgress, setUploadProgress] = useState<number>(0); // For individual file or overall batch
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [dragOver, setDragOver] = useState<boolean>(false);
   const [videoPreviewElement, setVideoPreviewElement] =
     useState<HTMLVideoElement | null>(null);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [validationMessage, setValidationMessage] = useState<string | null>(
     null
-  ); // For validation messages
+  );
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
 
   useEffect(() => {
@@ -104,14 +111,8 @@ export default function MediaUpload({
     }
   }, [media]);
 
-  // Effect to display platform constraints or warnings based on selectedPlatforms
   useEffect(() => {
     if (selectedAccounts?.length > 0) {
-      // Simple message for now, can be more sophisticated
-      // This is a placeholder for where you might display combined constraints or warnings
-      // The actual logic for combining/displaying constraints will be more complex
-      // and might involve calling a utility function with selectedPlatforms.
-      // For now, just acknowledge the selected platforms.
       const platforms = Array.from(
         new Set(
           accounts
@@ -120,8 +121,6 @@ export default function MediaUpload({
         )
       );
       setSelectedPlatforms(platforms);
-      // setValidationMessage(`Validating for: ${platformNames}. Specific rules will apply.`);
-      // Clear message if no platforms or if it's handled elsewhere
     } else {
       setSelectedPlatforms([]);
       setValidationMessage(null);
@@ -168,7 +167,7 @@ export default function MediaUpload({
                 ⚙️ TikTok Settings
               </Button>
             )}
-            
+
             <Tabs
               defaultValue={mediaActiveTab}
               value={mediaActiveTab}
@@ -234,9 +233,8 @@ export default function MediaUpload({
         )}
         {mediaActiveTab === "upload" && (
           <div className="relative">
-            {/* Background gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-2xl opacity-50" />
-            
+
             <button
               type="button"
               aria-label="Upload media by dragging and dropping files here"
@@ -263,173 +261,172 @@ export default function MediaUpload({
               }
               onClick={() => handleUploadClick(fileInputRef)}
             >
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm" // This might be dynamically adjusted later based on constraints
-              multiple
-              onChange={(e) =>
-                handleFileInputChange(
-                  e,
-                  fileInputRef,
-                  media,
-                  onChange,
-                  setIsUploading,
-                  setUploadProgress,
-                  selectedPlatforms, // Pass selectedPlatforms
-                  setValidationMessage, // Pass setter for validation messages
-                  validationMessage
-                )
-              }
-              disabled={isUploading || media.length >= 10}
-            />
-            {isUploading ? (
-              <div className="space-y-6">
-                <div className="relative">
-                  <div className="w-20 h-20 rounded-full border-4 border-primary/30 border-t-primary animate-spin mx-auto"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <CloudUpload className="h-8 w-8 text-primary" />
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm"
+                multiple
+                onChange={(e) =>
+                  handleFileInputChange(
+                    e,
+                    fileInputRef,
+                    media,
+                    onChange,
+                    setIsUploading,
+                    setUploadProgress,
+                    selectedPlatforms,
+                    setValidationMessage,
+                    validationMessage
+                  )
+                }
+                disabled={isUploading || media.length >= 10}
+              />
+              {isUploading ? (
+                <div className="space-y-6">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-full border-4 border-primary/30 border-t-primary animate-spin mx-auto"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <CloudUpload className="h-8 w-8 text-primary" />
+                    </div>
                   </div>
-                </div>
-                <div className="text-center space-y-2">
-                  <p className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Processing Media...
-                  </p>
-                  <div className="w-full max-w-xs mx-auto bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-primary to-purple-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                    />
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {uploadProgress}% complete
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                {/* Enhanced Upload Icon */}
-                <div className="relative mx-auto w-24 h-24">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl opacity-20 animate-pulse"></div>
-                  <div className="relative w-full h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
-                    <CloudUpload className="h-12 w-12 text-white" />
-                  </div>
-                </div>
-
-                {/* Enhanced Content */}
-                <div className="space-y-4 text-center">
-                  <div className="space-y-2">
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {dragOver ? "Drop your files here!" : "Upload Your Media"}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Drag & drop files here, or click to browse
+                  <div className="text-center space-y-2">
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                      Processing Media...
+                    </p>
+                    <div className="w-full max-w-xs mx-auto bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-primary to-purple-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {uploadProgress}% complete
                     </p>
                   </div>
-
-                  {/* Enhanced Upload Options */}
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button 
-                      variant="gradient" 
-                      size="lg"
-                      className="shadow-lg hover:shadow-xl transition-all duration-300 group touch-manipulation h-12 px-8"
-                    >
-                      <Plus className="mr-2 h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
-                      Choose Files
-                    </Button>
-
-                    {/* Mobile Camera Options */}
-                    <div className="flex gap-2 sm:hidden">
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        className="flex-1 h-12 touch-manipulation active:scale-95"
-                        onClick={() => {
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.accept = 'image/*';
-                          input.capture = 'environment'; // Back camera
-                          input.onchange = (e) => {
-                            const files = (e.target as HTMLInputElement).files;
-                            if (files && files.length > 0) {
-                              handleFileInputChange(
-                                e as any,
-                                fileInputRef,
-                                media,
-                                onChange,
-                                setIsUploading,
-                                setUploadProgress,
-                                selectedPlatforms,
-                                setValidationMessage,
-                                validationMessage
-                              );
-                            }
-                          };
-                          input.click();
-                        }}
-                      >
-                        <Camera className="mr-2 h-4 w-4" />
-                        Camera
-                      </Button>
-                      
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        className="flex-1 h-12 touch-manipulation active:scale-95"
-                        onClick={() => {
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.accept = 'video/*';
-                          input.capture = 'environment'; // Back camera for video
-                          input.onchange = (e) => {
-                            const files = (e.target as HTMLInputElement).files;
-                            if (files && files.length > 0) {
-                              handleFileInputChange(
-                                e as any,
-                                fileInputRef,
-                                media,
-                                onChange,
-                                setIsUploading,
-                                setUploadProgress,
-                                selectedPlatforms,
-                                setValidationMessage,
-                                validationMessage
-                              );
-                            }
-                          };
-                          input.click();
-                        }}
-                      >
-                        <Video className="mr-2 h-4 w-4" />
-                        Video
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* File Type Indicators */}
-                  <div className="flex items-center justify-center gap-6 pt-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <ImageIcon className="h-4 w-4" />
-                      <span>Images</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <Video className="h-4 w-4" />
-                      <span>Videos</span>
-                    </div>
-                    <div className="sm:hidden flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <Smartphone className="h-4 w-4" />
-                      <span>Camera</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-gray-500 dark:text-gray-400 pt-2">
-                    Maximum 10 files • JPG, PNG, GIF, MP4, MOV supported
-                  </p>
                 </div>
-              </div>
-            )}
-          </button>
+              ) : (
+                <div className="space-y-8">
+                  <div className="relative mx-auto w-24 h-24">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl opacity-20 animate-pulse"></div>
+                    <div className="relative w-full h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
+                      <CloudUpload className="h-12 w-12 text-white" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 text-center">
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {dragOver
+                          ? "Drop your files here!"
+                          : "Upload Your Media"}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Drag & drop files here, or click to browse
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <Button
+                        variant="gradient"
+                        size="lg"
+                        className="shadow-lg hover:shadow-xl transition-all duration-300 group touch-manipulation h-12 px-8"
+                      >
+                        <Plus className="mr-2 h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
+                        Choose Files
+                      </Button>
+
+                      <div className="flex gap-2 sm:hidden">
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="flex-1 h-12 touch-manipulation active:scale-95"
+                          onClick={() => {
+                            const input = document.createElement("input");
+                            input.type = "file";
+                            input.accept = "image/*";
+                            input.capture = "environment";
+                            input.onchange = (e) => {
+                              const files = (e.target as HTMLInputElement)
+                                .files;
+                              if (files && files.length > 0) {
+                                handleFileInputChange(
+                                  e as any,
+                                  fileInputRef,
+                                  media,
+                                  onChange,
+                                  setIsUploading,
+                                  setUploadProgress,
+                                  selectedPlatforms,
+                                  setValidationMessage,
+                                  validationMessage
+                                );
+                              }
+                            };
+                            input.click();
+                          }}
+                        >
+                          <Camera className="mr-2 h-4 w-4" />
+                          Camera
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="flex-1 h-12 touch-manipulation active:scale-95"
+                          onClick={() => {
+                            const input = document.createElement("input");
+                            input.type = "file";
+                            input.accept = "video/*";
+                            input.capture = "environment";
+                            input.onchange = (e) => {
+                              const files = (e.target as HTMLInputElement)
+                                .files;
+                              if (files && files.length > 0) {
+                                handleFileInputChange(
+                                  e as any,
+                                  fileInputRef,
+                                  media,
+                                  onChange,
+                                  setIsUploading,
+                                  setUploadProgress,
+                                  selectedPlatforms,
+                                  setValidationMessage,
+                                  validationMessage
+                                );
+                              }
+                            };
+                            input.click();
+                          }}
+                        >
+                          <Video className="mr-2 h-4 w-4" />
+                          Video
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-6 pt-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <ImageIcon className="h-4 w-4" />
+                        <span>Images</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <Video className="h-4 w-4" />
+                        <span>Videos</span>
+                      </div>
+                      <div className="sm:hidden flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <Smartphone className="h-4 w-4" />
+                        <span>Camera</span>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-gray-500 dark:text-gray-400 pt-2">
+                      Maximum 10 files • JPG, PNG, GIF, MP4, MOV supported
+                    </p>
+                  </div>
+                </div>
+              )}
+            </button>
           </div>
         )}
 
@@ -444,11 +441,10 @@ export default function MediaUpload({
             onDragCancel={() => handleDragCancel(setActiveDragId)}
           >
             <div className="space-y-6">
-              {/* Main Preview Area */}
               <div className="relative w-full flex items-center justify-center bg-muted/10 dark:bg-gray-700/30 rounded-md min-h-[300px] max-h-[400px]">
                 {media[0].type === "image" ? (
                   <img
-                    src={media[0].url} // This should be local blob URL for preview before final upload
+                    src={media[0].url}
                     alt="Media preview"
                     className="max-h-[400px] object-contain rounded-md"
                   />
@@ -463,7 +459,7 @@ export default function MediaUpload({
                           setVideoPreviewElement
                         )
                       }
-                      src={media[0].url} // This should be local blob URL
+                      src={media[0].url}
                       controls
                       className="w-full max-h-[400px] object-contain rounded-t-md bg-black"
                     >
@@ -532,7 +528,6 @@ export default function MediaUpload({
                 </TooltipProvider>
               </div>
 
-              {/* Sortable Thumbnail Grid */}
               <SortableContext
                 items={media.map((item) => item.id)}
                 strategy={rectSortingStrategy}
@@ -544,7 +539,6 @@ export default function MediaUpload({
                       item={item}
                       index={index}
                       onRemove={() => removeMediaItem(item.id, media, onChange)}
-                      // Ensure SortableMediaItem is also theme-aware if it has specific styles
                     />
                   ))}
                 </div>
@@ -555,7 +549,6 @@ export default function MediaUpload({
                   <DraggableOverlayItem
                     item={activeDraggedItem}
                     index={activeDraggedItemIndex}
-                    // Ensure DraggableOverlayItem is also theme-aware
                   />
                 ) : null}
               </DragOverlay>
@@ -575,7 +568,6 @@ export default function MediaUpload({
               )}
               <div className="text-center text-sm text-muted-foreground dark:text-gray-400">
                 <p>Drag to reorder. The first item is the cover.</p>
-                {/* Removed generic optimal dimensions, will be handled by platform specific warnings */}
                 <p>Maximum files: 10 (You've uploaded {media.length})</p>
               </div>
             </div>

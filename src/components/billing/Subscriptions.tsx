@@ -83,7 +83,6 @@ const Subscriptions = ({
     return (
       <div className="space-y-4">
         <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-background to-muted/30 border border-border/50 p-6">
-          {/* Background gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
 
           <div className="relative flex items-center gap-3 mb-4">
@@ -104,7 +103,6 @@ const Subscriptions = ({
             </div>
           </div>
 
-          {/* Usage Display */}
           <div className="relative space-y-4 mb-6">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
@@ -160,13 +158,10 @@ const Subscriptions = ({
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Subscription Card */}
       <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-background to-muted/30 border border-border/50">
-        {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
 
         <div className="relative p-6">
-          {/* Subscription Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10">
@@ -195,7 +190,6 @@ const Subscriptions = ({
             </Badge>
           </div>
 
-          {/* Billing Information */}
           <div className="grid md:grid-cols-2 gap-6 mb-6">
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -233,7 +227,6 @@ const Subscriptions = ({
                 <span>Usage Overview</span>
               </div>
 
-              {/* Usage Meters */}
               <div className="space-y-3">
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
@@ -281,7 +274,6 @@ const Subscriptions = ({
           </div>
         </div>
 
-        {/* Action Buttons */}
         {billing?.subscriptionStatus === "active" && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border/50">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">

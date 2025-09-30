@@ -119,7 +119,6 @@ export default function Testimonials() {
     },
   ];
 
-  // Auto-play carousel
   useEffect(() => {
     if (!isAutoPlaying) return;
 
@@ -130,7 +129,6 @@ export default function Testimonials() {
     return () => clearInterval(interval);
   }, [isAutoPlaying, testimonials.length]);
 
-  // Intersection Observer for animations
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -173,7 +171,6 @@ export default function Testimonials() {
 
   return (
     <section className="py-24 relative overflow-hidden" id="testimonials">
-      {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/3 -right-40 w-80 h-80 rounded-full bg-secondary-100/30 dark:bg-secondary-900/10 blur-3xl"></div>
         <div className="absolute bottom-1/3 -left-40 w-80 h-80 rounded-full bg-primary-100/30 dark:bg-primary-900/10 blur-3xl"></div>
@@ -196,9 +193,7 @@ export default function Testimonials() {
           </p>
         </div>
 
-        {/* Enhanced Testimonials Carousel */}
         <div className="relative max-w-6xl mx-auto">
-          {/* Main Carousel */}
           <div className="relative overflow-hidden rounded-2xl">
             <div
               className="flex transition-transform duration-700 ease-in-out"
@@ -225,13 +220,10 @@ export default function Testimonials() {
                     onMouseEnter={() => setIsAutoPlaying(false)}
                     onMouseLeave={() => setIsAutoPlaying(true)}
                   >
-                    {/* Animated Background Gradient */}
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-secondary-500/5 to-primary-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                    {/* Glowing Border Effect */}
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary-400/20 to-secondary-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
 
-                    {/* Verified Badge */}
                     {testimonial.verified && (
                       <div className="absolute top-4 right-4">
                         <div className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700">
@@ -242,17 +234,13 @@ export default function Testimonials() {
                     )}
 
                     <div className="relative">
-                      {/* Quote Icon */}
                       <div className="mb-6">
                         <Quote className="w-10 h-10 text-primary-400 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
                       </div>
-
-                      {/* Testimonial Content */}
                       <blockquote className="text-lg md:text-xl font-medium text-gray-800 dark:text-gray-200 mb-6 leading-relaxed group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors duration-300">
                         "{testimonial.content}"
                       </blockquote>
 
-                      {/* Rating Display */}
                       <div className="flex items-center gap-2 mb-6">
                         <div className="flex items-center gap-1">
                           {[...Array(5)].map((_, i) => (
@@ -272,16 +260,13 @@ export default function Testimonials() {
                         </span>
                       </div>
 
-                      {/* Author Info */}
                       <div className="flex items-center gap-4">
-                        {/* Avatar */}
                         <div className="relative">
                           <img
                             src={testimonial.avatar}
                             alt={testimonial.name}
                             className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-lg group-hover:scale-110 transition-transform duration-300"
                           />
-                          {/* Platform Icon Overlay */}
                           {testimonial.platform && (
                             <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white dark:bg-gray-800 border-2 border-white dark:border-gray-700 flex items-center justify-center">
                               {testimonial.platform === "twitter" && (
@@ -302,7 +287,6 @@ export default function Testimonials() {
                           )}
                         </div>
 
-                        {/* Author Details */}
                         <div className="flex-1">
                           <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
                             {testimonial.name}
@@ -315,7 +299,6 @@ export default function Testimonials() {
                           </p>
                         </div>
 
-                        {/* Metrics */}
                         {testimonial.metrics && (
                           <div className="text-right">
                             {testimonial.metrics.followers && (
@@ -344,9 +327,7 @@ export default function Testimonials() {
             </div>
           </div>
 
-          {/* Navigation Controls */}
           <div className="flex items-center justify-center gap-4 mt-8">
-            {/* Previous Button */}
             <button
               onClick={prevTestimonial}
               className="p-3 rounded-full bg-white/10 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700 hover:bg-white/20 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-110 group"
@@ -355,7 +336,6 @@ export default function Testimonials() {
               <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200" />
             </button>
 
-            {/* Dot Indicators */}
             <div className="flex items-center gap-2">
               {testimonials.map((_, index) => (
                 <button
@@ -371,7 +351,6 @@ export default function Testimonials() {
               ))}
             </div>
 
-            {/* Next Button */}
             <button
               onClick={nextTestimonial}
               className="p-3 rounded-full bg-white/10 dark:bg-gray-800/50 border border-white/20 dark:border-gray-700 hover:bg-white/20 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-110 group"
@@ -381,7 +360,6 @@ export default function Testimonials() {
             </button>
           </div>
 
-          {/* Auto-play Indicator */}
           <div className="flex items-center justify-center mt-4">
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <div
@@ -394,7 +372,6 @@ export default function Testimonials() {
           </div>
         </div>
 
-        {/* Enhanced Bottom CTA */}
         <div className="mt-16 text-center">
           <div className="max-w-2xl mx-auto">
             <div
@@ -406,10 +383,8 @@ export default function Testimonials() {
                 border: "1px solid rgba(255,255,255,0.1)",
               }}
             >
-              {/* Animated Background */}
               <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 via-secondary-500/10 to-primary-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-              {/* Floating Sparkles */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 {[...Array(6)].map((_, i) => (
                   <div

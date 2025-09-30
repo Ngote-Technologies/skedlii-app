@@ -5,6 +5,7 @@ import {
   LoginResponse,
   LoginResponseV2,
   GetMeResponseV2,
+  SubscriptionInfo as ApiSubscriptionInfo,
 } from "../api/auth";
 import { useV2Api } from "../api/axios";
 import { Organization, Team } from "../types";
@@ -24,12 +25,33 @@ export type SubscriptionStatus =
   | "past_due"
   | "trialing";
 
-interface SubscriptionInfo {
-  hasValidSubscription: boolean;
-  subscriptionTier: string | null;
-  subscriptionStatus: SubscriptionStatus | null;
+type SubscriptionInfoState = ApiSubscriptionInfo & {
   organizationOwnerBilling?: any; // For organization members inheriting subscription
-}
+};
+
+const createEmptySubscriptionInfo = (): SubscriptionInfoState => ({
+  hasValidSubscription: false,
+  subscriptionTier: null,
+  selectedTier: null,
+  subscriptionStatus: null,
+  billingCycle: null,
+  subscriptionId: null,
+  customerId: null,
+  currentPeriodStart: null,
+  currentPeriodEnd: null,
+  cancelAtPeriodEnd: false,
+  trialEnd: null,
+  isTrial: false,
+  hasUsedTrial: false,
+  planLimits: {
+    maxSocialAccounts: 0,
+    maxTeamMembers: 0,
+    maxScheduledPosts: 0,
+    maxPostsPerMonth: 0,
+    analyticsRetentionDays: 0,
+    aiCreditsPerMonth: 0,
+  },
+});
 
 interface AuthState {
   // State
@@ -44,7 +66,7 @@ interface AuthState {
   // Enhanced authentication context
   userRole: UserRole | null;
   userType: UserType | null;
-  subscriptionInfo: SubscriptionInfo;
+  subscriptionInfo: SubscriptionInfoState;
 
   // Computed permissions (matching V2 API ComputedPermissions interface)
   isAdmin: boolean;
@@ -74,7 +96,7 @@ interface AuthState {
   fetchUserData: () => Promise<void>;
   clearError: () => void;
   updateSubscriptionInfo: (
-    info: SubscriptionInfo,
+    info: SubscriptionInfoState,
     options?: { skipRefresh?: boolean }
   ) => Promise<void>;
   refreshPermissions: (organizationId?: string) => Promise<void>;
@@ -132,11 +154,12 @@ const adaptLoginResponse = (
         canManageApiKeys: false,
         canAccessBetaFeatures: false,
       },
-      subscriptionInfo: v2Response.subscriptionInfo || {
-        hasValidSubscription: false,
-        subscriptionTier: null,
-        subscriptionStatus: null,
-      },
+      subscriptionInfo: v2Response.subscriptionInfo
+        ? {
+            ...createEmptySubscriptionInfo(),
+            ...v2Response.subscriptionInfo,
+          }
+        : createEmptySubscriptionInfo(),
     };
   } else {
     const v1Response = response as LoginResponse;
@@ -153,11 +176,12 @@ const adaptLoginResponse = (
         canConnectSocialAccounts: false,
         canCreateTeams: false,
       },
-      subscriptionInfo: v1Response.subscriptionInfo || {
-        hasValidSubscription: false,
-        subscriptionTier: null,
-        subscriptionStatus: null,
-      },
+      subscriptionInfo: v1Response.subscriptionInfo
+        ? {
+            ...createEmptySubscriptionInfo(),
+            ...v1Response.subscriptionInfo,
+          }
+        : createEmptySubscriptionInfo(),
     };
   }
 };
@@ -204,11 +228,7 @@ const adaptGetMeResponse = (response: any, isV2: boolean) => {
         canConnectSocialAccounts: true, // Most users can connect accounts
         canCreateTeams: isOwnerOrAdmin,
       },
-      subscriptionInfo: {
-        hasValidSubscription: false, // Will be fetched separately
-        subscriptionTier: null,
-        subscriptionStatus: null,
-      },
+      subscriptionInfo: createEmptySubscriptionInfo(),
     };
   } else {
     // V1 response format
@@ -235,11 +255,7 @@ export const logoutUser = async () => {
       teams: [],
       userRole: null,
       userType: null,
-      subscriptionInfo: {
-        hasValidSubscription: false,
-        subscriptionTier: null,
-        subscriptionStatus: null,
-      },
+      subscriptionInfo: createEmptySubscriptionInfo(),
       isAdmin: false,
       canManageOrganization: false,
       canManageBilling: false,
@@ -286,11 +302,7 @@ export const useAuthStore = create<AuthState>()(
       // Enhanced authentication context
       userRole: null,
       userType: null,
-      subscriptionInfo: {
-        hasValidSubscription: false,
-        subscriptionTier: null,
-        subscriptionStatus: null,
-      },
+      subscriptionInfo: createEmptySubscriptionInfo(),
 
       // Computed permissions (initially false)
       isAdmin: false,
@@ -467,7 +479,7 @@ export const useAuthStore = create<AuthState>()(
       clearError: () => set({ error: null }),
 
       updateSubscriptionInfo: async (
-        info: SubscriptionInfo,
+        info: SubscriptionInfoState,
         options?: { skipRefresh?: boolean }
       ) => {
         // Update subscription info

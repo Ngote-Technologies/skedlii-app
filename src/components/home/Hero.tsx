@@ -29,10 +29,8 @@ export default function Hero() {
 
   return (
     <section className="py-20 md:py-32 overflow-hidden bg-gradient-to-b from-primary-50/70 to-white dark:from-background dark:via-card/30 dark:to-background relative">
-      {/* Enhanced Animated Background */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 via-primary-500 to-secondary-500 animate-pulse"></div>
 
-      {/* Interactive Mouse-Following Gradient */}
       <div
         className="absolute inset-0 opacity-30 pointer-events-none transition-all duration-1000"
         style={{
@@ -40,7 +38,6 @@ export default function Hero() {
         }}
       />
 
-      {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary-200/20 dark:bg-primary/10 blur-3xl animate-pulse"></div>
         <div
@@ -53,7 +50,6 @@ export default function Hero() {
         ></div>
       </div>
 
-      {/* Floating Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(12)].map((_, i) => (
           <div
@@ -87,7 +83,6 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Add CSS animations for particles */}
       <style jsx>{`
         @keyframes floatParticle1 {
           0%,
@@ -227,7 +222,6 @@ export default function Hero() {
               ))}
             </div>
 
-            {/* Social Proof Stats */}
             <div className="mt-6 flex flex-wrap justify-center lg:justify-start gap-8 animate-in slide-in-from-bottom-8 duration-700 delay-900">
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <div className="flex -space-x-1">
@@ -259,7 +253,6 @@ export default function Hero() {
             }`}
           >
             <div className="relative">
-              {/* Main dashboard mockup */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-700 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-1 hover:scale-105 group">
                 <div className="h-12 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700 flex items-center px-4 group-hover:bg-gray-100 dark:group-hover:bg-gray-800 transition-colors duration-300">
                   <div className="flex space-x-2">
@@ -333,7 +326,6 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Enhanced Decorative element */}
               <div
                 className="absolute -bottom-6 -right-6 bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-3 px-5 rounded-lg shadow-lg transform rotate-3 hover:rotate-2 hover:scale-110 transition-all duration-300 cursor-pointer group/badge"
                 style={{ animationDelay: "2s" }}
@@ -347,7 +339,6 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Mobile app preview */}
               <div className="absolute -right-8 -top-12 w-40 h-60 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 transform rotate-6 hidden md:block">
                 <div className="h-4 mx-auto w-10 bg-gray-200 dark:bg-gray-700 rounded-b-xl"></div>
                 <div className="p-2">

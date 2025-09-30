@@ -17,15 +17,17 @@ const Plans = ({
   billing,
   handleUpgradeDowngrade,
   canManageBilling,
+  hasValidSubscription,
 }: {
   displayedPlans: any[];
   isYearly: boolean;
   billing: any;
   handleUpgradeDowngrade: (plan: any, interval: "monthly" | "yearly") => void;
   canManageBilling?: boolean;
+  hasValidSubscription?: boolean;
 }) => {
   const getPlanActionText = (planId: string) => {
-    if (!billing?.subscriptionTier) {
+    if (!billing?.subscriptionTier || !hasValidSubscription) {
       return "Choose Plan";
     }
 
@@ -137,7 +139,9 @@ const Plans = ({
           formatted ?? (isYearly ? plan.priceYearly : plan.priceMonthly) ?? "—";
         const displayPeriod = cycle;
         const isCurrentPlan: boolean =
-          (billing?.subscriptionTier && billing.subscriptionTier === plan.id) ||
+          (billing?.subscriptionTier &&
+            billing.subscriptionTier === plan.id &&
+            hasValidSubscription) ||
           false;
         const PlanIcon = getPlanIcon(plan.id);
         const theme = getPlanTheme(plan.id, plan.isPopular);

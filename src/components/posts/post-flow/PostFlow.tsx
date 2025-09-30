@@ -105,7 +105,6 @@ export default function PostFlow() {
   const isLoading =
     isFetchingOrganizationAccounts || Boolean(draftId && isDraftLoading);
 
-  // Check if we can proceed to the next step
   const canProceedToCaption = selectedAccounts.length > 0;
   const hasAnyCaption =
     globalCaption.trim().length > 0 ||
@@ -309,7 +308,6 @@ export default function PostFlow() {
     },
   ];
 
-  // Navigation functions for step clicking and mobile swipe
   const navigateToStep = (stepId: string) => {
     const step = steps.find((s) => s.id === stepId);
     if (step && !step.disabled) {
@@ -319,7 +317,6 @@ export default function PostFlow() {
 
   return (
     <div className="space-y-8 touch-pan-y">
-      {/* Enhanced Header with Step Progress */}
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between gap-4">
           <div>
@@ -366,7 +363,6 @@ export default function PostFlow() {
           </div>
         </div>
 
-        {/* Interactive Step Progress Navigation */}
         <Card className="border-0 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -377,27 +373,22 @@ export default function PostFlow() {
                 return (
                   <div key={step.id} className="flex items-center flex-1">
                     <div className="flex flex-col items-center relative">
-                      {/* Interactive Step Circle */}
                       <button
                         onClick={() => navigateToStep(step.id)}
                         disabled={step.disabled}
                         className={cn(
                           "w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-300 group relative",
-                          // Base styles
                           "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2",
-                          // Active state
                           step.active && [
                             "border-primary bg-primary text-white shadow-lg scale-110",
                             "hover:shadow-xl hover:scale-105",
                           ],
-                          // Completed state
                           step.completed &&
                             !step.active && [
                               "border-green-500 bg-green-500 text-white",
                               !step.disabled &&
                                 "hover:border-green-600 hover:bg-green-600 hover:scale-105 cursor-pointer",
                             ],
-                          // Default/incomplete state
                           !step.active &&
                             !step.completed && [
                               "border-gray-300 bg-white dark:bg-gray-800 text-gray-400",
@@ -405,7 +396,6 @@ export default function PostFlow() {
                                 "hover:border-primary/50 hover:bg-primary/5 hover:scale-105 cursor-pointer",
                               !step.disabled && "hover:text-primary",
                             ],
-                          // Disabled state
                           step.disabled && ["opacity-50 cursor-not-allowed"]
                         )}
                         title={
@@ -420,7 +410,6 @@ export default function PostFlow() {
                           <StepIcon className="h-5 w-5" />
                         )}
 
-                        {/* Hover tooltip */}
                         {!step.disabled && (
                           <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-700 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
                             {step.active ? step.label : `Go to ${step.label}`}
@@ -428,7 +417,6 @@ export default function PostFlow() {
                         )}
                       </button>
 
-                      {/* Step Label */}
                       <div className="mt-3 text-center min-w-0">
                         <button
                           onClick={() => navigateToStep(step.id)}
@@ -453,7 +441,6 @@ export default function PostFlow() {
                       </div>
                     </div>
 
-                    {/* Connector Line */}
                     {!isLast && (
                       <div className="flex-1 mx-4">
                         <div
@@ -594,7 +581,6 @@ export default function PostFlow() {
                 }
               />
 
-              {/* Enhanced Post Preview */}
               <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
                 <CardHeader>
                   <div className="flex items-center space-x-3">

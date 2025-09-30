@@ -61,13 +61,10 @@ export default function ResetPasswordForm({
         email,
         newPassword: data.password,
       };
-      console.log("Making API request with data:", body);
       const result = await apiRequest("POST", "/auth/reset-password", body);
-      console.log("API request successful:", result);
       return result;
     },
     onSuccess: (data) => {
-      console.log("Password reset successful:", data);
       setIsSuccess(true);
       setIsLoading(false);
       toast.success({
@@ -76,12 +73,6 @@ export default function ResetPasswordForm({
       });
     },
     onError: (err: any) => {
-      console.log("Mutation error:", {
-        err,
-        type: typeof err,
-        keys: Object.keys(err || {}),
-      });
-
       // Parse error message from API response
       let errorMessage = "Failed to reset password. Please try again.";
 
@@ -91,8 +82,6 @@ export default function ResetPasswordForm({
       } else if (typeof err === "string") {
         errorMessage = err;
       }
-
-      console.log("Final error message:", errorMessage);
 
       toast.error({
         title: "Password Reset Failed",
@@ -105,26 +94,18 @@ export default function ResetPasswordForm({
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (isLoading || isMutating) {
-      console.log("Already loading, ignoring submit");
       return;
     }
 
     setIsLoading(true);
     const { confirmPassword, ...rest } = data;
 
-    console.log("Submitting form with data:", {
-      ...rest,
-      token: token ? "present" : "missing",
-    });
-
-    // Use React Query mutation which handles success/error automatically
     resetPassword({ ...rest, token });
   };
 
   if (isSuccess) {
     return (
       <div className="text-center py-8 space-y-6 animate-in fade-in duration-500">
-        {/* Enhanced success icon with animation */}
         <div className="relative mx-auto w-20 h-20 mb-6">
           <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-600 rounded-full opacity-20 animate-pulse"></div>
           <div className="relative flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-400 to-green-600 rounded-full">
@@ -132,7 +113,6 @@ export default function ResetPasswordForm({
           </div>
         </div>
 
-        {/* Enhanced success message */}
         <div className="space-y-3">
           <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
             Password Updated Successfully
@@ -143,7 +123,6 @@ export default function ResetPasswordForm({
           </p>
         </div>
 
-        {/* Enhanced action button */}
         <div className="space-y-3">
           <Button
             onClick={onBack}
@@ -166,7 +145,6 @@ export default function ResetPasswordForm({
 
   return (
     <div className="space-y-6">
-      {/* Enhanced header section */}
       <div className="text-center space-y-3">
         <div className="mx-auto w-12 h-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
           <Lock className="w-6 h-6 text-white" />
@@ -181,7 +159,6 @@ export default function ResetPasswordForm({
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-          {/* Enhanced password field with strength indicator */}
           <FormField
             control={form.control}
             name="password"
@@ -200,7 +177,6 @@ export default function ResetPasswordForm({
                   />
                 </FormControl>
 
-                {/* Password strength indicator */}
                 {currentPassword && (
                   <PasswordStrengthIndicator password={currentPassword} />
                 )}
@@ -208,7 +184,6 @@ export default function ResetPasswordForm({
             )}
           />
 
-          {/* Enhanced confirm password field */}
           <FormField
             control={form.control}
             name="confirmPassword"
@@ -230,7 +205,6 @@ export default function ResetPasswordForm({
             )}
           />
 
-          {/* Enhanced action buttons */}
           <div className="space-y-4 pt-2">
             <Button
               type="submit"
@@ -262,7 +236,6 @@ export default function ResetPasswordForm({
         </form>
       </Form>
 
-      {/* Enhanced security note */}
       <div className="text-center">
         <p className="text-xs text-gray-500 dark:text-gray-500 max-w-xs mx-auto leading-relaxed">
           Make sure your password is unique and not used on other websites.

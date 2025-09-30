@@ -9,12 +9,11 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
-import { AlertCircle, Sparkles, Mail, Lock } from "lucide-react";
+import { Sparkles, Mail, Lock } from "lucide-react";
 import { useAuth } from "../../store/hooks";
 import { useToast } from "../../hooks/use-toast";
 
@@ -57,7 +56,8 @@ export default function LoginForm({
       if (!response.success) {
         toast.error({
           title: "Login Failed",
-          description: response.message ?? "Please check your credentials and try again.",
+          description:
+            response.message ?? "Please check your credentials and try again.",
         });
         return;
       }
@@ -72,7 +72,8 @@ export default function LoginForm({
       console.error("[Unhandled Login Exception]", error);
       toast.error({
         title: "Unexpected Error",
-        description: error?.message ?? "Something went wrong. Please try again.",
+        description:
+          error?.message ?? "Something went wrong. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -81,10 +82,8 @@ export default function LoginForm({
 
   return (
     <div className="space-y-6">
-      {/* Enhanced form with floating animations */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Email field with enhanced styling */}
           <FormField
             control={form.control}
             name="email"
@@ -104,17 +103,10 @@ export default function LoginForm({
                     {...field}
                   />
                 </FormControl>
-                {fieldState.error && (
-                  <FormMessage className="flex items-center gap-2 mt-2">
-                    <AlertCircle className="w-4 h-4" />
-                    {fieldState.error.message}
-                  </FormMessage>
-                )}
               </FormItem>
             )}
           />
 
-          {/* Password field with enhanced styling */}
           <FormField
             control={form.control}
             name="password"
@@ -132,16 +124,9 @@ export default function LoginForm({
                     {...field}
                   />
                 </FormControl>
-                {fieldState.error && (
-                  <FormMessage className="flex items-center gap-2 mt-2">
-                    <AlertCircle className="w-4 h-4" />
-                    {fieldState.error.message}
-                  </FormMessage>
-                )}
               </FormItem>
             )}
           />
-          {/* Enhanced remember me and forgot password section */}
           <div className="flex items-center justify-between pt-2">
             <FormField
               control={form.control}
@@ -173,7 +158,6 @@ export default function LoginForm({
             </Button>
           </div>
 
-          {/* Enhanced submit button */}
           <Button
             type="submit"
             size="lg"
@@ -191,7 +175,6 @@ export default function LoginForm({
         </form>
       </Form>
 
-      {/* Enhanced footer with better styling */}
       <div className="text-center">
         <div className="relative">
           <div className="absolute inset-0 flex items-center">

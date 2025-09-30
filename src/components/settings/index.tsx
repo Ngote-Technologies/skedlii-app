@@ -65,7 +65,6 @@ export default function UserSettings() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
-  // Delete account mutation
   const { mutate: deleteAccount, isPending: isDeletingAccount } = useMutation({
     mutationFn: async () => {
       if (deleteConfirmation !== "DELETE MY ACCOUNT") {
@@ -94,23 +93,22 @@ export default function UserSettings() {
       mutationFn: async (data: UpdateUserPayload) => {
         return await usersApi.updateUser(data);
       },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/users/me"] });
-      toast.success({
-        title: "Profile Updated",
-        description: "Your profile has been updated successfully.",
-      });
-      fetchUserData();
-    },
-    onError: () => {
-      toast.error({
-        title: "Profile Update Failed",
-        description: "Failed to update your profile. Please try again.",
-      });
-    },
-  });
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/users/me"] });
+        toast.success({
+          title: "Profile Updated",
+          description: "Your profile has been updated successfully.",
+        });
+        fetchUserData();
+      },
+      onError: () => {
+        toast.error({
+          title: "Profile Update Failed",
+          description: "Failed to update your profile. Please try again.",
+        });
+      },
+    });
 
-  // Change password mutation
   const { mutate: changePassword, isPending: isChangingPassword } = useMutation(
     {
       mutationFn: async (data: PasswordFormData) => {
@@ -208,7 +206,6 @@ export default function UserSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Header */}
       <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 p-6 backdrop-blur-sm border border-border/50">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
         <div className="relative flex flex-col sm:flex-row justify-between gap-4">
@@ -242,7 +239,6 @@ export default function UserSettings() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-4">
-        {/* Enhanced Tab Navigation */}
         <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30 p-1 border border-border/50">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
           <TabsList className="relative grid w-full grid-cols-4 bg-transparent">
@@ -306,11 +302,9 @@ export default function UserSettings() {
 
         <TabsContent value="security">
           <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-background to-muted/30 border border-border/50">
-            {/* Background gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-pink-500/5" />
 
             <div className="relative p-6 space-y-6">
-              {/* Header */}
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-gradient-to-r from-red-500/10 to-pink-500/10 border border-red-500/20">
                   <AlertTriangle className="h-5 w-5 text-red-600" />
@@ -332,7 +326,6 @@ export default function UserSettings() {
                 </div>
               </div>
 
-              {/* Warning Content */}
               <div className="p-4 rounded-lg bg-red-500/5 border border-red-500/20">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
@@ -354,7 +347,6 @@ export default function UserSettings() {
                 </div>
               </div>
 
-              {/* Action Button */}
               <div className="flex justify-end pt-4 border-t border-border/50">
                 <Button
                   variant="destructive"
@@ -370,7 +362,6 @@ export default function UserSettings() {
         </TabsContent>
       </Tabs>
 
-      {/* Enhanced Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader className="text-center">

@@ -156,7 +156,6 @@ export default function Pricing() {
     return () => observer.disconnect();
   }, []);
 
-  // Transform backend plans into UI-friendly format
   const transformPlan = (backendPlan: BackendPlan): PricingPlan => {
     const planIcons: Record<string, React.ReactNode> = {
       creator: <User className="h-6 w-6" />,
@@ -184,7 +183,6 @@ export default function Pricing() {
       ],
     };
 
-    // Use backend yearly pricing directly (backend provides total yearly price)
     const yearlyMonthlyEquivalent =
       Math.round((backendPlan.priceYearly / 12) * 100) / 100;
 
@@ -193,7 +191,7 @@ export default function Pricing() {
       name: backendPlan.name,
       price: backendPlan.priceMonthly,
       yearlyPrice: yearlyMonthlyEquivalent,
-      yearlyTotal: backendPlan.priceYearly, // Add the full yearly price
+      yearlyTotal: backendPlan.priceYearly,
       description: backendPlan.description,
       popular: backendPlan.isPopular,
       enterprise: backendPlan.id === "enterprise",
@@ -206,25 +204,12 @@ export default function Pricing() {
     };
   };
 
-  // Use fallback plans if backend fails or returns empty data
-  // For development, always use fallback plans to ensure UI works
   const plansToUse =
     plansError || backendPlans.length === 0 ? fallbackPlans : backendPlans;
 
-  // Filter out test plans and transform for UI
   const plans: PricingPlan[] = plansToUse
-    .filter((plan) => plan.id !== "test") // Exclude test plan
+    .filter((plan) => plan.id !== "test")
     .map(transformPlan);
-
-  // Debug logging
-  console.log("Pricing Debug:", {
-    plansLoading,
-    plansError,
-    backendPlansLength: backendPlans.length,
-    fallbackPlansLength: fallbackPlans.length,
-    plansToUseLength: plansToUse.length,
-    finalPlansLength: plans.length,
-  });
 
   const yearlyDiscount = (originalPrice: number, yearlyPrice: number) => {
     return Math.round(((originalPrice - yearlyPrice) / originalPrice) * 100);
@@ -234,7 +219,6 @@ export default function Pricing() {
     <div className="min-h-screen flex flex-col" id="pricing">
       <Header />
       <main className="flex-grow relative overflow-hidden">
-        {/* Enhanced Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 -right-40 w-80 h-80 rounded-full bg-primary-200/20 dark:bg-primary-900/10 blur-3xl animate-pulse"></div>
           <div
@@ -247,7 +231,6 @@ export default function Pricing() {
           ></div>
         </div>
 
-        {/* Hero Section */}
         <section className="py-24 text-center max-w-4xl mx-auto px-4 relative">
           <div className="inline-block mb-6">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-full bg-primary-100 dark:bg-primary-900/50 text-primary-800 dark:text-primary-300 border border-primary-200 dark:border-primary-700 hover:scale-105 transition-transform duration-200 cursor-default">
@@ -270,7 +253,6 @@ export default function Pricing() {
             fees.
           </p>
 
-          {/* Billing Toggle */}
           <div className="flex items-center justify-center gap-4 mb-12 animate-in slide-in-from-bottom-8 duration-700 delay-300">
             <span
               className={`text-sm font-medium transition-colors duration-200 ${
@@ -311,7 +293,6 @@ export default function Pricing() {
           </div>
         </section>
 
-        {/* Pricing Cards */}
         <section className="pb-24 px-4">
           <div className="max-w-7xl mx-auto">
             {plansLoading && plans.length === 0 ? (
@@ -354,7 +335,6 @@ export default function Pricing() {
                       border: "1px solid rgba(255,255,255,0.1)",
                     }}
                   >
-                    {/* Plan Badge */}
                     {(plan.popular || plan.badge) && (
                       <div className="absolute left-1/2 transform -translate-x-1/2 z-10 w-max top-1">
                         <div
@@ -372,7 +352,6 @@ export default function Pricing() {
                       </div>
                     )}
 
-                    {/* Coming Soon Badge */}
                     {plan.comingSoon && (
                       <div className="absolute top-4 right-4">
                         <div className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700">
@@ -382,18 +361,14 @@ export default function Pricing() {
                       </div>
                     )}
 
-                    {/* Gradient Background Effect */}
                     <div
                       className={`absolute inset-0 bg-gradient-to-br ${plan.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
                     />
-
-                    {/* Glowing Border Effect */}
                     <div
                       className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${plan.color} opacity-0 group-hover:opacity-20 transition-opacity duration-500 blur-xl`}
                     />
 
                     <div className="relative p-8">
-                      {/* Plan Icon */}
                       <div className="flex items-center gap-3 mb-6">
                         <div
                           className={`w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br ${plan.color} text-white shadow-lg group-hover:shadow-xl transition-shadow duration-300`}
@@ -412,7 +387,6 @@ export default function Pricing() {
                         </div>
                       </div>
 
-                      {/* Price */}
                       <div className="mb-6">
                         <div className="flex items-baseline gap-2 mb-2">
                           <span className="text-4xl font-bold text-gray-900 dark:text-white">
@@ -438,7 +412,6 @@ export default function Pricing() {
                         </p>
                       </div>
 
-                      {/* CTA Button */}
                       <div className="mb-8">
                         <Link to="/register" className="block w-full">
                           <Button
@@ -473,7 +446,6 @@ export default function Pricing() {
                         </Link>
                       </div>
 
-                      {/* Highlights */}
                       {plan.highlights && (
                         <div className="mb-6">
                           <div className="space-y-2">
@@ -494,7 +466,6 @@ export default function Pricing() {
                         </div>
                       )}
 
-                      {/* Features List */}
                       <div>
                         <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
                           Everything included:
@@ -523,7 +494,6 @@ export default function Pricing() {
           </div>
         </section>
 
-        {/* FAQ/Additional Info Section */}
         <section className="pb-24 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div
@@ -535,10 +505,8 @@ export default function Pricing() {
                 border: "1px solid rgba(255,255,255,0.1)",
               }}
             >
-              {/* Animated Background */}
               <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 via-secondary-500/10 to-primary-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-              {/* Floating Elements */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 {[...Array(8)].map((_, i) => (
                   <div
