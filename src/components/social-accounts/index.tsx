@@ -629,7 +629,7 @@ export default function SocialAccounts() {
                         </div>
                       )}
 
-                      {(account.connectedAt || account.createdAt) && (
+                      {(account.lastConnectedAt || account.createdAt) && (
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <Calendar className="h-3 w-3" />
@@ -637,7 +637,9 @@ export default function SocialAccounts() {
                           </div>
                           <span className="text-xs font-medium text-green-600">
                             {formatDate(
-                              account.connectedAt ?? account.createdAt ?? "",
+                              account.lastConnectedAt ??
+                                account.createdAt ??
+                                "",
                               "MMM dd, yyyy"
                             )}
                           </span>
