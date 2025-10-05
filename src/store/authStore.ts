@@ -6,6 +6,7 @@ import {
   LoginResponseV2,
   GetMeResponseV2,
   SubscriptionInfo as ApiSubscriptionInfo,
+  ComputedPermissions,
 } from "../api/auth";
 import { useV2Api } from "../api/axios";
 import { Organization, Team } from "../types";
@@ -53,6 +54,37 @@ const createEmptySubscriptionInfo = (): SubscriptionInfoState => ({
   },
 });
 
+const createEmptyComputedPermissions = (): ComputedPermissions => ({
+  isAdmin: false,
+  canManageOrganization: false,
+  canManageBilling: false,
+  canConnectSocialAccounts: false,
+  canCreateTeams: false,
+  canManageTeams: false,
+  canDeleteTeams: false,
+  canInviteMembers: false,
+  canRemoveMembers: false,
+  canViewAnalytics: false,
+  canExportData: false,
+  canAccessAdvancedFeatures: false,
+  canSchedulePosts: false,
+  canBulkSchedule: false,
+  canUseAIFeatures: false,
+  canManageWebhooks: false,
+  canViewAuditLogs: false,
+  canManageApiKeys: false,
+  canAccessBetaFeatures: false,
+  canViewJobs: false,
+  canManageJobs: false,
+});
+
+const mergeComputedPermissions = (
+  perms?: Partial<ComputedPermissions>
+): ComputedPermissions => ({
+  ...createEmptyComputedPermissions(),
+  ...(perms ?? {}),
+});
+
 interface AuthState {
   // State
   user: any;
@@ -88,6 +120,8 @@ interface AuthState {
   canViewAuditLogs: boolean;
   canManageApiKeys: boolean;
   canAccessBetaFeatures: boolean;
+  canViewJobs: boolean;
+  canManageJobs: boolean;
 
   // Actions
   login: (email: string, password: string) => Promise<any>;
@@ -133,27 +167,9 @@ const adaptLoginResponse = (
           }
         : null,
       teams: [], // Teams still require separate call
-      computedPermissions: v2Response.computedPermissions || {
-        isAdmin: false,
-        canManageOrganization: false,
-        canManageBilling: false,
-        canConnectSocialAccounts: false,
-        canCreateTeams: false,
-        canManageTeams: false,
-        canDeleteTeams: false,
-        canInviteMembers: false,
-        canRemoveMembers: false,
-        canViewAnalytics: false,
-        canExportData: false,
-        canAccessAdvancedFeatures: false,
-        canSchedulePosts: false,
-        canBulkSchedule: false,
-        canUseAIFeatures: false,
-        canManageWebhooks: false,
-        canViewAuditLogs: false,
-        canManageApiKeys: false,
-        canAccessBetaFeatures: false,
-      },
+      computedPermissions: mergeComputedPermissions(
+        v2Response.computedPermissions
+      ),
       subscriptionInfo: v2Response.subscriptionInfo
         ? {
             ...createEmptySubscriptionInfo(),
@@ -169,13 +185,9 @@ const adaptLoginResponse = (
       user: v1Response.user,
       organization: v1Response.organization,
       teams: v1Response.teams || [],
-      computedPermissions: v1Response.computedPermissions || {
-        isAdmin: false,
-        canManageOrganization: false,
-        canManageBilling: false,
-        canConnectSocialAccounts: false,
-        canCreateTeams: false,
-      },
+      computedPermissions: mergeComputedPermissions(
+        v1Response.computedPermissions
+      ),
       subscriptionInfo: v1Response.subscriptionInfo
         ? {
             ...createEmptySubscriptionInfo(),
@@ -220,14 +232,23 @@ const adaptGetMeResponse = (response: any, isV2: boolean) => {
       organizations: v2Response.organizations,
       // V2 doesn't provide these in /me response, will need separate calls
       teams: [],
-      computedPermissions: {
+      computedPermissions: mergeComputedPermissions({
         // Basic permissions based on role
         isAdmin: isOwnerOrAdmin,
         canManageOrganization: isOwnerOrAdmin,
         canManageBilling: userRole === "owner",
         canConnectSocialAccounts: true, // Most users can connect accounts
         canCreateTeams: isOwnerOrAdmin,
-      },
+        canManageTeams: isOwnerOrAdmin,
+        canDeleteTeams: isOwnerOrAdmin,
+        canInviteMembers: isOwnerOrAdmin,
+        canRemoveMembers: isOwnerOrAdmin,
+        canViewAnalytics: true,
+        canSchedulePosts: true,
+        canBulkSchedule: isOwnerOrAdmin,
+        canViewJobs: isOwnerOrAdmin,
+        canManageJobs: isOwnerOrAdmin,
+      }),
       subscriptionInfo: createEmptySubscriptionInfo(),
     };
   } else {
@@ -256,25 +277,7 @@ export const logoutUser = async () => {
       userRole: null,
       userType: null,
       subscriptionInfo: createEmptySubscriptionInfo(),
-      isAdmin: false,
-      canManageOrganization: false,
-      canManageBilling: false,
-      canConnectSocialAccounts: false,
-      canCreateTeams: false,
-      canManageTeams: false,
-      canDeleteTeams: false,
-      canInviteMembers: false,
-      canRemoveMembers: false,
-      canViewAnalytics: false,
-      canExportData: false,
-      canAccessAdvancedFeatures: false,
-      canSchedulePosts: false,
-      canBulkSchedule: false,
-      canUseAIFeatures: false,
-      canManageWebhooks: false,
-      canViewAuditLogs: false,
-      canManageApiKeys: false,
-      canAccessBetaFeatures: false,
+      ...createEmptyComputedPermissions(),
     });
 
     // Clear team store explicitly
@@ -305,25 +308,7 @@ export const useAuthStore = create<AuthState>()(
       subscriptionInfo: createEmptySubscriptionInfo(),
 
       // Computed permissions (initially false)
-      isAdmin: false,
-      canManageOrganization: false,
-      canManageBilling: false,
-      canConnectSocialAccounts: false,
-      canCreateTeams: false,
-      canManageTeams: false,
-      canDeleteTeams: false,
-      canInviteMembers: false,
-      canRemoveMembers: false,
-      canViewAnalytics: false,
-      canExportData: false,
-      canAccessAdvancedFeatures: false,
-      canSchedulePosts: false,
-      canBulkSchedule: false,
-      canUseAIFeatures: false,
-      canManageWebhooks: false,
-      canViewAuditLogs: false,
-      canManageApiKeys: false,
-      canAccessBetaFeatures: false,
+      ...createEmptyComputedPermissions(),
       // Actions
       login: async (email, password) => {
         set({ isLoading: true, error: null });
@@ -565,6 +550,8 @@ export const useAuthStore = create<AuthState>()(
         canViewAuditLogs: state.canViewAuditLogs,
         canManageApiKeys: state.canManageApiKeys,
         canAccessBetaFeatures: state.canAccessBetaFeatures,
+        canViewJobs: state.canViewJobs,
+        canManageJobs: state.canManageJobs,
       }),
     }
   )

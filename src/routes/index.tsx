@@ -42,6 +42,9 @@ const Posts = React.lazy(() => import("../components/posts"));
 const ScheduledPosts = React.lazy(
   () => import("../components/posts/scheduled-posts/ScheduledPosts")
 );
+const ScheduledPostDetail = React.lazy(
+  () => import("../components/posts/scheduled-posts/ScheduledPostDetail")
+);
 const PostFlow = React.lazy(
   () => import("../components/posts/post-flow/PostFlow")
 );
@@ -50,6 +53,9 @@ const DraftsList = React.lazy(
 );
 const DraftDetail = React.lazy(
   () => import("../components/posts/drafts/DraftDetail")
+);
+const SocialPostDetail = React.lazy(
+  () => import("../components/posts/SocialPostDetail")
 );
 const Billing = React.lazy(() => import("../components/billing"));
 const HelpSupport = React.lazy(() => import("../components/help-support"));
@@ -75,6 +81,9 @@ const OrganizationMembers = React.lazy(
 );
 const AcceptInvitation = React.lazy(() => import("../pages/AcceptInvitation"));
 const ToastDemo = React.lazy(() => import("../components/ui/toast-demo"));
+const AdminJobsDashboard = React.lazy(
+  () => import("../components/admin/jobs")
+);
 
 const AppRoutes = () => {
   return (
@@ -146,7 +155,12 @@ const AppRoutes = () => {
                 <Route path="analytics" element={<AnalyticsDashboard />} />
                 <Route path="post-flow" element={<PostFlow />} />
                 <Route path="posts" element={<Posts />} />
+                <Route path="posts/:postId" element={<SocialPostDetail />} />
                 <Route path="scheduled" element={<ScheduledPosts />} />
+                <Route
+                  path="scheduled/:scheduledId"
+                  element={<ScheduledPostDetail />}
+                />
                 <Route path="drafts" element={<DraftsList />} />
                 <Route path="drafts/:draftId" element={<DraftDetail />} />
                 <Route path="settings" element={<UserSettings />} />
@@ -169,6 +183,7 @@ const AppRoutes = () => {
                   path="organizations/teams"
                   element={<TeamManagement />}
                 />
+                <Route path="admin/jobs" element={<AdminJobsDashboard />} />
                 {/* Development/Testing Routes */}
                 {import.meta.env.DEV && (
                   <Route path="dev/toast-demo" element={<ToastDemo />} />

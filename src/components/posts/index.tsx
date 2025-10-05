@@ -736,6 +736,14 @@ const Posts = () => {
                           {timestampLabel} {formattedTimestamp ?? "—"}
                         </span>
                       </span>
+                      {!isImmediate && (
+                        <Link
+                          to={`/dashboard/posts/${post._id}`}
+                          className="text-xs text-primary hover:underline"
+                        >
+                          View details
+                        </Link>
+                      )}
                       {post.collection && (
                         <div className="flex items-center space-x-1 text-xs">
                           <Folder className="h-3 w-3 text-muted-foreground" />
