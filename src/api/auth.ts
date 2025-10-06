@@ -35,6 +35,8 @@ export interface ComputedPermissions {
   canViewAuditLogs: boolean;
   canManageApiKeys: boolean;
   canAccessBetaFeatures: boolean;
+  canViewJobs: boolean;
+  canManageJobs: boolean;
 }
 
 export interface SubscriptionInfo {

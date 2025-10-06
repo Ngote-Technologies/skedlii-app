@@ -51,9 +51,12 @@ export function CollectionsView({
     );
   }
 
-  if (collections.data.length === 0) {
+  if (collections?.items?.length === 0) {
     return (
-      <Card className="border-dashed border-2 relative overflow-hidden" variant="gradient">
+      <Card
+        className="border-dashed border-2 relative overflow-hidden"
+        variant="gradient"
+      >
         <div className="absolute top-4 right-4 opacity-10">
           <Sparkles className="h-12 w-12" />
         </div>
@@ -65,11 +68,12 @@ export function CollectionsView({
             No collections yet
           </CardTitle>
           <CardDescription className="text-base max-w-md mx-auto">
-            Create collections to organize your social media content into thematic groups for better management
+            Create collections to organize your social media content into
+            thematic groups for better management
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center pb-8">
-          <Button 
+          <Button
             onClick={() => setIsCreating(true)}
             variant="gradient"
             size="lg"
@@ -83,24 +87,25 @@ export function CollectionsView({
     );
   }
 
-  if (collections.data.length > 0) {
+  if (collections?.items?.length > 0) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {collections?.data.map((collection: any, index: number) => {
-          const postCount = collection?.contentRefs?.length ?? 0;
+        {collections?.items.map((collection: any, index: number) => {
+          const postCount = collection?.items?.length ?? 0;
           const createdAt = new Date(collection.createdAt);
-          const isRecent = createdAt > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-          
+          const isRecent =
+            createdAt > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
           return (
-            <Card 
-              key={collection._id} 
+            <Card
+              key={collection._id}
               className="overflow-hidden group hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer border-border/50"
               variant="elevated"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               {/* Gradient header background */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/60 to-primary/30" />
-              
+              {/* <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/60 to-primary/30" /> */}
+
               <CardHeader className="pb-3 relative">
                 <div className="flex justify-between items-start">
                   <div className="flex items-start gap-3 flex-1">
@@ -123,11 +128,11 @@ export function CollectionsView({
                       </div>
                     </div>
                   </div>
-                  
+
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="icon"
                         className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-muted/80"
                       >
@@ -149,14 +154,14 @@ export function CollectionsView({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                
+
                 <CardDescription className="text-sm text-muted-foreground line-clamp-2 mt-2">
                   {collection.description?.trim()
                     ? collection.description
                     : "No description provided for this collection"}
                 </CardDescription>
               </CardHeader>
-              
+
               <CardContent className="pt-2 pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -164,25 +169,28 @@ export function CollectionsView({
                       <FileText className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm font-medium">{postCount}</span>
                       <span className="text-xs text-muted-foreground">
-                        post{postCount !== 1 ? 's' : ''}
+                        post{postCount !== 1 ? "s" : ""}
                       </span>
                     </div>
                   </div>
-                  
+
                   {postCount > 0 && (
-                    <Badge variant="outline" className="text-xs">
-                      <Clock className="h-3 w-3 mr-1" />
+                    <Badge
+                      variant="success"
+                      className="text-xs"
+                      icon={<Clock className="h-3 w-3 mr-1" />}
+                    >
                       Active
                     </Badge>
                   )}
                 </div>
               </CardContent>
-              
+
               <CardFooter className="bg-gradient-to-r from-muted/30 to-muted/50 py-3 px-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-200" 
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-200"
                   asChild
                 >
                   <Link to={`/dashboard/collections/${collection._id}`}>

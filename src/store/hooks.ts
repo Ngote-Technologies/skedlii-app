@@ -44,6 +44,8 @@ export const useAuth = () => {
     canViewAuditLogs,
     canManageApiKeys,
     canAccessBetaFeatures,
+    canViewJobs,
+    canManageJobs,
   } = useAuthStore();
 
   const {
@@ -112,6 +114,8 @@ export const useAuth = () => {
     canViewAuditLogs,
     canManageApiKeys,
     canAccessBetaFeatures,
+    canViewJobs,
+    canManageJobs,
 
     // Team actions
     // fetchTeams,
