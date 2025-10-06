@@ -103,16 +103,29 @@ export function getScheduledPostListView(
                     )}
                     {/* Cancel is allowed when there are pending targets and none are publishing */}
                     {Array.isArray(post.platforms) &&
-                      post.platforms.some((p: any) => p?.status === "pending") &&
-                      !post.platforms.some((p: any) => p?.status === "publishing") && (
-                        <DropdownMenuItem onClick={() => cancelPost(String(post._id))}>
+                      post.platforms.some(
+                        (p: any) => p?.status === "pending"
+                      ) &&
+                      !post.platforms.some(
+                        (p: any) => p?.status === "publishing"
+                      ) && (
+                        <DropdownMenuItem
+                          onClick={() => cancelPost(String(post._id))}
+                        >
                           <CheckCircle size={14} className="mr-2" />
                           Cancel Post
                         </DropdownMenuItem>
                       )}
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
-                      disabled={Array.isArray(post.platforms) && post.platforms.some((p: any) => p?.status === "pending" || p?.status === "publishing")}
+                      disabled={
+                        Array.isArray(post.platforms) &&
+                        post.platforms.some(
+                          (p: any) =>
+                            p?.status === "pending" ||
+                            p?.status === "publishing"
+                        )
+                      }
                       onClick={() => handleDeletePost(post)}
                     >
                       <Trash2 size={14} className="mr-2" />
@@ -139,18 +152,35 @@ export function getScheduledPostListView(
                 )}
               </div>
             </CardContent>
-            <CardFooter className="flex flex-wrap gap-1 border-t pt-2 bg-muted/30">
-              {post.platforms?.map((platform: any) => {
-                const name = (platform.platformName || platform.platform || "").toString().toLowerCase();
-                return (
-                <div
-                  key={platform.accountId}
-                  className="text-xs bg-muted px-2 py-1 rounded-full flex items-center"
-                >
-                  <i className={`${getSocialIcon(name)} mr-1`}></i>
-                  <span className="capitalize">{name || platform.platformId}</span>
-                </div>
-              );})}
+            <CardFooter className="flex flex-wrap items-center justify-between gap-2 border-t pt-2 bg-muted/30">
+              <Link
+                to={`/dashboard/scheduled/${post._id}`}
+                className="text-xs text-primary hover:underline"
+              >
+                View details
+              </Link>
+              <div className="flex flex-wrap gap-1">
+                {post.platforms?.map((platform: any) => {
+                  const name = (
+                    platform.platformName ||
+                    platform.platform ||
+                    ""
+                  )
+                    .toString()
+                    .toLowerCase();
+                  return (
+                    <div
+                      key={platform.accountId}
+                      className="text-xs bg-muted px-2 py-1 rounded-full flex items-center"
+                    >
+                      <i className={`${getSocialIcon(name)} mr-1`}></i>
+                      <span className="capitalize">
+                        {name || platform.platformId}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </CardFooter>
           </Card>
         ))}

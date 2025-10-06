@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Building,
   FileText,
+  History,
 } from "lucide-react";
 import { useAuth } from "../store/hooks";
 import { useMemo } from "react";
@@ -43,6 +44,7 @@ export default function DashboardSidebar({
     canCreateTeams,
     canConnectSocialAccounts,
     hasValidSubscription: hasValidSub,
+    canViewJobs,
     userContext,
   } = useAccessControl();
   const userType = userContext.userType;
@@ -142,6 +144,13 @@ export default function DashboardSidebar({
         badge: !hasValidSub ? "Team" : null,
         show: true, // Show but may be disabled
       },
+      {
+        icon: <History size={18} />,
+        label: "Job History",
+        href: "/dashboard/admin/jobs",
+        badge: null,
+        show: canViewJobs,
+      },
     ];
 
     // Add development items in development mode
@@ -189,6 +198,7 @@ export default function DashboardSidebar({
     userType,
     canCreateTeams,
     canConnectSocialAccounts,
+    canViewJobs,
   ]);
 
   const handleNavigation = () => {
