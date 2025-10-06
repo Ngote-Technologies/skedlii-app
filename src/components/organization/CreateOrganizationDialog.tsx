@@ -68,7 +68,6 @@ export default function CreateOrganizationDialog({
   });
 
   const onSubmit = async (data: CreateOrganizationFormData) => {
-    console.log(data);
     setIsLoading(true);
     try {
       // await createOrganization(data as CreateOrganizationData);
