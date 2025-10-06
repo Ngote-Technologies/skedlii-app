@@ -25,9 +25,13 @@ export default function Collection() {
 
   const [collectionPosts, setCollectionPosts] = useState<any[]>([]);
 
-  const { data: collection, isLoading: isLoadingCollection } = useQuery({
-    queryKey: [`/collections/collection/${collectionId}`],
-    queryFn: () => apiRequest("GET", `/collections/collection/${collectionId}`),
+  const { data: collectionData, isLoading: isLoadingCollection } = useQuery({
+    queryKey: [`/collections/collection/${collectionId}?include=posts`],
+    queryFn: () =>
+      apiRequest(
+        "GET",
+        `/collections/collection/${collectionId}?include=posts`
+      ),
   }) as { data: any; isLoading: boolean };
 
   useEffect(() => {
@@ -37,10 +41,10 @@ export default function Collection() {
   }, [collectionId]);
 
   useEffect(() => {
-    if (collection?.items?.length) {
-      setCollectionPosts(collection.items);
+    if (collectionData?.collection?.items?.length) {
+      setCollectionPosts(collectionData.collection.items);
     }
-  }, [collection]);
+  }, [collectionData]);
 
   const isLoading = isLoadingCollection;
 
@@ -48,7 +52,7 @@ export default function Collection() {
     return <CollectionSkeleton />;
   }
 
-  if (!collection) {
+  if (!collectionData) {
     return <div>Collection not found</div>;
   }
 
@@ -88,7 +92,6 @@ export default function Collection() {
         className="relative overflow-hidden border-border/50"
         variant="elevated"
       >
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/60 to-primary/30" />
         <div className="absolute top-4 right-4 opacity-5">
           <Sparkles className="h-16 w-16" />
         </div>
@@ -102,11 +105,11 @@ export default function Collection() {
             <div className="flex-1 space-y-3">
               <div>
                 <CardTitle className="text-3xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent mb-2">
-                  {collection.name}
+                  {collectionData.collection.name}
                 </CardTitle>
-                {collection.description && (
+                {collectionData.collection.description && (
                   <p className="text-muted-foreground text-lg leading-relaxed">
-                    {collection.description}
+                    {collectionData.collection.description}
                   </p>
                 )}
               </div>
@@ -115,10 +118,12 @@ export default function Collection() {
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">
-                    {collection.items?.length ?? 0} post
-                    {(collection.items?.length ?? 0) !== 1 ? "s" : ""}
+                    {collectionData.collection.items?.length ?? 0} post
+                    {(collectionData.collection.items?.length ?? 0) !== 1
+                      ? "s"
+                      : ""}
                   </span>
-                  {(collection.items?.length ?? 0) > 0 && (
+                  {(collectionData.collection.items?.length ?? 0) > 0 && (
                     <Badge variant="success" className="text-xs">
                       Active
                     </Badge>
@@ -129,7 +134,10 @@ export default function Collection() {
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
                     Created{" "}
-                    {formatDate(new Date(collection.createdAt), "MMM d, yyyy")}
+                    {formatDate(
+                      new Date(collectionData.collection.createdAt),
+                      "MMM d, yyyy"
+                    )}
                   </span>
                 </div>
 
@@ -138,7 +146,10 @@ export default function Collection() {
                   <span className="text-sm text-muted-foreground">
                     Last updated{" "}
                     {formatDate(
-                      new Date(collection.updatedAt || collection.createdAt),
+                      new Date(
+                        collectionData.collection.updatedAt ||
+                          collectionData.collection.createdAt
+                      ),
                       "MMM d"
                     )}
                   </span>
@@ -274,6 +285,12 @@ function PostCard({ post, index }: { readonly post: any; index: number }) {
         return "text-blue-600 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800";
       case "instagram":
         return "text-pink-500 bg-pink-50 dark:bg-pink-950/20 border-pink-200 dark:border-pink-800";
+      case "threads":
+        return "text-blue-500 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800";
+      case "tiktok":
+        return "text-blue-500 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800";
+      case "youtube":
+        return "text-blue-500 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800";
       default:
         return "text-muted-foreground bg-muted/50 border-border";
     }
@@ -293,13 +310,10 @@ function PostCard({ post, index }: { readonly post: any; index: number }) {
           >
             {platform}
           </Badge>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          >
+
+          <a href={post.postUrl} target="_blank">
             <ExternalLink className="h-3 w-3" />
-          </Button>
+          </a>
         </div>
 
         <div className="flex items-center gap-3">
@@ -334,7 +348,7 @@ function PostCard({ post, index }: { readonly post: any; index: number }) {
           <div className="flex items-center gap-2">
             <FileText className="h-3 w-3 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">
-              {content.length} chars
+              {content?.length} chars
             </span>
           </div>
           <Badge variant="outline" className="text-xs">
