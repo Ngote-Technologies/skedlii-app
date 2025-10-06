@@ -45,38 +45,39 @@ let hasShownTokenExpiredToast = false;
 // Shared interceptor logic for request handling
 const createRequestInterceptor = (version: "v1" | "v2") => {
   return async (config: InternalAxiosRequestConfig) => {
-    console.log(`[DEBUG] ${version.toUpperCase()} Request Interceptor:`, {
-      method: config.method?.toUpperCase(),
-      url: config.url,
-      baseURL: config.baseURL,
-      fullURL: (config.baseURL || "") + (config.url || ""),
-    });
+    // console.log(`[DEBUG] ${version.toUpperCase()} Request Interceptor:`, {
+    //   method: config.method?.toUpperCase(),
+    //   url: config.url,
+    //   baseURL: config.baseURL,
+    //   fullURL: (config.baseURL || "") + (config.url || ""),
+    // });
 
     // Get tokens from localStorage
     const accessToken = localStorage.getItem("auth_token");
     const refreshToken = localStorage.getItem("refresh_token");
 
     // Don't add auth header for specific auth endpoints (exact match, not substring)
-    const path = config.url || '';
+    const path = config.url || "";
     const matches = (ep: string) => path === ep || path.endsWith(ep);
     const isAuthEndpoint = [
-      '/auth/login',
-      '/auth/register',
-      '/auth/refresh',
-      '/auth/forgot-password',
-      '/auth/reset-password',
+      "/auth/login",
+      "/auth/register",
+      "/auth/refresh",
+      "/auth/forgot-password",
+      "/auth/reset-password",
     ].some(matches);
 
     if (accessToken && !isAuthEndpoint) {
       config.headers.Authorization = `Bearer ${accessToken}`;
-      console.log(
-        `[DEBUG] ${version.toUpperCase()} Request: Added Authorization header`
-      );
-    } else if (isAuthEndpoint) {
-      console.log(
-        `[DEBUG] ${version.toUpperCase()} Request: Skipping auth header for auth endpoint`
-      );
+      // console.log(
+      //   `[DEBUG] ${version.toUpperCase()} Request: Added Authorization header`
+      // );
     }
+    // else if (isAuthEndpoint) {
+    //   console.log(
+    //     `[DEBUG] ${version.toUpperCase()} Request: Skipping auth header for auth endpoint`
+    //   );
+    // }
 
     // Add request timestamp for debugging
     config.headers["X-Request-Time"] = new Date().toISOString();
@@ -85,17 +86,17 @@ const createRequestInterceptor = (version: "v1" | "v2") => {
     // Version information is implicit based on the baseURL being used
 
     // V2 specific: Add refresh token ONLY for the exact refresh endpoint
-    if (version === 'v2' && refreshToken && (matches('/auth/refresh'))) {
+    if (version === "v2" && refreshToken && matches("/auth/refresh")) {
       config.data = { ...config.data, refreshToken };
     }
 
-    console.log(
-      `[DEBUG] ${version.toUpperCase()} Request: Final config ready`,
-      {
-        hasAuth: !!config.headers.Authorization,
-        contentType: config.headers["Content-Type"],
-      }
-    );
+    // console.log(
+    //   `[DEBUG] ${version.toUpperCase()} Request: Final config ready`,
+    //   {
+    //     hasAuth: !!config.headers.Authorization,
+    //     contentType: config.headers["Content-Type"],
+    //   }
+    // );
 
     return config;
   };
@@ -105,11 +106,11 @@ const createRequestInterceptor = (version: "v1" | "v2") => {
 const createResponseInterceptor = (version: "v1" | "v2") => {
   return {
     success: (response: any) => {
-      console.log(`[DEBUG] ${version.toUpperCase()} Response Success:`, {
-        status: response.status,
-        url: response.config?.url,
-        hasData: !!response.data,
-      });
+      // console.log(`[DEBUG] ${version.toUpperCase()} Response Success:`, {
+      //   status: response.status,
+      //   url: response.config?.url,
+      //   hasData: !!response.data,
+      // });
       return response;
     },
     error: async (error: any) => {
