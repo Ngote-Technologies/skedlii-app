@@ -180,15 +180,15 @@ export default function Collections() {
               <div className="flex items-center gap-2">
                 <FolderOpen className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {collections?.data?.length || 0} collections
+                  {collections?.items?.length || 0} collections
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {collections?.data?.reduce(
+                  {collections?.items?.reduce(
                     (total: number, collection: any) =>
-                      total + (collection.contentRefs?.length || 0),
+                      total + (collection.items?.length || 0),
                     0
                   ) || 0}{" "}
                   total posts
@@ -197,7 +197,7 @@ export default function Collections() {
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {collections?.data?.filter(
+                  {collections?.items?.filter(
                     (c: any) =>
                       new Date(c.createdAt) >
                       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
