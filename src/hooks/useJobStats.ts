@@ -25,7 +25,8 @@ export function useJobStats(enabled: boolean = true) {
     queryKey: ["/admin/jobs/stats"],
     enabled,
     select: normalizeStats,
-    refetchInterval: enabled ? 10000 : false,
+    refetchOnWindowFocus: true,
+    // refetchInterval: enabled ? 10000 : false,
   });
 }
 
