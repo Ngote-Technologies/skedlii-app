@@ -19,7 +19,9 @@ export type ImmediateScheduledTarget = {
   lastErrorType?: string;
 };
 
-const IMMEDIATE_QUERY_KEY = "/scheduled-posts?mode=immediate" as const;
+// Only fetch immediate posts that are still processing (pending or publishing)
+const IMMEDIATE_QUERY_KEY =
+  "/scheduled-posts?mode=immediate&status=pending,publishing" as const;
 
 const ACTIVE_STATUSES = new Set(["pending", "publishing", "failed"]);
 
