@@ -20,8 +20,9 @@ export type ImmediateScheduledTarget = {
 };
 
 // Only fetch immediate posts that are still processing (pending or publishing)
+// Ask API to return flattened platform targets directly to reduce overfetching
 const IMMEDIATE_QUERY_KEY =
-  "/scheduled-posts?mode=immediate&status=pending,publishing" as const;
+  "/scheduled-posts?mode=immediate&status=pending,publishing&view=targets" as const;
 
 const ACTIVE_STATUSES = new Set(["pending", "publishing", "failed"]);
 
@@ -48,7 +49,7 @@ type RawScheduledPost = {
 };
 
 type ScheduledPostsResponse = {
-  items?: RawScheduledPost[];
+  items?: RawScheduledPost[] | ImmediateScheduledTarget[];
   data?: RawScheduledPost[];
 };
 
@@ -56,15 +57,25 @@ const normalizeStatus = (status?: string) =>
   String(status ?? "pending").toLowerCase();
 
 const toTargetArray = (
-  response: ScheduledPostsResponse | null | undefined
+  response: ScheduledPostsResponse | ImmediateScheduledTarget[] | null | undefined
 ): ImmediateScheduledTarget[] => {
+  // If API already returns flattened targets (view=targets), pass through after normalization
+  if (Array.isArray(response)) {
+    return response.map(toNormalizedTarget);
+  }
+
   const rawItems = Array.isArray(response?.items)
-    ? response?.items
+    ? (response?.items as any[])
     : Array.isArray(response?.data)
-    ? response?.data
+    ? (response?.data as any[])
     : [];
 
-  return rawItems.flatMap((item) => {
+  if (rawItems.length > 0 && isTargetLike(rawItems[0])) {
+    return rawItems.map(toNormalizedTarget);
+  }
+
+  // Otherwise, flatten scheduled-posts documents to platform targets (legacy shape)
+  return rawItems.flatMap((item: RawScheduledPost) => {
     const platforms = Array.isArray(item?.platforms) ? item.platforms : [];
     const baseContent = (item?.content ?? "").toString();
     const mediaUrls = Array.isArray(item?.mediaUrls) ? item.mediaUrls : [];
@@ -104,8 +115,8 @@ const toTargetArray = (
             content: baseContent,
             mediaUrls,
             mediaType,
-            organizationId: item?.organizationId
-              ? String(item.organizationId)
+            organizationId: (item as any)?.organizationId
+              ? String((item as any).organizationId)
               : undefined,
             createdAt: item?.createdAt,
             scheduledFor: item?.scheduledFor,
@@ -118,6 +129,41 @@ const toTargetArray = (
       });
   });
 };
+
+function isTargetLike(obj: any): obj is ImmediateScheduledTarget {
+  return (
+    obj &&
+    typeof obj === "object" &&
+    typeof obj.accountId === "string" &&
+    typeof obj.scheduledPostId === "string"
+  );
+}
+
+function toNormalizedTarget(t: any): ImmediateScheduledTarget {
+  const scheduledPostId = String(t?.scheduledPostId || "");
+  const accountId = String(t?.accountId || "");
+  const id = t?.id ? String(t.id) : `scheduled-${scheduledPostId}-${accountId}`;
+  const mediaType =
+    t?.mediaType === "image" || t?.mediaType === "video" ? t.mediaType : "text";
+  return {
+    id,
+    scheduledPostId,
+    accountId,
+    platformName: String(t?.platformName || ""),
+    status: normalizeStatus(t?.status),
+    caption: String(t?.caption ?? t?.content ?? ""),
+    content: String(t?.content ?? ""),
+    mediaUrls: Array.isArray(t?.mediaUrls) ? t.mediaUrls : [],
+    mediaType,
+    organizationId: t?.organizationId ? String(t.organizationId) : undefined,
+    createdAt: t?.createdAt,
+    scheduledFor: t?.scheduledFor,
+    startedAt: t?.startedAt,
+    postUrl: t?.postUrl,
+    lastError: t?.lastError,
+    lastErrorType: t?.lastErrorType,
+  };
+}
 
 export function useImmediateScheduledPosts(enabled: boolean = true) {
   return useQuery<

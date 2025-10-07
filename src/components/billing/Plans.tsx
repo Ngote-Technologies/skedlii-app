@@ -242,7 +242,7 @@ const Plans = ({
                       ? `bg-gradient-to-r ${theme.gradient} hover:shadow-lg hover:shadow-primary/25 text-white border-0`
                       : "bg-primary/10 text-primary border border-primary/30 hover:bg-primary/15"
                   } ${
-                    !canManageBilling
+                    !canManageBilling || plan.comingSoon
                       ? "disabled:opacity-50 disabled:cursor-not-allowed"
                       : ""
                   }`}
@@ -254,10 +254,12 @@ const Plans = ({
                       : "secondary"
                   }
                   onClick={() => handleUpgradeDowngrade(plan, cycle)}
-                  disabled={isCurrentPlan || !canManageBilling}
+                  disabled={isCurrentPlan || !canManageBilling || !!plan.comingSoon}
                   title={
                     !canManageBilling
                       ? "Only account owners can manage billing"
+                      : plan.comingSoon
+                      ? "This plan is coming soon"
                       : ""
                   }
                 >
@@ -265,7 +267,11 @@ const Plans = ({
                   {plan.isPopular && !isCurrentPlan && (
                     <Zap className="h-4 w-4 mr-2" />
                   )}
-                  {!canManageBilling ? "View Only" : getPlanActionText(plan.id)}
+                  {plan.comingSoon
+                    ? "Coming Soon"
+                    : !canManageBilling
+                    ? "View Only"
+                    : getPlanActionText(plan.id)}
                 </Button>
               </div>
             </div>
