@@ -13,40 +13,23 @@ import {
   Rocket,
   Heart,
   TrendingUp,
-  User,
-  Building,
 } from "lucide-react";
 
 interface BackendPlan {
   id: string;
   name: string;
   description: string;
-  badge: string;
-  badgeColor: string;
-  isPopular: boolean;
-  features: string[];
-  priceMonthly: number;
-  priceYearly: number;
-  priceMonthlyId: string;
-  priceYearlyId: string;
-  productId: string;
-}
-
-interface PricingPlan {
-  id: string;
-  name: string;
-  price: number;
-  yearlyPrice: number;
-  yearlyTotal?: number;
-  description: string;
-  popular?: boolean;
-  enterprise?: boolean;
-  features: string[];
-  highlights: string[];
-  color: string;
-  icon: React.ReactNode;
-  comingSoon?: boolean;
   badge?: string;
+  badgeColor?: string; // not used directly for classes
+  isPopular?: boolean;
+  comingSoon?: boolean;
+  features: string[];
+  intervals: Array<{
+    cycle: "monthly" | "yearly";
+    amount: number; // cents
+    currency: string; // e.g. usd
+    trialDays?: number;
+  }>;
 }
 
 export default function Pricing() {
@@ -55,85 +38,14 @@ export default function Pricing() {
 
   // Fetch plans from backend - with timeout and error handling
   const {
-    data: backendPlans = [],
+    data: plansResponse,
     isLoading: plansLoading,
     error: plansError,
   } = useQuery({
-    queryKey: [`/plans`],
-    retry: false, // Don't retry on failure
+    queryKey: [`/billing/plans`],
     staleTime: 0, // Always try to fetch fresh data
-  }) as { data: BackendPlan[]; isLoading: boolean; error: any };
-
-  // Fallback plans in case API fails
-  const fallbackPlans: BackendPlan[] = [
-    {
-      id: "creator",
-      name: "Creator",
-      description:
-        "Perfect for individual creators getting started with social media management",
-      badge: "7-Day Free Trial",
-      badgeColor: "blue",
-      isPopular: true,
-      features: [
-        "Up to 3 social accounts",
-        "Schedule up to 30 posts/month",
-        "Basic analytics",
-        "Content calendar",
-        "Post templates",
-        "7-day free trial",
-      ],
-      priceMonthly: 5,
-      priceYearly: 50,
-      priceMonthlyId: "price_creator_monthly",
-      priceYearlyId: "price_creator_yearly",
-      productId: "prod_creator",
-    },
-    {
-      id: "team",
-      name: "Team",
-      description: "Collaboration for small teams in one workspace",
-      badge: "Most Popular",
-      badgeColor: "purple",
-      isPopular: false,
-      features: [
-        "Up to 10 social accounts",
-        "Unlimited posts",
-        "Approvals workflow + content calendar",
-        "Advanced analytics & insights",
-        "Team collaboration (5 members)",
-        "25 GB content library",
-        "Priority support",
-      ],
-      priceMonthly: 25,
-      priceYearly: 250,
-      priceMonthlyId: "price_team_monthly",
-      priceYearlyId: "price_team_yearly",
-      productId: "prod_team",
-    },
-    {
-      id: "enterprise",
-      name: "Enterprise",
-      description: "Complete solution for agencies and large organizations",
-      badge: "Everything Included",
-      badgeColor: "gold",
-      isPopular: false,
-      features: [
-        "Unlimited social accounts",
-        "Unlimited posts & scheduling",
-        "Advanced team management",
-        "White-label solution",
-        "Custom integrations",
-        "Dedicated account manager",
-        "SLA guarantee",
-        "Advanced security & compliance",
-      ],
-      priceMonthly: 50,
-      priceYearly: 500,
-      priceMonthlyId: "price_enterprise_monthly",
-      priceYearlyId: "price_enterprise_yearly",
-      productId: "prod_enterprise",
-    },
-  ];
+  }) as { data: any; isLoading: boolean; error: any };
+  const backendPlans = plansResponse?.plans || [];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -154,65 +66,92 @@ export default function Pricing() {
     planCards.forEach((card) => observer.observe(card));
 
     return () => observer.disconnect();
-  }, []);
+  }, [backendPlans.length]);
 
-  const transformPlan = (backendPlan: BackendPlan): PricingPlan => {
-    const planIcons: Record<string, React.ReactNode> = {
-      creator: <User className="h-6 w-6" />,
-      team: <Crown className="h-6 w-6" />,
-      enterprise: <Building className="h-6 w-6" />,
-    };
+  const getInterval = (plan: BackendPlan, cycle: "monthly" | "yearly") =>
+    (plan.intervals || []).find((i) => i.cycle === cycle);
 
-    const planColors: Record<string, string> = {
-      creator: "from-blue-500 to-blue-600",
-      team: "from-purple-500 to-purple-600",
-      enterprise: "from-amber-500 to-amber-600",
-    };
-
-    const planHighlights: Record<string, string[]> = {
-      creator: ["7-day free trial", "Most popular", "Best for solo creators"],
-      team: [
-        "Power up social growth",
-        "Advanced features",
-        "Team collaboration",
-      ],
-      enterprise: [
-        "Everything included",
-        "Priority support",
-        "Custom solutions",
-      ],
-    };
-
-    const yearlyMonthlyEquivalent =
-      Math.round((backendPlan.priceYearly / 12) * 100) / 100;
-
-    return {
-      id: backendPlan.id,
-      name: backendPlan.name,
-      price: backendPlan.priceMonthly,
-      yearlyPrice: yearlyMonthlyEquivalent,
-      yearlyTotal: backendPlan.priceYearly,
-      description: backendPlan.description,
-      popular: backendPlan.isPopular,
-      enterprise: backendPlan.id === "enterprise",
-      features: backendPlan.features,
-      highlights: planHighlights[backendPlan.id] || ["Great value"],
-      color: planColors[backendPlan.id] || "from-gray-500 to-gray-600",
-      icon: planIcons[backendPlan.id] || <Rocket className="h-6 w-6" />,
-      badge: backendPlan.badge,
-      comingSoon: false,
-    };
+  const getSavingsPercent = (plan: BackendPlan) => {
+    const m = getInterval(plan, "monthly");
+    const y = getInterval(plan, "yearly");
+    if (!m?.amount || !y?.amount) return null;
+    const yearIfMonthly = m.amount * 12;
+    if (y.amount >= yearIfMonthly) return 0;
+    return Math.round(((yearIfMonthly - y.amount) / yearIfMonthly) * 100);
   };
 
-  const plansToUse =
-    plansError || backendPlans.length === 0 ? fallbackPlans : backendPlans;
+  const currencyFormatter = (amountCents: number, currency: string) => {
+    try {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: currency.toUpperCase(),
+        maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2,
+      }).format(amountCents / 100);
+    } catch {
+      return `$${(amountCents / 100).toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
+    }
+  };
 
-  const plans: PricingPlan[] = plansToUse
-    .filter((plan) => plan.id !== "test")
-    .map(transformPlan);
+  const getPlanIcon = (planId: string) => {
+    switch (planId) {
+      case "creator":
+        return Star;
+      case "team":
+        return Crown;
+      case "enterprise":
+        return Rocket;
+      default:
+        return Sparkles;
+    }
+  };
 
-  const yearlyDiscount = (originalPrice: number, yearlyPrice: number) => {
-    return Math.round(((originalPrice - yearlyPrice) / originalPrice) * 100);
+  const getPlanTheme = (planId: string, isPopular?: boolean) => {
+    if (isPopular) {
+      return {
+        gradient: "from-primary-600 to-primary-700",
+        ring: "ring-primary/50",
+        iconBg: "bg-primary text-white",
+        badge: "bg-primary text-white",
+      };
+    }
+
+    switch (planId) {
+      case "test":
+        return {
+          gradient: "from-gray-500 to-gray-600",
+          ring: "ring-gray-300",
+          iconBg: "bg-gray-500 text-gray-600",
+          badge: "bg-gray-500 text-gray-600",
+        };
+      case "creator":
+        return {
+          gradient: "from-blue-500 to-cyan-500",
+          ring: "ring-blue-300",
+          iconBg: "bg-blue-500 text-blue-600",
+          badge: "bg-blue-500 text-blue-600",
+        };
+      case "team":
+        return {
+          gradient: "from-primary-600 to-primary-700",
+          ring: "ring-primary-300",
+          iconBg: "bg-accent-500 text-primary-600",
+          badge: "bg-accent-500 text-primary-600",
+        };
+      case "enterprise":
+        return {
+          gradient: "from-orange-500 to-red-500",
+          ring: "ring-orange-300",
+          iconBg: "bg-orange-500 text-orange-600",
+          badge: "bg-orange-500 text-orange-600",
+        };
+      default:
+        return {
+          gradient: "from-gray-500 to-gray-600",
+          ring: "ring-gray-300",
+          iconBg: "bg-gray-500/10 text-gray-600",
+          badge: "bg-gray-500/10 text-gray-600",
+        };
+    }
   };
 
   return (
@@ -231,7 +170,7 @@ export default function Pricing() {
           ></div>
         </div>
 
-        <section className="py-24 text-center max-w-4xl mx-auto px-4 relative">
+        <section className="py-16 text-center max-w-4xl mx-auto px-4 relative">
           <div className="inline-block mb-6">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-full bg-primary-100 dark:bg-primary-900/50 text-primary-800 dark:text-primary-300 border border-primary-200 dark:border-primary-700 hover:scale-105 transition-transform duration-200 cursor-default">
               <TrendingUp className="w-4 h-4" />
@@ -242,7 +181,7 @@ export default function Pricing() {
 
           <h1 className="text-4xl md:text-5xl font-bold font-heading mb-6 animate-in slide-in-from-bottom-4 duration-700">
             Choose the Perfect{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 via-secondary-500 to-primary-300 dark:from-primary-500 dark:via-secondary-400 dark:to-primary-200">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 via-accent-300 to-primary-300 dark:from-primary-500 dark:via-secondary-400 dark:to-primary-200">
               Plan for You
             </span>
           </h1>
@@ -253,7 +192,7 @@ export default function Pricing() {
             fees.
           </p>
 
-          <div className="flex items-center justify-center gap-4 mb-12 animate-in slide-in-from-bottom-8 duration-700 delay-300">
+          <div className="flex items-center justify-center gap-4 animate-in slide-in-from-bottom-8 duration-700 delay-300">
             <span
               className={`text-sm font-medium transition-colors duration-200 ${
                 !isYearly
@@ -287,7 +226,7 @@ export default function Pricing() {
               </span>
               <div className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700">
                 <Sparkles className="w-3 h-3" />
-                Save up to 20%
+                Save over 15%
               </div>
             </div>
           </div>
@@ -295,7 +234,7 @@ export default function Pricing() {
 
         <section className="pb-24 px-4">
           <div className="max-w-7xl mx-auto">
-            {plansLoading && plans.length === 0 ? (
+            {plansLoading ? (
               <div className="flex justify-center items-center h-64">
                 <div className="flex items-center gap-3">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
@@ -304,191 +243,217 @@ export default function Pricing() {
                   </span>
                 </div>
               </div>
+            ) : plansError ? (
+              <div className="flex flex-col items-center justify-center h-64 text-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold">
+                  !
+                </div>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  We couldn’t load pricing right now. Please try again.
+                </p>
+                <Button onClick={() => window.location.reload()}>Reload</Button>
+              </div>
+            ) : backendPlans.length === 0 ? (
+              <div className="flex items-center justify-center h-64 text-muted-foreground">
+                No plans available yet.
+              </div>
             ) : (
               <div
                 className={`grid grid-cols-1 gap-8 ${
-                  plans.length === 3
+                  backendPlans.length === 3
                     ? "md:grid-cols-3 max-w-6xl mx-auto"
-                    : plans.length === 4
+                    : backendPlans.length === 4
                     ? "md:grid-cols-2 lg:grid-cols-4"
                     : "md:grid-cols-2"
                 }`}
               >
-                {plans.map((plan, index) => (
-                  <div
-                    key={plan.id}
-                    data-plan-index={index}
-                    className={`relative rounded-2xl overflow-hidden group cursor-pointer transition-all duration-500 transform hover:scale-105 ${
-                      visibleCards.includes(index)
-                        ? "animate-in slide-in-from-bottom-8 duration-700"
-                        : "opacity-0 translate-y-8"
-                    } ${
-                      plan.popular
-                        ? "ring-2 ring-primary-500 ring-offset-2 ring-offset-background"
-                        : ""
-                    }`}
-                    style={{
-                      animationDelay: `${index * 150}ms`,
-                      background:
-                        "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                    }}
-                  >
-                    {(plan.popular || plan.badge) && (
-                      <div className="absolute left-1/2 transform -translate-x-1/2 z-10 w-max top-1">
-                        <div
-                          className={`flex items-center gap-1 px-4 py-1 text-xs font-medium rounded-full text-white shadow-lg ${
-                            plan.popular
-                              ? "bg-gradient-to-r from-purple-500 to-purple-600"
-                              : plan.id === "team"
-                              ? "bg-gradient-to-r from-purple-500 to-purple-600"
-                              : "bg-gradient-to-r from-primary-500 to-primary-600"
-                          }`}
-                        >
-                          <Star className="w-3 h-3 fill-current" />
-                          {plan.badge || "Most Popular"}
-                        </div>
-                      </div>
-                    )}
-
-                    {plan.comingSoon && (
-                      <div className="absolute top-4 right-4">
-                        <div className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700">
-                          <Clock className="w-3 h-3" />
-                          Coming Soon
-                        </div>
-                      </div>
-                    )}
-
+                {backendPlans.map((plan: BackendPlan, index: number) => {
+                  const cycle: "monthly" | "yearly" = isYearly
+                    ? "yearly"
+                    : "monthly";
+                  const interval = getInterval(plan, cycle);
+                  const monthly = getInterval(plan, "monthly");
+                  const yearly = getInterval(plan, "yearly");
+                  const currency =
+                    interval?.currency ||
+                    monthly?.currency ||
+                    yearly?.currency ||
+                    "usd";
+                  const amountCents = interval?.amount ?? 0;
+                  const displayPrice = currencyFormatter(amountCents, currency);
+                  const savings = getSavingsPercent(plan);
+                  const PlanIcon = getPlanIcon(plan.id);
+                  const theme = getPlanTheme(plan.id, plan.isPopular);
+                  return (
                     <div
-                      className={`absolute inset-0 bg-gradient-to-br ${plan.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
-                    />
-                    <div
-                      className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${plan.color} opacity-0 group-hover:opacity-20 transition-opacity duration-500 blur-xl`}
-                    />
-
-                    <div className="relative p-8">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div
-                          className={`w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br ${plan.color} text-white shadow-lg group-hover:shadow-xl transition-shadow duration-300`}
-                        >
-                          {plan.icon}
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold font-heading group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
-                            {plan.name}
-                          </h3>
-                          {plan.enterprise && (
-                            <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                              Enterprise
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="mb-6">
-                        <div className="flex items-baseline gap-2 mb-2">
-                          <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                            ${isYearly ? plan.yearlyPrice : plan.price}
-                          </span>
-                          <span className="text-gray-500 dark:text-gray-400">
-                            /month
-                          </span>
-                        </div>
-                        {isYearly && plan.price > 0 && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <span className="text-gray-400 line-through">
-                              ${plan.price}/month
-                            </span>
-                            <div className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
-                              {yearlyDiscount(plan.price, plan.yearlyPrice)}%
-                              off
-                            </div>
-                          </div>
-                        )}
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
-                          {plan.description}
-                        </p>
-                      </div>
-
-                      <div className="mb-8">
-                        <Link to="/register" className="block w-full">
-                          <Button
-                            variant={plan.popular ? "premium" : "outline"}
-                            size="lg"
-                            className={`w-full group/btn ${
-                              plan.popular ? "shadow-lg hover:shadow-xl" : ""
-                            } ${
-                              plan.comingSoon
-                                ? "opacity-50 cursor-not-allowed"
-                                : ""
+                      key={plan.id}
+                      data-plan-index={index}
+                      className={`relative rounded-2xl ring-2 overflow-hidden group cursor-pointer transition-all duration-500 transform hover:scale-105 ${
+                        visibleCards.includes(index)
+                          ? "animate-in slide-in-from-bottom-8 duration-700"
+                          : "opacity-0 translate-y-8"
+                      } ${
+                        plan.isPopular
+                          ? "ring-2 ring-primary-500 ring-offset-2 ring-offset-background"
+                          : ""
+                      }`}
+                      style={{
+                        animationDelay: `${index * 150}ms`,
+                        background:
+                          "linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
+                        backdropFilter: "blur(10px)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                      }}
+                    >
+                      {(plan.isPopular || plan.badge) && (
+                        <div className="absolute left-1/2 transform -translate-x-1/2 z-10 w-max top-1">
+                          <div
+                            className={`flex items-center gap-1 px-4 py-1 text-xs font-medium rounded-full text-white shadow-lg ${
+                              plan.isPopular
+                                ? "bg-gradient-to-r from-primary-600 to-primary-700"
+                                : plan.id === "team"
+                                ? "bg-gradient-to-r from-primary-600 to-primary-700"
+                                : "bg-gradient-to-r from-primary-500 to-primary-600"
                             }`}
-                            disabled={plan.comingSoon}
                           >
-                            {plan.comingSoon ? (
-                              <>
-                                <Clock className="w-4 h-4 mr-2" />
-                                Coming Soon
-                              </>
-                            ) : plan.id === "creator" ? (
-                              <>
-                                Start Free Trial
-                                <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-200" />
-                              </>
-                            ) : (
-                              <>
-                                Get Started
-                                <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-200" />
-                              </>
-                            )}
-                          </Button>
-                        </Link>
-                      </div>
-
-                      {plan.highlights && (
-                        <div className="mb-6">
-                          <div className="space-y-2">
-                            {plan.highlights.map(
-                              (highlight, highlightIndex) => (
-                                <div
-                                  key={highlightIndex}
-                                  className="flex items-center gap-2 text-sm font-medium text-primary-600 dark:text-primary-400"
-                                >
-                                  <div
-                                    className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${plan.color}`}
-                                  />
-                                  {highlight}
-                                </div>
-                              )
-                            )}
+                            <Star className="w-3 h-3 fill-current" />
+                            {plan.badge || "Most Popular"}
                           </div>
                         </div>
                       )}
 
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
-                          Everything included:
-                        </h4>
-                        <ul className="space-y-3">
-                          {plan.features.map((feature, featureIndex) => (
-                            <li
-                              key={featureIndex}
-                              className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400"
-                            >
-                              <div className="flex-shrink-0 mt-0.5">
-                                <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                                  <Check className="w-2.5 h-2.5 text-green-600 dark:text-green-400" />
+                      <div
+                        className={`absolute inset-0 bg-gradient-to-br ${theme.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
+                      />
+                      <div
+                        className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${theme.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-500 blur-xl`}
+                      />
+
+                      <div className="relative p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div
+                            className={`w-12 h-12 flex items-center justify-center rounded-xl ${theme.iconBg} text-white shadow-lg group-hover:shadow-xl transition-shadow duration-300`}
+                          >
+                            <PlanIcon className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold font-heading group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
+                              {plan.name}
+                            </h3>
+                          </div>
+                        </div>
+
+                        <div className="mb-6">
+                          <div className="flex items-baseline gap-2 mb-2">
+                            <span className="text-4xl font-bold text-gray-900 dark:text-white">
+                              {displayPrice}
+                            </span>
+                            <span className="text-gray-500 dark:text-gray-400">
+                              /{cycle}
+                            </span>
+                          </div>
+                          {isYearly && savings != null && (
+                            <div className="flex items-center gap-2 text-sm">
+                              {monthly?.amount ? (
+                                <span className="text-gray-400 line-through">
+                                  {currencyFormatter(monthly.amount, currency)}
+                                </span>
+                              ) : null}
+                              {typeof savings === "number" && savings > 0 ? (
+                                <div className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                                  Save {savings}%
                                 </div>
-                              </div>
-                              <span className="leading-relaxed">{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
+                              ) : null}
+                            </div>
+                          )}
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
+                            {plan.description}
+                          </p>
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
+                            Everything included:
+                          </h4>
+                          <ul className="space-y-3">
+                            {plan.features.map((feature, featureIndex) => (
+                              <li
+                                key={featureIndex}
+                                className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400"
+                              >
+                                <div className="flex-shrink-0 mt-0.5">
+                                  <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                    <Check className="w-2.5 h-2.5 text-green-600 dark:text-green-400" />
+                                  </div>
+                                </div>
+                                <span className="leading-relaxed">
+                                  {feature}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div className="mt-8">
+                          {(() => {
+                            const monthlyInt = getInterval(plan, "monthly");
+                            const yearlyInt = getInterval(plan, "yearly");
+                            const trialDays =
+                              (isYearly
+                                ? yearlyInt?.trialDays
+                                : monthlyInt?.trialDays) || 0;
+                            const isTrial = trialDays > 0;
+                            const ctaLabel = plan.comingSoon
+                              ? "Coming Soon"
+                              : isTrial
+                              ? "Start Free Trial"
+                              : "Get Started";
+
+                            const base =
+                              "w-full h-11 rounded-xl group/btn transition-all duration-200";
+                            const solid =
+                              "bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl";
+                            const outline =
+                              "border border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/40";
+                            const disabledCls = plan.comingSoon
+                              ? "opacity-50 cursor-not-allowed"
+                              : "";
+
+                            return (
+                              <Link
+                                to="/register"
+                                className={`block w-full ${
+                                  plan.comingSoon ? "pointer-events-none" : ""
+                                }`}
+                              >
+                                <Button
+                                  variant={isTrial ? "default" : "outline"}
+                                  size="xl"
+                                  className={`${base} ${
+                                    isTrial ? solid : outline
+                                  } ${disabledCls}`}
+                                  disabled={plan.comingSoon}
+                                >
+                                  {plan.comingSoon ? (
+                                    <span className="inline-flex items-center">
+                                      <Clock className="w-4 h-4 mr-2" />
+                                      Coming Soon
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center">
+                                      {ctaLabel}
+                                      <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-200" />
+                                    </span>
+                                  )}
+                                </Button>
+                              </Link>
+                            );
+                          })()}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

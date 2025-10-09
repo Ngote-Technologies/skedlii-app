@@ -35,7 +35,7 @@ export default function Integrations() {
     {
       name: "Instagram",
       icon: <FaInstagram className="h-6 w-6" />,
-      color: "bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400",
+      color: "bg-[#E1306C]",
     },
     {
       name: "Facebook",
@@ -43,14 +43,13 @@ export default function Integrations() {
       color: "bg-[#1877F2]",
     },
     {
-      name: "X (Twitter)",
-      icon: <FaXTwitter className="h-6 w-6" />,
-      color: "bg-black dark:bg-white dark:text-black",
-      comingSoon: true,
-    },
-    {
       name: "TikTok",
       icon: <FaTiktok className="h-6 w-6" />,
+      color: "bg-black dark:bg-white dark:text-black",
+    },
+    {
+      name: "X (Twitter)",
+      icon: <FaXTwitter className="h-6 w-6" />,
       color: "bg-black dark:bg-white dark:text-black",
       comingSoon: true,
     },
@@ -99,7 +98,7 @@ export default function Integrations() {
               </div>
 
               {/* Decorative hover effect */}
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-300 to-secondary-300 dark:from-primary-700 dark:to-secondary-700 rounded-full opacity-0 group-hover:opacity-30 blur transition duration-1000 group-hover:duration-200"></div>
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-300 to-accent-300 dark:from-primary-700 dark:to-accent-700 rounded-full opacity-0 group-hover:opacity-30 blur transition duration-1000 group-hover:duration-200"></div>
             </div>
           ))}
         </div>

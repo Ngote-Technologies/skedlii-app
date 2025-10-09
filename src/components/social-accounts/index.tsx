@@ -43,6 +43,9 @@ import {
   Eye,
   Calendar,
   AlertCircle,
+  FolderOpen,
+  Link,
+  Link2,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -391,7 +394,7 @@ export default function SocialAccounts() {
 
           {platformStats?.uniquePlatforms?.length > 1 && (
             <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30 p-4 border border-border/50 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent-500/5" />
               <div className="relative flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                   <div className="p-1.5 rounded-md bg-primary/10">
@@ -411,7 +414,7 @@ export default function SocialAccounts() {
                         onClick={() => togglePlatformFilter(platform)}
                         className={`group relative overflow-hidden transition-all duration-200 ${
                           isSelected
-                            ? "bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-md"
+                            ? "bg-primary-600 hover:bg-primary-700 text-white border-0 shadow-md"
                             : "hover:border-primary/30 hover:bg-primary/5"
                         }`}
                       >
@@ -468,7 +471,7 @@ export default function SocialAccounts() {
                   key={account._id}
                   className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 border-border/50 bg-gradient-to-br from-background to-muted/30"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                   <CardHeader className="relative pb-2">
                     <div className="flex justify-between items-start">
@@ -794,12 +797,12 @@ export default function SocialAccounts() {
       {accounts?.length === 0 && !isLoading ? (
         <div className="flex flex-col items-center justify-center space-y-4 h-[60vh]">
           <div className="relative">
-            <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-full blur-lg animate-pulse" />
-            <div className="relative rounded-full bg-gradient-to-r from-primary to-purple-500 p-4">
+            <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-accent-500/20 rounded-full blur-lg animate-pulse" />
+            <div className="relative rounded-full bg-gradient-to-r from-primary to-accent-500 p-4">
               <Plus className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h3 className="text-xl font-semibold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+          <h3 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent-500 bg-clip-text text-transparent">
             {canConnectSocialAccounts
               ? "No accounts connected"
               : "No team accounts available"}
@@ -813,7 +816,7 @@ export default function SocialAccounts() {
             <Button
               onClick={() => setIsAddingAccount(true)}
               disabled={!hasValidSubscription}
-              className="bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+              className="bg-primary-600 hover:bg-primary-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <Plus size={16} className="mr-2" />
               Connect Account
@@ -839,12 +842,15 @@ export default function SocialAccounts() {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 p-6 backdrop-blur-sm border border-border/50">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
+          <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 p-6 backdrop-blur-sm border border-border/50">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
             <div className="relative flex flex-col sm:flex-row justify-between gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                    <Link2 className="h-6 w-6 text-primary" />
+                  </div>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
                     Social Accounts
                   </h2>
                   <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 border border-green-500/20">
@@ -914,7 +920,7 @@ export default function SocialAccounts() {
               {canConnectSocialAccounts ? (
                 <Button
                   onClick={() => setIsAddingAccount(true)}
-                  className="w-full sm:w-auto bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
                   disabled={!hasValidSubscription}
                 >
                   <Plus size={16} className="mr-2" />

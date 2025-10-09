@@ -9,13 +9,13 @@
   --background: 210 40% 98%;
   --foreground: 222 47% 11%;
 
-  /* Primary color - vibrant blue (aligned with your Tailwind config) */
-  --primary: 214 90% 52%; /* Matches your #4B8EF0 */
+  /* Primary color — Brand Blue */
+  --primary: 210 100% 50%; /* #0080FF */
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary color - success green */
-  --secondary: 157 70% 59%; /* Approximates your original #57D8A5 */
-  --secondary-foreground: 0 0% 100%;
+  /* Secondary — Neutral (chrome/surfaces, not status) */
+  --secondary: 220 16% 92%; /* ~#EEF1F5 */
+  --secondary-foreground: 222 47% 11%;
 
   /* UI element colors */
   --card: 0 0% 100%;
@@ -24,11 +24,11 @@
   --popover-foreground: 222 47% 11%;
   --muted: 220 14% 96%;
   --muted-foreground: 220 9% 46%;
-  --accent: 262 83% 76%; /* Approximates your original #A78BFA */
-  --accent-foreground: 222 47% 11%;
+  --accent: 33 100% 50%; /* Saffron #FF8A00 */
+  --accent-foreground: 0 0% 100%;
   --border: 214 32% 91%;
   --input: 214 32% 91%;
-  --ring: 214 90% 52%;
+  --ring: 210 100% 50%;
 
   /* Feedback colors */
   --destructive: 0 81% 68%; /* Similar to your #FC8181 */
@@ -37,15 +37,15 @@
   --success-foreground: 210 40% 98%;
   --warning: 43 86% 70%; /* Similar to your #FFD966 */
   --warning-foreground: 0 0% 20%;
-  --info: 214 90% 52%;
+  --info: 190 90% 42%; /* ~#06B6D4 */
   --info-foreground: 210 40% 98%;
 
   /* Sidebar colors */
   --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 222 47% 11%;
-  --sidebar-primary: 214 90% 52%;
+  --sidebar-primary: 210 100% 50%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 262 83% 76%;
+  --sidebar-accent: 33 100% 50%;
   --sidebar-accent-foreground: 222 47% 11%;
   --sidebar-border: 214 32% 91%;
   --sidebar-ring: 214 90% 52%;
@@ -55,50 +55,50 @@
 }
 
 .dark {
-  /* Main colors for dark mode - better contrast but not too dark */
-  --background: 224 71% 4%;  /* Rich dark background */
-  --foreground: 213 31% 91%; /* High contrast white text */
+  /* Main colors for dark mode — high contrast, no purple */
+  --background: 224 71% 4%;
+  --foreground: 213 31% 91%;
 
-  /* Primary color - vibrant blue optimized for dark */
-  --primary: 217 91% 60%;     /* Bright but readable blue */
+  /* Brand Blue tuned for dark */
+  --primary: 210 100% 60%;
   --primary-foreground: 0 0% 98%;
 
-  /* Secondary color - success green adjusted for dark */
-  --secondary: 162 63% 41%;   /* Professional green */
+  /* Neutral secondary (chrome) */
+  --secondary: 220 15% 25%;
   --secondary-foreground: 0 0% 98%;
 
-  /* UI element colors for dark mode - layered depth */
-  --card: 224 71% 6%;         /* Slightly lighter than background */
+  /* UI surfaces */
+  --card: 224 71% 6%;
   --card-foreground: 213 31% 91%;
-  --popover: 224 71% 6%;     
+  --popover: 224 71% 6%;
   --popover-foreground: 213 31% 91%;
-  --muted: 215 28% 17%;       /* Good contrast for muted sections */
-  --muted-foreground: 217 9% 61%; /* Readable muted text */
-  --accent: 263 70% 50%;      /* Rich purple accent */
+  --muted: 215 28% 17%;
+  --muted-foreground: 217 9% 61%;
+  --accent: 33 100% 50%; /* Saffron accent */
   --accent-foreground: 0 0% 98%;
-  --border: 215 28% 17%;      /* Visible borders */
-  --input: 215 28% 17%;       /* Input background */
-  --ring: 217 91% 60%;        /* Focus ring */
+  --border: 215 28% 17%;
+  --input: 215 28% 17%;
+  --ring: 210 100% 60%;
 
-  /* Feedback colors for dark mode */
-  --destructive: 0 84% 60%;   
+  /* Feedback */
+  --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
-  --success: 162 63% 41%;     
+  --success: 162 63% 41%;
   --success-foreground: 0 0% 98%;
-  --warning: 38 92% 50%;      
+  --warning: 38 92% 50%;
   --warning-foreground: 0 0% 98%;
-  --info: 217 91% 60%;
+  --info: 190 90% 48%;
   --info-foreground: 0 0% 98%;
 
-  /* Sidebar colors for dark mode */
+  /* Sidebar colors */
   --sidebar-background: 224 71% 5%;
   --sidebar-foreground: 213 31% 91%;
-  --sidebar-primary: 217 91% 60%;
+  --sidebar-primary: 210 100% 60%;
   --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 263 70% 50%;
+  --sidebar-accent: 33 100% 50%;
   --sidebar-accent-foreground: 0 0% 98%;
   --sidebar-border: 215 28% 17%;
-  --sidebar-ring: 217 91% 60%;
+  --sidebar-ring: 210 100% 60%;
 }
 
 @layer base {
@@ -153,7 +153,7 @@
 @layer components {
   /* Custom component styles */
   .gradient-heading {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary;
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent;
   }
 
   .card-hover {
@@ -192,7 +192,7 @@
 
   /* Improved buttons */
   .btn-gradient {
-    @apply bg-gradient-to-r from-primary to-secondary text-white font-medium shadow-lg hover:shadow-xl transition-shadow;
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium shadow-lg hover:shadow-xl transition-shadow;
   }
 
   /* Advanced dark mode enhancements */
@@ -207,7 +207,7 @@
   }
 
   .dark-text-gradient {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-foreground via-primary/90 to-secondary/80;
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-foreground via-primary/90 to-accent/80;
   }
 
   .dark-border-glow {

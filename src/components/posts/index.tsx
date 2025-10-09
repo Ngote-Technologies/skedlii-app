@@ -19,6 +19,7 @@ import {
   ChevronRight,
   Play,
   Loader2,
+  CalendarSync,
 } from "lucide-react";
 import { useAuth } from "../../store/hooks";
 import {
@@ -434,35 +435,49 @@ const Posts = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Posts</h2>
-          <p className="text-muted-foreground">
-            View and manage your social media posts
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetchPosts()}
-            className="gap-2"
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />
-            Refresh
-          </Button>
-          {hasValidSubscription && (
+    <div className="space-y-8">
+      <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
+        <div className="relative flex flex-col sm:flex-row justify-between gap-4">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                <CalendarSync className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
+                  Posts
+                </h2>
+                <p className="text-muted-foreground">
+                  View and manage your social media posts
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
             <Button
-              onClick={() => navigate("/dashboard/post-flow")}
+              variant="outline"
+              size="lg"
+              onClick={() => refetchPosts()}
               className="gap-2"
             >
-              <Plus size={16} />
-              New Post
+              <RefreshCw
+                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+              />
+              Refresh
             </Button>
-          )}
+            {hasValidSubscription && (
+              <Button
+                variant="default"
+                size="lg"
+                onClick={() => navigate("/dashboard/post-flow")}
+                className="gap-2"
+              >
+                <Plus size={16} />
+                New Post
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

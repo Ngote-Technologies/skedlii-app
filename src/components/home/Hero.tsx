@@ -29,7 +29,7 @@ export default function Hero() {
 
   return (
     <section className="py-20 md:py-32 overflow-hidden bg-gradient-to-b from-primary-50/70 to-white dark:from-background dark:via-card/30 dark:to-background relative">
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 via-primary-500 to-secondary-500 animate-pulse"></div>
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 via-primary-500 to-accent-500 animate-pulse"></div>
 
       <div
         className="absolute inset-0 opacity-30 pointer-events-none transition-all duration-1000"
@@ -72,7 +72,7 @@ export default function Hero() {
                   ? "w-2 h-2 bg-secondary-400/50 dark:bg-secondary/60"
                   : i % 4 === 2
                   ? "w-1.5 h-1.5 bg-primary-300/40 dark:bg-primary/50"
-                  : "w-2.5 h-2.5 bg-purple-400/45 dark:bg-accent/55"
+                  : "w-2.5 h-2.5 bg-accent-400/45 dark:bg-accent/55"
               } shadow-lg`}
               style={{
                 animation: `particlePulse ${3 + (i % 2)}s ease-in-out infinite`,

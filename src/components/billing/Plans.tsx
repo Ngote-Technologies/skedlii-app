@@ -62,7 +62,7 @@ const Plans = ({
   const getPlanTheme = (planId: string, isPopular: boolean) => {
     if (isPopular) {
       return {
-        gradient: "from-primary to-purple-500",
+        gradient: "from-primary-600 to-primary-700",
         ring: "ring-primary/50",
         iconBg: "bg-primary text-white",
         badge: "bg-primary text-white",
@@ -86,10 +86,10 @@ const Plans = ({
         };
       case "team":
         return {
-          gradient: "from-purple-500 to-pink-500",
-          ring: "ring-purple-300",
-          iconBg: "bg-purple-500/10 text-purple-600",
-          badge: "bg-purple-500/10 text-purple-600",
+          gradient: "from-primary-600 to-primary-700",
+          ring: "ring-primary-300",
+          iconBg: "bg-primary-500/10 text-primary-600",
+          badge: "bg-primary-500/10 text-primary-600",
         };
       case "enterprise":
         return {
@@ -114,7 +114,7 @@ const Plans = ({
   ) => {
     if (amountCents == null) return null;
     try {
-      return new Intl.NumberFormat(undefined, {
+      return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: (currency || "USD").toUpperCase(),
         maximumFractionDigits: amountCents % 100 === 0 ? 0 : 2,
@@ -158,7 +158,7 @@ const Plans = ({
               }`}
             >
               {/* Background gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
               {/* Top badges moved inline; removed ring/shiny badges */}
 
@@ -196,7 +196,7 @@ const Plans = ({
                 {/* Pricing */}
                 <div className="text-center py-4">
                   <div className="flex items-baseline justify-center">
-                    <span className="text-4xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                    <span className="text-4xl font-bold bg-gradient-to-r from-primary to-accent-500 bg-clip-text text-transparent">
                       {typeof displayPrice === "string" &&
                       displayPrice.startsWith("$")
                         ? displayPrice
@@ -242,7 +242,7 @@ const Plans = ({
                       ? `bg-gradient-to-r ${theme.gradient} hover:shadow-lg hover:shadow-primary/25 text-white border-0`
                       : "bg-primary/10 text-primary border border-primary/30 hover:bg-primary/15"
                   } ${
-                    !canManageBilling
+                    !canManageBilling || plan.comingSoon
                       ? "disabled:opacity-50 disabled:cursor-not-allowed"
                       : ""
                   }`}
@@ -254,10 +254,14 @@ const Plans = ({
                       : "secondary"
                   }
                   onClick={() => handleUpgradeDowngrade(plan, cycle)}
-                  disabled={isCurrentPlan || !canManageBilling}
+                  disabled={
+                    isCurrentPlan || !canManageBilling || !!plan.comingSoon
+                  }
                   title={
                     !canManageBilling
                       ? "Only account owners can manage billing"
+                      : plan.comingSoon
+                      ? "This plan is coming soon"
                       : ""
                   }
                 >
@@ -265,7 +269,11 @@ const Plans = ({
                   {plan.isPopular && !isCurrentPlan && (
                     <Zap className="h-4 w-4 mr-2" />
                   )}
-                  {!canManageBilling ? "View Only" : getPlanActionText(plan.id)}
+                  {plan.comingSoon
+                    ? "Coming Soon"
+                    : !canManageBilling
+                    ? "View Only"
+                    : getPlanActionText(plan.id)}
                 </Button>
               </div>
             </div>
