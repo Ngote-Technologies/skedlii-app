@@ -37,7 +37,7 @@ export const getPlatformIcon = (platform: string) => {
 export const getPlatformBgColor = (platform: string): string => {
   switch (platform.toLowerCase()) {
     case "instagram":
-      return "bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400";
+      return "bg-[#E1306C]";
     case "twitter":
       return "bg-[#1DA1F2]";
     case "facebook":

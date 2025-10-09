@@ -178,8 +178,8 @@ export default function Testimonials() {
 
       <div className="container mx-auto px-4 relative">
         <div className="text-center mb-16">
-          <div className="inline-block mb-4">
-            <div className="badge badge-secondary px-4 py-1.5 text-sm">
+          <div className="inline-block mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-full bg-primary-100 dark:bg-primary-900/50 text-primary-800 dark:text-primary-300 border border-primary-200 dark:border-primary-700 hover:scale-105 transition-transform duration-200 cursor-default">
               For Creators, By Creators
             </div>
           </div>
@@ -419,7 +419,7 @@ export default function Testimonials() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Link to="/register" className="group">
                     <Button
-                      variant="premium"
+                      variant="default"
                       size="lg"
                       className="group/cta shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-2"
                     >

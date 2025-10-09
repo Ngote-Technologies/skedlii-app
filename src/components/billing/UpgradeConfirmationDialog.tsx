@@ -129,22 +129,19 @@ export function UpgradeConfirmationDialog({
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="max-w-2xl max-h-[85vh] border-border/50 bg-gradient-to-br from-background to-muted/20 flex flex-col">
         {/* Background gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-lg" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent-500/5 rounded-lg" />
 
         <AlertDialogHeader className="relative flex-shrink-0">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-primary/10 to-accent-500/10">
               <Crown className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <AlertDialogTitle className="text-xl bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+              <AlertDialogTitle className="text-xl bg-gradient-to-r from-primary to-accent-500 bg-clip-text text-transparent">
                 Confirm Subscription Upgrade
               </AlertDialogTitle>
               <div className="flex items-center gap-2 mt-1">
-                <Badge
-                  className="from-primary to-purple-500 text-white"
-                  variant="premium"
-                >
+                <Badge className="bg-primary-600 text-white" variant="premium">
                   {previewData.billingInfo?.newPlan || planName}
                 </Badge>
                 <Badge
@@ -166,13 +163,13 @@ export function UpgradeConfirmationDialog({
           {/* Plan Comparison */}
           {previewData.billingInfo && (
             <Card className="border-border/50 bg-gradient-to-br from-background to-muted/30">
-              <CardHeader className="relative overflow-hidden pb-3">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
-                <div className="relative flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-primary" />
-                  <CardTitle className="text-lg">Plan Change Summary</CardTitle>
-                </div>
-              </CardHeader>
+            <CardHeader className="relative overflow-hidden pb-3">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent-500/5" />
+              <div className="relative flex items-center gap-2">
+                <Zap className="h-4 w-4 text-primary" />
+                <CardTitle className="text-lg">Plan Change Summary</CardTitle>
+              </div>
+            </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center">
                   <div className="text-center">
@@ -198,7 +195,7 @@ export function UpgradeConfirmationDialog({
                     <div className="text-sm text-muted-foreground mb-1">
                       New Plan
                     </div>
-                    <div className="font-bold text-lg bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                    <div className="font-bold text-lg bg-gradient-to-r from-primary to-accent-500 bg-clip-text text-transparent">
                       {previewData.billingInfo.newPlan}
                     </div>
                     <div className="text-sm text-primary font-medium">
@@ -223,7 +220,7 @@ export function UpgradeConfirmationDialog({
           {/* Amount Due Summary */}
           <Card className="border-border/50 bg-gradient-to-br from-background to-muted/30">
             <CardHeader className="relative overflow-hidden pb-3">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent-500/5" />
               <div className="relative flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-primary" />
                 <div>
@@ -236,7 +233,7 @@ export function UpgradeConfirmationDialog({
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent-500 bg-clip-text text-transparent">
                   {formatCurrency(previewData.amountDue, previewData.currency)}
                 </div>
                 <Badge
@@ -371,7 +368,7 @@ export function UpgradeConfirmationDialog({
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isLoading}
-            className="min-w-[160px] bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+            className="min-w-[160px] bg-primary-600 hover:bg-primary-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
           >
             {isLoading ? (
               <div className="flex items-center gap-2">
