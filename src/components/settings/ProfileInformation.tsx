@@ -93,7 +93,7 @@ const ProfileInformation = ({
                 Profile Information
               </CardTitle>
               <Badge
-                variant="secondary"
+                variant="default"
                 className="flex items-center gap-1"
                 icon={<Shield className="h-3 w-3" />}
               >

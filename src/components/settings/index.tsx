@@ -21,7 +21,7 @@ import {
   Shield,
   AlertTriangle,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ProfileInformation from "./ProfileInformation";
 import PasswordChange from "./PasswordChange";
 import NotificationSettings from "./NotificationSettings";
@@ -55,15 +55,25 @@ const passwordSchema = z
 type ProfileFormData = z.infer<typeof profileSchema>;
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
+const TAB_ITEMS = [
+  { value: "profile" as const, label: "Profile", icon: User },
+  { value: "password" as const, label: "Password", icon: Lock },
+  // { value: "notifications" as const, label: "Notifications", icon: Bell },
+  { value: "security" as const, label: "Security", icon: Shield },
+];
+type TabValue = "profile" | "password" | "notifications" | "security";
+
 export default function UserSettings() {
   const { user, fetchUserData, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [activeTab, setActiveTab] = useState<TabValue>("profile");
 
   const { mutate: deleteAccount, isPending: isDeletingAccount } = useMutation({
     mutationFn: async () => {
@@ -205,73 +215,60 @@ export default function UserSettings() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 p-6 backdrop-blur-sm border border-border/50">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
+    <div className="space-y-8">
+      <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
         <div className="relative flex flex-col sm:flex-row justify-between gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-                Account Settings
-              </h2>
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 border border-green-500/20">
-                <Settings className="h-3 w-3 text-green-500 animate-pulse" />
-                <span className="text-xs font-medium text-green-600">
-                  Active
-                </span>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                <Settings className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
+                  Account Settings
+                </h2>
+                <p className="text-muted-foreground">
+                  Manage your account preferences, security, and notification
+                  settings
+                </p>
               </div>
             </div>
-            <p className="text-muted-foreground">
-              Manage your account preferences, security, and notification
-              settings
-            </p>
           </div>
-          <Link to="/dashboard/billing">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
             <Button
-              variant="outline"
-              className="flex items-center gap-2 bg-gradient-to-r from-background to-muted/50 border-border/50 hover:bg-primary/5 transition-all duration-200"
+              variant="default"
+              onClick={() => navigate("/dashboard/billing")}
+              className="w-full sm:w-auto"
             >
               <CreditCard className="h-4 w-4" />
               Billing & Subscription
             </Button>
-          </Link>
+          </div>
         </div>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-4">
-        <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-muted/30 via-muted/20 to-muted/30 p-1 border border-border/50">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5" />
-          <TabsList className="relative grid w-full grid-cols-4 bg-transparent">
-            <TabsTrigger
-              value="profile"
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
-            >
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Profile</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="password"
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
-            >
-              <Lock className="h-4 w-4" />
-              <span className="hidden sm:inline">Password</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="notifications"
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
-            >
-              <Bell className="h-4 w-4" />
-              <span className="hidden sm:inline">Notifications</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="security"
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
-            >
-              <Shield className="h-4 w-4" />
-              <span className="hidden sm:inline">Security</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+      <Tabs
+        defaultValue={activeTab}
+        className="space-y-4"
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as TabValue)}
+      >
+        <TabsList className="grid w-full grid-cols-3 bg-muted/30 p-1">
+          {TAB_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <TabsTrigger
+                key={item.value}
+                value={item.value}
+                className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                <Icon className="h-4 w-4" />
+                <span className="hidden sm:inline">{item.label}</span>
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
 
         <TabsContent value="profile">
           <ProfileInformation
@@ -315,8 +312,8 @@ export default function UserSettings() {
                     <Badge
                       variant="destructive"
                       className="flex items-center gap-1"
+                      icon={<AlertTriangle className="h-3 w-3" />}
                     >
-                      <AlertTriangle className="h-3 w-3" />
                       <span className="text-xs">Irreversible</span>
                     </Badge>
                   </div>

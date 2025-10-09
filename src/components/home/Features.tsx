@@ -71,7 +71,7 @@ export default function Features() {
       title: "Team Collaboration",
       description:
         "Work together with your team to create, approve, and schedule content seamlessly.",
-      color: "from-purple-500 to-purple-600",
+      color: "from-primary-600 to-primary-700",
       preview: "Streamlined approval workflows for team content creation",
       benefits: [
         "Approval workflows",
@@ -159,7 +159,7 @@ export default function Features() {
           </div>
           <h2 className="text-4xl md:text-5xl font-bold font-heading mb-6 animate-in slide-in-from-bottom-6 duration-700 delay-300">
             Your Social Media Workflow,{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 via-secondary-500 to-primary-300 dark:from-primary-500 dark:via-secondary-400 dark:to-primary-200">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 via-accent-300 to-primary-300 dark:from-primary-500 dark:via-secondary-400 dark:to-primary-200">
               Reimagined
             </span>
           </h2>
@@ -360,7 +360,7 @@ export default function Features() {
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Button
                     asChild
-                    variant="premium"
+                    variant="default"
                     size="lg"
                     className="group/cta shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                   >
@@ -373,7 +373,9 @@ export default function Features() {
 
                   <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    <span>No card required • Cancel anytime</span>
+                    <span>Card required</span>
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <span>Cancel anytime</span>
                   </div>
                 </div>
               </div>

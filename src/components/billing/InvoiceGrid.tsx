@@ -32,10 +32,10 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
         <div className="relative">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/10 to-purple-500/10 flex items-center justify-center border border-primary/20">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/10 to-accent-500/10 flex items-center justify-center border border-primary/20">
             <Receipt className="w-8 h-8 text-primary" />
           </div>
-          <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-primary to-purple-500 rounded-full flex items-center justify-center">
+          <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-primary to-accent-500 rounded-full flex items-center justify-center">
             <Download className="w-3 h-3 text-white" />
           </div>
         </div>
@@ -181,11 +181,11 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
                     <span>Payment Method</span>
                   </div>
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/50">
-                    <div className="w-6 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-sm flex items-center justify-center">
-                      <span className="text-[8px] font-bold text-white">
-                        ••••
-                      </span>
-                    </div>
+                  <div className="w-6 h-4 bg-gradient-to-r from-primary-500 to-primary-700 rounded-sm flex items-center justify-center">
+                    <span className="text-[8px] font-bold text-white">
+                      ••••
+                    </span>
+                  </div>
                     <span className="text-xs font-medium">•••• 4242</span>
                   </div>
                 </div>
@@ -193,7 +193,7 @@ export function InvoiceGrid({ invoices }: InvoiceTableProps) {
                 {/* Download Button */}
                 <Button
                   asChild
-                  className="w-full lg:w-auto bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 group/btn"
+                  className="w-full lg:w-auto bg-primary-600 hover:bg-primary-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 group/btn"
                   size="sm"
                 >
                   <a

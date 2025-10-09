@@ -152,51 +152,46 @@ export default function DashboardPage() {
         )}
 
         <div className="space-y-8">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 to-purple-500/10 rounded-3xl blur-3xl"></div>
-            <Card className="relative border-0 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-900/80 dark:to-gray-800/80 backdrop-blur-sm shadow-sm">
-              <CardContent className="p-8">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-                  <div className="space-y-4">
-                    {/* Mobile: Centered layout, Desktop: Horizontal layout */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0">
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-r from-primary-500 to-purple-500 flex items-center justify-center mx-auto sm:mx-0 flex-shrink-0">
-                        <Sparkles className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="text-center sm:text-left">
-                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent leading-tight">
-                          Welcome Back {user?.name || ""}!
-                        </h1>
-                        <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg mt-1">
-                          Ready to create amazing content today? ✨
-                        </p>
-                      </div>
-                    </div>
+          <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
+            <div className="relative flex flex-col sm:flex-row justify-between gap-4">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                    <Sparkles className="h-6 w-6 text-primary" />
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
-                    <Button
-                      onClick={() => navigate("/dashboard/post-flow")}
-                      variant="default"
-                      size="lg"
-                      className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300 group"
-                      disabled={!hasValidSubscription}
-                    >
-                      <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
-                      Create Post
-                    </Button>
-                    <Button
-                      onClick={() => navigate("/dashboard/scheduled")}
-                      variant="outline"
-                      size="lg"
-                      className="w-full sm:w-auto"
-                    >
-                      <Calendar className="mr-2 h-5 w-5" />
-                      View Schedule
-                    </Button>
+                  <div>
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
+                      Welcome Back {user?.name || ""}!
+                    </h2>
+                    <p className="text-muted-foreground">
+                      Ready to create amazing content today? ✨
+                    </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
+                <Button
+                  onClick={() => navigate("/dashboard/post-flow")}
+                  variant="default"
+                  size="lg"
+                  className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300 group"
+                  disabled={!hasValidSubscription}
+                >
+                  <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
+                  Create Post
+                </Button>
+                <Button
+                  onClick={() => navigate("/dashboard/scheduled")}
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                >
+                  <Calendar className="mr-2 h-5 w-5" />
+                  View Schedule
+                </Button>
+              </div>
+            </div>
           </div>
 
           {summaryLoading ? (
@@ -223,8 +218,8 @@ export default function DashboardPage() {
                   label: "Scheduled Posts",
                   value: summary?.counts?.posts?.scheduled ?? 0,
                   icon: <CalendarClock className="h-6 w-6" />,
-                  color: "bg-purple-500",
-                  gradient: "from-purple-500 to-pink-500",
+                  color: "bg-primary-600",
+                  gradient: "from-primary-600 to-primary-700",
                   footer: getFooter(
                     summaryLoading,
                     summary?.counts?.posts?.scheduled ?? 0,
@@ -373,10 +368,10 @@ export default function DashboardPage() {
                     {
                       label: "Schedule",
                       icon: (
-                        <CalendarClock className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500" />
+                        <CalendarClock className="h-6 w-6 sm:h-8 sm:w-8 text-primary-600" />
                       ),
                       description: "Plan ahead",
-                      color: "hover:bg-purple-50 dark:hover:bg-purple-900/20",
+                      color: "hover:bg-primary-50 dark:hover:bg-primary-900/20",
                       onClick: () => navigate("/dashboard/scheduled"),
                     },
                     {
@@ -446,12 +441,12 @@ export default function DashboardPage() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-primary-50 dark:bg-primary-900/20">
                   <div className="flex items-center space-x-3">
-                    <Eye className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <Eye className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                     <span className="text-sm font-medium">Views Today</span>
                   </div>
-                  <span className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                  <span className="text-lg font-bold text-primary-600 dark:text-primary-400">
                     1.2k
                   </span>
                 </div>

@@ -11,6 +11,7 @@ import {
   CreditCard,
   FileText,
   Building,
+  History,
 } from "lucide-react";
 
 export interface BreadcrumbSegment {
@@ -119,9 +120,7 @@ export const breadcrumbRoutes: BreadcrumbRoute[] = [
       {
         label: (data) => {
           if (!data) return "Draft";
-          return (
-            data?.draft?.title || data?.title || "Draft"
-          );
+          return data?.draft?.title || data?.title || "Draft";
         },
         queryKey: (params) => [`/post-drafts/${params[0]}`],
         fallback: (id) => `Draft ${id.slice(0, 8)}...`,
@@ -140,6 +139,20 @@ export const breadcrumbRoutes: BreadcrumbRoute[] = [
       {
         label: "Drafts",
         icon: <FileText className="w-4 h-4" />,
+      },
+    ],
+  },
+  {
+    pattern: /^\/dashboard\/admin\/jobs$/,
+    segments: [
+      {
+        label: "Dashboard",
+        href: "/dashboard",
+        icon: <Home className="w-4 h-4" />,
+      },
+      {
+        label: "Job History",
+        icon: <History className="w-4 h-4" />,
       },
     ],
   },
@@ -273,7 +286,7 @@ export const staticBreadcrumbMap: Record<
     icon: <FolderOpen className="w-4 h-4" />,
   },
   // teams: {
-  //   label: "Team Management", 
+  //   label: "Team Management",
   //   icon: <Users className="w-4 h-4" />,
   // }, // Moved to organizations/teams
   analytics: {
@@ -297,7 +310,7 @@ export const staticBreadcrumbMap: Record<
     icon: <Building className="w-4 h-4" />,
   },
   "organizations/settings": {
-    label: "Organization Settings", 
+    label: "Organization Settings",
     icon: <Settings className="w-4 h-4" />,
   },
   "organizations/members": {

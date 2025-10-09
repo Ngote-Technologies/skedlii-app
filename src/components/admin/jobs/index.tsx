@@ -150,8 +150,12 @@ const AdminJobsDashboard: React.FC = () => {
   const [cursorStack, setCursorStack] = React.useState<string[]>([]);
   const [selectedJobId, setSelectedJobId] = React.useState<string | null>(null);
   const [detailOpen, setDetailOpen] = React.useState(false);
-  const [pendingRetryId, setPendingRetryId] = React.useState<string | null>(null);
-  const [pendingCancelId, setPendingCancelId] = React.useState<string | null>(null);
+  const [pendingRetryId, setPendingRetryId] = React.useState<string | null>(
+    null
+  );
+  const [pendingCancelId, setPendingCancelId] = React.useState<string | null>(
+    null
+  );
 
   React.useEffect(() => {
     // Reset pagination whenever filters change (except limit)
@@ -349,28 +353,38 @@ const AdminJobsDashboard: React.FC = () => {
   const cancelPending = cancelMutation.isPending;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Job History
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Inspect queue runs across scheduled posts, immediate publish, and
-              maintenance tasks.
-            </p>
+    <div className="space-y-8">
+      <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
+        <div className="relative flex flex-col sm:flex-row justify-between gap-4">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                <History className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
+                  Job History
+                </h2>
+                <p className="text-muted-foreground">
+                  Inspect queue runs across scheduled posts, immediate publish,
+                  and maintenance tasks.
+                </p>
+              </div>
+            </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              void invalidateJobs();
-            }}
-            disabled={jobsQuery.isLoading || jobsQuery.isFetching}
-          >
-            <RefreshCw className="mr-2 h-4 w-4" /> Refresh
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                void invalidateJobs();
+              }}
+              disabled={jobsQuery.isLoading || jobsQuery.isFetching}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" /> Refresh
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -436,113 +450,113 @@ const AdminJobsDashboard: React.FC = () => {
                     className="cursor-pointer"
                     onClick={() => openDetail(job)}
                   >
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">
-                        {job.jobName || job.queueName}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {job.jobId}
-                      </span>
-                      {job.lastError ? (
-                        <span className="mt-1 text-xs text-destructive flex items-center gap-1">
-                          <AlertCircle className="h-3.5 w-3.5" />
-                          {job.lastError}
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {job.jobName || job.queueName}
                         </span>
-                      ) : null}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={cn(
-                        "capitalize",
-                        STATUS_BADGE_CLASS[job.status]
-                      )}
-                    >
-                      {statusLabel(job.status)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col text-sm">
-                      <span className="font-medium">
-                        {job.platform || job.publishMode || "—"}
-                      </span>
-                      {job.socialAccountId ? (
                         <span className="text-xs text-muted-foreground">
-                          Account: {job.socialAccountId}
+                          {job.jobId}
                         </span>
-                      ) : null}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col text-sm">
-                      {job.scheduledFor ? (
-                        <span>{formatDate(job.scheduledFor, "PPP p")}</span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        {formatDate(job.enqueuedAt, "PPP p")}
+                        {job.lastError ? (
+                          <span className="mt-1 text-xs text-destructive flex items-center gap-1">
+                            <AlertCircle className="h-3.5 w-3.5" />
+                            {job.lastError}
+                          </span>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className={cn(
+                          "capitalize",
+                          STATUS_BADGE_CLASS[job.status]
+                        )}
+                      >
+                        {statusLabel(job.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col text-sm">
+                        <span className="font-medium">
+                          {job.platform || job.publishMode || "—"}
+                        </span>
+                        {job.socialAccountId ? (
+                          <span className="text-xs text-muted-foreground">
+                            Account: {job.socialAccountId}
+                          </span>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col text-sm">
+                        {job.scheduledFor ? (
+                          <span>{formatDate(job.scheduledFor, "PPP p")}</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {formatDate(job.enqueuedAt, "PPP p")}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">
+                        {job.attemptsMade}
+                        {typeof job.attempts === "number"
+                          ? ` / ${job.attempts}`
+                          : ""}
                       </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm">
-                      {job.attemptsMade}
-                      {typeof job.attempts === "number"
-                        ? ` / ${job.attempts}`
-                        : ""}
-                    </span>
-                  </TableCell>
-                  <TableCell align="right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        disabled={
-                          !canManageJobs ||
-                          !job.operations.canRetry ||
-                          retryPending
-                        }
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          if (!canManageJobs) return;
-                          retryMutation.mutate(job.id);
-                        }}
-                      >
-                        {retryingThisJob ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <RefreshCw className="h-4 w-4" />
-                        )}
-                        <span className="sr-only">Retry job</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        disabled={
-                          !canManageJobs ||
-                          !job.operations.canCancel ||
-                          cancelPending
-                        }
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          if (!canManageJobs) return;
-                          cancelMutation.mutate(job.id);
-                        }}
-                      >
-                        {cancelingThisJob ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <XCircle className="h-4 w-4" />
-                        )}
-                        <span className="sr-only">Cancel job</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                    </TableCell>
+                    <TableCell align="right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          disabled={
+                            !canManageJobs ||
+                            !job.operations.canRetry ||
+                            retryPending
+                          }
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            if (!canManageJobs) return;
+                            retryMutation.mutate(job.id);
+                          }}
+                        >
+                          {retryingThisJob ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <RefreshCw className="h-4 w-4" />
+                          )}
+                          <span className="sr-only">Retry job</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          disabled={
+                            !canManageJobs ||
+                            !job.operations.canCancel ||
+                            cancelPending
+                          }
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            if (!canManageJobs) return;
+                            cancelMutation.mutate(job.id);
+                          }}
+                        >
+                          {cancelingThisJob ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <XCircle className="h-4 w-4" />
+                          )}
+                          <span className="sr-only">Cancel job</span>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 );
               })}
 
@@ -602,9 +616,7 @@ const AdminJobsDashboard: React.FC = () => {
                 onCancel={() =>
                   detailJob && cancelMutation.mutate(detailJob.id)
                 }
-                retryLoading={
-                  retryPending && detailJob?.id === pendingRetryId
-                }
+                retryLoading={retryPending && detailJob?.id === pendingRetryId}
                 cancelLoading={
                   cancelPending && detailJob?.id === pendingCancelId
                 }

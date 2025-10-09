@@ -180,59 +180,54 @@ export default function ScheduledPosts() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between gap-6">
-        <div className="flex items-center space-x-4">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-            <Clock className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-              Content Schedule
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              Manage and preview your scheduled social media posts
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-4 px-4 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
-            <div className="text-center">
-              <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                {visibleItems.length}
+      <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
+        <div className="relative flex flex-col sm:flex-row justify-between gap-4">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                <Clock className="h-6 w-6 text-primary" />
               </div>
-              <div className="text-xs text-gray-500">Total</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-green-600 dark:text-green-400">
-                {filterPostsByDate(selectedDate).length}
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
+                  Content Schedule
+                </h2>
+                <p className="text-muted-foreground">
+                  Manage and preview your scheduled social media posts
+                </p>
               </div>
-              <div className="text-xs text-gray-500">Today</div>
             </div>
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-            <input
-              type="checkbox"
-              className="h-4 w-4"
-              checked={hideCanceled}
-              onChange={(e) => setHideCanceled(e.target.checked)}
-            />
-            Hide canceled
-          </label>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
+            <div className="flex items-center gap-4 px-4 py-2 bg-transparent dark:bg-gray-800/50 rounded-xl">
+              <div className="text-center">
+                <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                  {visibleItems.length}
+                </div>
+                <div className="text-xs text-gray-500">Total</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                  {filterPostsByDate(selectedDate).length}
+                </div>
+                <div className="text-xs text-gray-500">Today</div>
+              </div>
+            </div>
 
-          <Button
-            disabled={!hasValidSubscription}
-            onClick={() => navigate("/dashboard/post-flow")}
-            variant="default"
-            className="shadow-lg hover:shadow-xl transition-all duration-300 group"
-          >
-            <Plus
-              size={16}
-              className="mr-2 group-hover:rotate-90 transition-transform duration-200"
-            />
-            Create Post
-          </Button>
+            <Button
+              disabled={!hasValidSubscription}
+              onClick={() => navigate("/dashboard/post-flow")}
+              variant="default"
+              className="shadow-lg hover:shadow-xl transition-all duration-300 group"
+            >
+              <Plus
+                size={16}
+                className="mr-2 group-hover:rotate-90 transition-transform duration-200"
+              />
+              Create Post
+            </Button>
+          </div>
         </div>
       </div>
 
