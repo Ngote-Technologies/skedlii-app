@@ -73,7 +73,7 @@ export default function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
           icon: <UserPlus className="w-6 h-6" />,
           title: "Join Skedlii",
           description: "Create your account and start managing social media",
-          color: "from-purple-500 to-purple-600",
+          color: "from-primary-500 to-primary-600",
         };
       case "forgot-password":
         return {

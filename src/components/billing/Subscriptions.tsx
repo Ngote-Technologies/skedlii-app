@@ -83,7 +83,7 @@ const Subscriptions = ({
     return (
       <div className="space-y-4">
         <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-background to-muted/30 border border-border/50 p-6">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent-500/5" />
 
           <div className="relative flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-gray-500/10">
@@ -143,7 +143,7 @@ const Subscriptions = ({
           <Button
             onClick={() => setActiveTab("plans")}
             disabled={!canManageBilling}
-            className="w-full bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-primary-600 hover:bg-primary-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             title={
               !canManageBilling ? "Only account owners can manage billing" : ""
             }
@@ -159,7 +159,7 @@ const Subscriptions = ({
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-background to-muted/30 border border-border/50">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent-500/5" />
 
         <div className="relative p-6">
           <div className="flex items-center justify-between mb-6">
@@ -168,7 +168,7 @@ const Subscriptions = ({
                 <Crown className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r capitalize from-primary to-purple-500 bg-clip-text text-transparent">
+                <h3 className="text-xl font-bold bg-gradient-to-r capitalize from-primary to-secondary-500 bg-clip-text text-transparent">
                   {billing?.subscriptionTier} Plan
                 </h3>
                 <StatusBadge
@@ -184,8 +184,8 @@ const Subscriptions = ({
             <Badge
               variant="outline"
               className="bg-green-500/10 border-green-500/20 text-green-600"
+              icon={<Shield className="h-3 w-3 mr-1" />}
             >
-              <Shield className="h-3 w-3 mr-1" />
               Secure
             </Badge>
           </div>
@@ -275,28 +275,13 @@ const Subscriptions = ({
         </div>
 
         {billing?.subscriptionStatus === "active" && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border/50">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-border/50">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <TrendingUp className="h-4 w-4 text-green-500" />
               <span>Subscription is active and up to date</span>
             </div>
 
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setActiveTab("plans")}
-                disabled={!canManageBilling}
-                className="border-border/50 hover:bg-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
-                title={
-                  !canManageBilling
-                    ? "Only account owners can manage billing"
-                    : ""
-                }
-              >
-                <Zap className="h-4 w-4 mr-2" />
-                Upgrade Plan
-              </Button>
-
               {canManageBilling && (
                 <AlertDialog
                   open={showCancelDialog}
@@ -336,7 +321,7 @@ const Subscriptions = ({
                       </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => cancelSubscription()}
-                        className="flex-1 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white border-0"
+                        className="flex-1 bg-red-600 hover:bg-red-700 text-white border-0"
                       >
                         <PauseCircle className="h-4 w-4 mr-2" />
                         Cancel Subscription
@@ -345,6 +330,20 @@ const Subscriptions = ({
                   </AlertDialogContent>
                 </AlertDialog>
               )}
+              <Button
+                variant="default"
+                onClick={() => setActiveTab("plans")}
+                disabled={!canManageBilling}
+                className="border-border/50 hover:bg-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={
+                  !canManageBilling
+                    ? "Only account owners can manage billing"
+                    : ""
+                }
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                Upgrade Plan
+              </Button>
             </div>
           </div>
         )}

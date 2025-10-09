@@ -167,7 +167,7 @@ export default function Collections() {
                 <FolderOpen className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
                   Collections
                 </h2>
                 <p className="text-muted-foreground">

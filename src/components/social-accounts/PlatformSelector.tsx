@@ -35,7 +35,7 @@ export default function PlatformSelector({
         </div>
 
         <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-muted/30 to-muted/20 p-4 border border-border/50">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent-500/5" />
           <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[300px] overflow-y-auto pr-2">
             {platformConfigs.map((platform) => {
               const isSelected = value === platform.label;
@@ -110,7 +110,7 @@ export default function PlatformSelector({
 
       {selectedConfig && (
         <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-background to-muted/50 border border-border/50 p-6 shadow-sm">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent-500/5" />
 
           <div className="relative space-y-4">
             <div className="flex items-center gap-3 pb-3 border-b border-border/50">

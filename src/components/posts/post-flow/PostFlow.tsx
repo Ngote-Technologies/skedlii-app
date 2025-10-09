@@ -21,6 +21,7 @@ import {
   Check,
   ChevronRight,
   Eye,
+  Plus,
 } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -318,48 +319,58 @@ export default function PostFlow() {
   return (
     <div className="space-y-8 touch-pan-y">
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-              Create Post
-            </h1>
-            <p className="text-muted-foreground">
-              Compose and schedule your content across multiple platforms
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {lastSavedAt && (
-              <span className="text-xs text-muted-foreground">
-                Draft saved{" "}
-                {lastSavedAt.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
-            )}
-            <Button
-              variant="outline"
-              onClick={handleSaveDraft}
-              disabled={isSubmitting}
-            >
-              {isSubmitting && pendingAction === "save" ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
+        <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
+          <div className="relative flex flex-col sm:flex-row justify-between gap-4">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                  <Plus className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent">
+                    Create Post
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Compose and schedule your content across multiple platforms
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
+              {lastSavedAt && (
+                <span className="text-xs text-muted-foreground">
+                  Draft saved{" "}
+                  {lastSavedAt.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
               )}
-              Save Draft
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() =>
-                currentDraftId &&
-                navigate(`/dashboard/drafts/${currentDraftId}`)
-              }
-              disabled={!currentDraftId}
-            >
-              <Eye className="mr-2 h-4 w-4" />
-              View Draft
-            </Button>
+              <Button
+                variant="outline"
+                onClick={handleSaveDraft}
+                disabled={isSubmitting}
+              >
+                {isSubmitting && pendingAction === "save" ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Save Draft
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  currentDraftId &&
+                  navigate(`/dashboard/drafts/${currentDraftId}`)
+                }
+                disabled={!currentDraftId}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                View Draft
+              </Button>
+            </div>
           </div>
         </div>
 

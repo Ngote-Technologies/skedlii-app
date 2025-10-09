@@ -134,7 +134,8 @@ export default function DashboardSidebar({
         href: "/dashboard/organizations",
         disabled: userType === "individual",
         badge: userType === "individual" ? "Org" : null,
-        show: userType === "organization", // Only show for organization users
+        // show: userType === "organization", // Only show for organization users
+        show: false, // Only show for organization users
       },
       {
         icon: <BarChart3 size={18} />,
@@ -156,7 +157,7 @@ export default function DashboardSidebar({
     // Add development items in development mode
     if (import.meta.env.DEV) {
       mainItems.push({
-        icon: <div className="text-purple-500">🧪</div>,
+        icon: <div className="text-primary-500">🧪</div>,
         label: "Toast Demo",
         href: "/dashboard/dev/toast-demo",
         badge: "DEV",
@@ -338,7 +339,7 @@ export default function DashboardSidebar({
                         <Button
                           variant="ghost"
                           className={cn(
-                            "w-full transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95",
+                            "w-full transition-all duration-200 active:scale-95 border border-transparent hover:bg-primary-50 hover:text-primary-700 hover:border-primary-200 dark:hover:bg-primary-900/20 dark:hover:text-primary-300 dark:hover:border-primary-800",
                             collapsed && !isMobile
                               ? "h-12 px-0 justify-center"
                               : isMobile
@@ -441,7 +442,7 @@ export default function DashboardSidebar({
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95",
+                      "w-full transition-all duration-200 active:scale-95 border border-transparent hover:bg-primary-50 hover:text-primary-700 hover:border-primary-200 dark:hover:bg-primary-900/20 dark:hover:text-primary-300 dark:hover:border-primary-800",
                       collapsed
                         ? "h-10 px-0 justify-center"
                         : "justify-start px-3 h-10",

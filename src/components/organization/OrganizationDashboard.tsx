@@ -31,8 +31,8 @@ export default function OrganizationDashboard() {
       title: "Social Accounts",
       value: 0,
       icon: Calendar,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100 dark:bg-purple-900/20",
+      color: "text-primary-600",
+      bgColor: "bg-primary-50 dark:bg-primary-900/20",
     },
     {
       title: "This Month",
@@ -165,7 +165,7 @@ export default function OrganizationDashboard() {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="h-2 w-2 bg-purple-500 rounded-full" />
+                <div className="h-2 w-2 bg-primary-500 rounded-full" />
                 <div className="flex-1">
                   <p className="text-sm text-gray-900 dark:text-gray-100">
                     Post scheduled
