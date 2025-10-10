@@ -157,7 +157,7 @@ export const breadcrumbRoutes: BreadcrumbRoute[] = [
     ],
   },
 
-  // Help articles: /dashboard/help/:articleId or any help sub-routes
+  // Help articles: /help/:articleId (dashboard redirects to public)
   {
     pattern: /^\/dashboard\/help\/([^\/]+)$/,
     segments: [
@@ -168,7 +168,7 @@ export const breadcrumbRoutes: BreadcrumbRoute[] = [
       },
       {
         label: "Help & Support",
-        href: "/dashboard/help",
+        href: "/help",
         icon: <HelpCircle className="w-4 h-4" />,
       },
       {

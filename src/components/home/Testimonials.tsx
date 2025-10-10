@@ -170,7 +170,7 @@ export default function Testimonials() {
   };
 
   return (
-    <section className="py-24 relative overflow-hidden" id="testimonials">
+    <section className="py-16 relative overflow-hidden" id="testimonials">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/3 -right-40 w-80 h-80 rounded-full bg-secondary-100/30 dark:bg-secondary-900/10 blur-3xl"></div>
         <div className="absolute bottom-1/3 -left-40 w-80 h-80 rounded-full bg-primary-100/30 dark:bg-primary-900/10 blur-3xl"></div>
@@ -184,7 +184,10 @@ export default function Testimonials() {
             </div>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold font-heading mb-6">
-            Built with Real Feedback
+            Built with Real{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 via-primary-500 to-primary-300 dark:from-primary-500 dark:via-primary-400 dark:to-primary-200 animate-gradient-x">
+              Feedback
+            </span>
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
             Skedlii is actively evolving with insights from content creators,
@@ -425,11 +428,10 @@ export default function Testimonials() {
                     >
                       <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-1 transition-transform duration-200" />
                       Start Free Trial
-                      <div className="w-2 h-2 rounded-full bg-white/70 animate-pulse ml-1"></div>
                     </Button>
                   </Link>
 
-                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  {/* <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <div className="flex -space-x-1">
                       {[...Array(5)].map((_, i) => (
                         <Star
@@ -439,7 +441,7 @@ export default function Testimonials() {
                       ))}
                     </div>
                     <span>Trusted by 50,000+ creators</span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
