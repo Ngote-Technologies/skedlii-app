@@ -151,6 +151,8 @@ export default function SocialAccounts() {
   const {
     data: individualAccountsData,
     isPending: isIndividualAccountsLoading,
+    isFetching: isIndividualAccountsFetching,
+    isRefetching: isIndividualAccountsRefetching,
     refetch: refetchIndividualAccounts,
   } = useGetSocialAccounts(shouldUseOrganizationAccounts ? "" : user?._id);
   const individualAccounts: any[] = individualAccountsData?.items ?? [];
@@ -158,7 +160,10 @@ export default function SocialAccounts() {
   // Organization accounts (only when using organization accounts)
   const {
     data: organizationAccountsData,
-    isPending: isOrganizationAccountsLoading,
+    isPending: isOrganizationAccountsPending,
+    isLoading: isOrganizationAccountsLoading,
+    isFetching: isOrganizationAccountsFetching,
+    isRefetching: isOrganizationAccountsRefetching,
     refetch: refetchOrganizationAccounts,
   } = useGetOrganizationSocialAccounts(
     shouldUseOrganizationAccounts ? organization?._id || "" : ""
@@ -172,6 +177,12 @@ export default function SocialAccounts() {
   const isAccountsLoading = shouldUseOrganizationAccounts
     ? isOrganizationAccountsLoading
     : isIndividualAccountsLoading;
+  const isAccountsFetching = shouldUseOrganizationAccounts
+    ? isOrganizationAccountsFetching
+    : isIndividualAccountsFetching;
+  const isAccountsRefetching = shouldUseOrganizationAccounts
+    ? isOrganizationAccountsRefetching
+    : isIndividualAccountsRefetching;
   const refetchAccounts = shouldUseOrganizationAccounts
     ? refetchOrganizationAccounts
     : refetchIndividualAccounts;
@@ -215,9 +226,6 @@ export default function SocialAccounts() {
       }
       case "facebook":
         connectFacebook();
-        // connectMeta({
-        //   platform: "facebook",
-        // });
         break;
       case "tiktok":
         connectTikTok();
@@ -383,11 +391,13 @@ export default function SocialAccounts() {
               variant="outline"
               size="sm"
               onClick={() => refetchAccounts()}
-              disabled={isLoading}
+              disabled={isLoading || isAccountsFetching}
             >
-              <RefreshCw
-                className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
-              />
+              {isAccountsFetching || isAccountsRefetching ? (
+                <RefreshCw className={`h-4 w-4 mr-2 animate-spin`} />
+              ) : (
+                <RefreshCw className={`h-4 w-4 mr-2`} />
+              )}
               Refresh
             </Button>
           </div>

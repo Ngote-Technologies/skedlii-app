@@ -40,12 +40,12 @@ const HelpArticlePage = () => {
   }, [articleId]);
 
   return (
-    <div className="prose prose-sm dark:prose-invert space-y-10">
+    <div className="prose prose-sm dark:prose-invert space-y-10 mt-10">
       <div className="flex items-center justify-between mb-6">
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate("/dashboard/help")}
+          onClick={() => navigate("/help")}
           className="gap-2"
         >
           <ArrowLeft className="h-4 w-4" />

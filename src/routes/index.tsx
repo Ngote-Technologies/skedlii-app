@@ -1,6 +1,8 @@
 import * as React from "react";
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useParams } from "react-router-dom";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../lib/queryClient";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
@@ -81,8 +83,34 @@ const OrganizationMembers = React.lazy(
 );
 const AcceptInvitation = React.lazy(() => import("../pages/AcceptInvitation"));
 const ToastDemo = React.lazy(() => import("../components/ui/toast-demo"));
-const AdminJobsDashboard = React.lazy(
-  () => import("../components/admin/jobs")
+const AdminJobsDashboard = React.lazy(() => import("../components/admin/jobs"));
+
+// Redirect helpers to keep backward compatibility for old dashboard help routes
+const RedirectDashboardHelp = () => <Navigate to="/help" replace />;
+const RedirectDashboardHelpArticle = () => {
+  const { articleId } = useParams();
+  return <Navigate to={`/help/${articleId}`} replace />;
+};
+
+// Public wrappers for Help pages (with marketing header/footer)
+const HelpPublic = () => (
+  <div className="min-h-screen flex flex-col">
+    <Header />
+    <main className="flex-grow container mx-auto px-4 py-10">
+      <HelpSupport />
+    </main>
+    <Footer />
+  </div>
+);
+
+const HelpArticlePublic = () => (
+  <div className="min-h-screen flex flex-col">
+    <Header />
+    <main className="flex-grow container mx-auto px-4 py-10">
+      <HelpArticlePage />
+    </main>
+    <Footer />
+  </div>
 );
 
 const AppRoutes = () => {
@@ -102,6 +130,9 @@ const AppRoutes = () => {
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/roadmap" element={<Roadmap />} />
               <Route path="/help-center" element={<Help />} />
+              {/* Public Help Center (moved from /dashboard/help) */}
+              <Route path="/help" element={<HelpPublic />} />
+              <Route path="/help/:articleId" element={<HelpArticlePublic />} />
               <Route path="/waitlist" element={<WaitlistPage />} />
               <Route
                 path="/login"
@@ -165,8 +196,12 @@ const AppRoutes = () => {
                 <Route path="drafts/:draftId" element={<DraftDetail />} />
                 <Route path="settings" element={<UserSettings />} />
                 <Route path="billing" element={<Billing />} />
-                <Route path="help" element={<HelpSupport />} />
-                <Route path="help/:articleId" element={<HelpArticlePage />} />
+                {/* Back-compat redirects to new public help routes */}
+                <Route path="help" element={<RedirectDashboardHelp />} />
+                <Route
+                  path="help/:articleId"
+                  element={<RedirectDashboardHelpArticle />}
+                />
                 <Route
                   path="organizations"
                   element={<OrganizationDashboard />}

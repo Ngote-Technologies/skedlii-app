@@ -66,7 +66,7 @@ export default function DashboardSidebar({
         },
         {
           label: "Help & Support",
-          href: "/dashboard/help",
+          href: "/help",
           icon: <HelpCircle size={18} />,
           show: true, // Everyone can access help
         },

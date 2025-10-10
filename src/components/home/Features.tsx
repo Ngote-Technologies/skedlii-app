@@ -159,7 +159,7 @@ export default function Features() {
           </div>
           <h2 className="text-4xl md:text-5xl font-bold font-heading mb-6 animate-in slide-in-from-bottom-6 duration-700 delay-300">
             Your Social Media Workflow,{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 via-accent-300 to-primary-300 dark:from-primary-500 dark:via-secondary-400 dark:to-primary-200">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 via-primary-500 to-primary-300 dark:from-primary-500 dark:via-primary-400 dark:to-primary-200 animate-gradient-x">
               Reimagined
             </span>
           </h2>
