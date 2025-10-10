@@ -198,7 +198,7 @@ export default function Footer() {
             <h3 className="text-white font-medium text-lg mb-4">Resources</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/help-center">
+                <Link to="/help">
                   <span className="hover:text-white">Help Center</span>
                 </Link>
               </li>
