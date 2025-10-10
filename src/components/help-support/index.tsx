@@ -1,9 +1,11 @@
 import { HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import ScrollToTop from "../layout/ScrollToTop";
 
 const HelpSupport = () => {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pt-10">
+      <ScrollToTop />
       <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
         <div className="relative flex flex-col sm:flex-row justify-between gap-4">
@@ -89,35 +91,38 @@ const HelpSupport = () => {
         <h3 className="text-lg font-semibold">Platform Help</h3>
         <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
           <li>
-            <Link
-              to="/dashboard/help/instagram"
-              className="hover:underline text-primary"
-            >
+            <Link to="/help/instagram" className="hover:underline text-primary">
               Instagram
             </Link>
           </li>
           <li>
-            <Link
-              to="/dashboard/help/twitter"
-              className="hover:underline text-primary"
-            >
+            <Link to="/help/twitter" className="hover:underline text-primary">
               Twitter
             </Link>
           </li>
           <li>
-            <Link
-              to="/dashboard/help/linkedin"
-              className="hover:underline text-primary"
-            >
+            <Link to="/help/linkedin" className="hover:underline text-primary">
               LinkedIn
             </Link>
           </li>
           <li>
-            <Link
-              to="/dashboard/help/threads"
-              className="hover:underline text-primary"
-            >
+            <Link to="/help/facebook" className="hover:underline text-primary">
+              Facebook
+            </Link>
+          </li>
+          <li>
+            <Link to="/help/threads" className="hover:underline text-primary">
               Threads
+            </Link>
+          </li>
+          <li>
+            <Link to="/help/tiktok" className="hover:underline text-primary">
+              TikTok
+            </Link>
+          </li>
+          <li>
+            <Link to="/help/youtube" className="hover:underline text-primary">
+              YouTube
             </Link>
           </li>
         </ul>

@@ -27,6 +27,7 @@ import {
   Settings,
   LogOut,
   ChevronDown,
+  InfoIcon,
 } from "lucide-react";
 import { useMobileMenuStore } from "../../store/layout";
 
@@ -129,7 +130,7 @@ export default function Header() {
                 >
                   Pricing
                 </HashLink>
-                <HashLink
+                {/* <HashLink
                   smooth
                   to="/"
                   elementId="testimonials"
@@ -140,7 +141,17 @@ export default function Header() {
                   }`}
                 >
                   Testimonials
-                </HashLink>
+                </HashLink> */}
+                <Link
+                  to="/help"
+                  className={`px-4 rounded-full text-sm font-medium transition-colors ${
+                    location.pathname.includes("/help")
+                      ? "bg-primary-100 text-primary-900 dark:bg-primary-900/20 dark:text-primary-300"
+                      : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50"
+                  }`}
+                >
+                  Help
+                </Link>
               </div>
             </div>
 
@@ -322,7 +333,7 @@ export default function Header() {
                       <Users className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                       <span className="font-medium">Pricing</span>
                     </HashLink>
-                    <HashLink
+                    {/* <HashLink
                       smooth
                       to="/"
                       onClick={() => setMobileMenuOpen(false)}
@@ -331,7 +342,15 @@ export default function Header() {
                     >
                       <Calendar className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                       <span className="font-medium">Testimonials</span>
-                    </HashLink>
+                    </HashLink> */}
+                    <Link
+                      to="/help"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                    >
+                      <InfoIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                      <span className="font-medium">Help</span>
+                    </Link>
 
                     <div className="border-t border-gray-200 dark:border-gray-700 my-4"></div>
 

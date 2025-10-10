@@ -156,7 +156,7 @@ export default function DashboardHeader() {
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/dashboard/help" className="cursor-pointer">
+                <Link to="/help" className="cursor-pointer">
                   <HelpCircle className="mr-2 h-4 w-4" />
                   Help & Support
                 </Link>

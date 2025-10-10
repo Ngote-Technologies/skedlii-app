@@ -68,7 +68,7 @@ export default function Collection() {
           <ArrowLeft className="h-4 w-4" />
           Back to Collections
         </Button>
-        <div className="flex gap-2">
+        {/* <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -85,7 +85,7 @@ export default function Collection() {
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Button>
-        </div>
+        </div> */}
       </div>
 
       <Card
@@ -186,7 +186,11 @@ export default function Collection() {
               This collection is empty. Start adding posts to organize your
               content.
             </p>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/dashboard/post-flow")}
+            >
               <FileText className="h-4 w-4 mr-2" />
               Add Posts
             </Button>

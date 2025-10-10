@@ -181,7 +181,7 @@ export default function Pricing() {
 
           <h1 className="text-4xl md:text-5xl font-bold font-heading mb-6 animate-in slide-in-from-bottom-4 duration-700">
             Choose the Perfect{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 via-accent-300 to-primary-300 dark:from-primary-500 dark:via-secondary-400 dark:to-primary-200">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 via-primary-500 to-primary-300 dark:from-primary-500 dark:via-primary-400 dark:to-primary-200 animate-gradient-x">
               Plan for You
             </span>
           </h1>
@@ -459,7 +459,7 @@ export default function Pricing() {
           </div>
         </section>
 
-        <section className="pb-24 px-4">
+        {/* <section className="pb-24 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div
               className="relative p-8 rounded-2xl overflow-hidden group hover:scale-105 transition-all duration-300"
@@ -523,7 +523,7 @@ export default function Pricing() {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
       </main>
     </div>
   );

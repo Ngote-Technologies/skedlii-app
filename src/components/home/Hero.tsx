@@ -11,6 +11,7 @@ import {
   Check,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { HashLink } from "react-router-hash-link";
 
 export default function Hero() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -184,7 +185,7 @@ export default function Hero() {
                   Start Free Trial
                 </Button>
               </Link>
-              <Link to="/#features" className="group">
+              <HashLink smooth to="/" elementId="features">
                 <Button
                   variant="outline"
                   size="xl"
@@ -193,7 +194,7 @@ export default function Hero() {
                   <span className="relative z-10">Learn More</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 to-secondary-500/10 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300"></div>
                 </Button>
-              </Link>
+              </HashLink>
             </div>
 
             <div className="flex flex-wrap justify-center lg:justify-start gap-6 text-gray-600 dark:text-gray-400 text-sm animate-in slide-in-from-bottom-8 duration-700 delay-700">
@@ -327,7 +328,7 @@ export default function Hero() {
               </div>
 
               <div
-                className="absolute -bottom-6 -right-6 bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-3 px-5 rounded-lg shadow-lg transform rotate-3 hover:rotate-2 hover:scale-110 transition-all duration-300 cursor-pointer group/badge"
+                className="absolute -bottom-6 -right-6 bg-gradient-to-r from-primary-500 to-primary-500 text-white py-3 px-5 rounded-lg shadow-lg transform rotate-3 hover:rotate-2 hover:scale-110 transition-all duration-300 cursor-pointer group/badge"
                 style={{ animationDelay: "2s" }}
               >
                 <div className="flex items-center gap-2">
