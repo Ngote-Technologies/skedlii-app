@@ -105,9 +105,11 @@ const Subscriptions = ({
 
           <div className="relative space-y-4 mb-6">
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Posts this month</span>
-                <span className="font-medium">
+              <div className="grid grid-cols-[1fr_auto] items-center gap-2 text-sm">
+                <span className="text-muted-foreground min-w-0 truncate">
+                  Posts this month
+                </span>
+                <span className="font-medium whitespace-nowrap">
                   0 / {billing?.planLimits?.maxPostsPerMonth || "50"}
                 </span>
               </div>
@@ -115,9 +117,11 @@ const Subscriptions = ({
             </div>
 
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Social accounts</span>
-                <span className="font-medium">
+              <div className="grid grid-cols-[1fr_auto] items-center gap-2 text-sm">
+                <span className="text-muted-foreground min-w-0 truncate">
+                  Social accounts
+                </span>
+                <span className="font-medium whitespace-nowrap">
                   0 / {billing?.planLimits?.maxSocialAccounts || "5"}
                 </span>
               </div>
@@ -125,9 +129,11 @@ const Subscriptions = ({
             </div>
 
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Team members</span>
-                <span className="font-medium">
+              <div className="grid grid-cols-[1fr_auto] items-center gap-2 text-sm">
+                <span className="text-muted-foreground min-w-0 truncate">
+                  Team members
+                </span>
+                <span className="font-medium whitespace-nowrap">
                   1 / {billing?.planLimits?.maxTeamMembers || "3"}
                 </span>
               </div>
@@ -199,22 +205,28 @@ const Subscriptions = ({
               {renderBillingStatus()}
 
               {billing?.subscriptionId && (
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm flex-wrap sm:flex-nowrap">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">
                     Subscription ID:
                   </span>
-                  <span className="font-medium font-mono text-xs">
+                  <span
+                    className="font-medium font-mono text-xs break-all min-w-0"
+                    title={billing.subscriptionId}
+                  >
                     {billing.subscriptionId}
                   </span>
                 </div>
               )}
 
               {billing?.customerId && (
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm flex-wrap sm:flex-nowrap">
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Customer ID:</span>
-                  <span className="font-medium font-mono text-xs">
+                  <span
+                    className="font-medium font-mono text-xs break-all min-w-0"
+                    title={billing.customerId}
+                  >
                     {billing.customerId}
                   </span>
                 </div>
@@ -281,17 +293,14 @@ const Subscriptions = ({
               <span>Subscription is active and up to date</span>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 w-full sm:w-auto flex-col sm:flex-row">
               {canManageBilling && (
                 <AlertDialog
                   open={showCancelDialog}
                   onOpenChange={setShowCancelDialog}
                 >
                   <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
-                    >
+                    <Button variant="destructive" className="w-full sm:w-auto">
                       <PauseCircle className="h-4 w-4 mr-2" />
                       Cancel Subscription
                     </Button>
@@ -334,12 +343,12 @@ const Subscriptions = ({
                 variant="default"
                 onClick={() => setActiveTab("plans")}
                 disabled={!canManageBilling}
-                className="border-border/50 hover:bg-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
                 title={
                   !canManageBilling
                     ? "Only account owners can manage billing"
                     : ""
                 }
+                className="w-full sm:w-auto"
               >
                 <Zap className="h-4 w-4 mr-2" />
                 Upgrade Plan
