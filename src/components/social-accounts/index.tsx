@@ -43,8 +43,6 @@ import {
   Eye,
   Calendar,
   AlertCircle,
-  FolderOpen,
-  Link,
   Link2,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -160,7 +158,6 @@ export default function SocialAccounts() {
   // Organization accounts (only when using organization accounts)
   const {
     data: organizationAccountsData,
-    isPending: isOrganizationAccountsPending,
     isLoading: isOrganizationAccountsLoading,
     isFetching: isOrganizationAccountsFetching,
     isRefetching: isOrganizationAccountsRefetching,
@@ -201,6 +198,20 @@ export default function SocialAccounts() {
       selectedPlatforms.includes(account.platform.toLowerCase())
     );
   }, [accounts, selectedPlatforms]);
+
+  // Normalize metadata counts across platforms and naming styles
+  const getNormalizedCounts = (metadata: any) => {
+    const followers =
+      metadata?.followers_count ?? metadata?.followerCount ?? undefined;
+    const following =
+      metadata?.following_count ?? metadata?.followingCount ?? undefined;
+    const posts = metadata?.posts_count ?? metadata?.postsCount ?? undefined;
+    return { followers, following, posts } as {
+      followers: number | undefined;
+      following: number | undefined;
+      posts: number | undefined;
+    };
+  };
 
   const form = useForm<SocialAccountFormData>({
     resolver: zodResolver(socialAccountSchema),
@@ -530,22 +541,26 @@ export default function SocialAccounts() {
                             <CardDescription className="capitalize font-medium">
                               {account.platform}
                             </CardDescription>
-                            {account.metadata?.followerCount && (
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <Users className="h-3 w-3" />
-                                <span>
-                                  {account.metadata.followerCount.toLocaleString()}
-                                </span>
-                              </div>
-                            )}
-                            {account.metadata?.followingCount && (
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <Users className="h-3 w-3" />
-                                <span>
-                                  {account.metadata.followingCount.toLocaleString()}
-                                </span>
-                              </div>
-                            )}
+                            {(() => {
+                              const { followers, following } =
+                                getNormalizedCounts(account.metadata);
+                              return (
+                                <>
+                                  {followers !== undefined && (
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                      <Users className="h-3 w-3" />
+                                      <span>{followers.toLocaleString()}</span>
+                                    </div>
+                                  )}
+                                  {following !== undefined && (
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                      <Users className="h-3 w-3" />
+                                      <span>{following.toLocaleString()}</span>
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>
@@ -554,65 +569,52 @@ export default function SocialAccounts() {
                         <StatusBadge status={account.status} size="sm" />
 
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          {account.status === "expired" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              disabled={isLoading}
+                              onClick={() => handleReauthorize(account)}
+                            >
+                              <RefreshCw className="h-3 w-3" />
+                            </Button>
+                          )}
                           <Button
-                            variant="ghost"
+                            variant="destructive"
                             size="sm"
                             className="h-6 w-6 p-0"
+                            onClick={() =>
+                              setDeleteConfig({
+                                id: account._id,
+                                isOpen: true,
+                                platform: account.platform,
+                              })
+                            }
+                            disabled={isDeletingPending}
                           >
-                            <Settings className="h-3 w-3" />
+                            <Trash2 className="h-3 w-3" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
+                          {account.metadata?.profileUrl && (
+                            <a
+                              href={account.metadata?.profileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                              </Button>
+                            </a>
+                          )}
                         </div>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent className="relative space-y-3">
-                    {(account.metadata?.followers_count ||
-                      account.metadata?.following_count ||
-                      account.metadata?.posts_count) && (
-                      <div className="grid grid-cols-3 gap-2 p-3 rounded-lg bg-muted/30 border border-border/50">
-                        {account.metadata?.posts_count !== undefined && (
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
-                              <BarChart3 className="h-3 w-3" />
-                              <span>Posts</span>
-                            </div>
-                            <div className="font-semibold text-sm">
-                              {account.metadata.posts_count.toLocaleString()}
-                            </div>
-                          </div>
-                        )}
-                        {account.metadata?.followers_count !== undefined && (
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
-                              <Users className="h-3 w-3" />
-                              <span>Followers</span>
-                            </div>
-                            <div className="font-semibold text-sm">
-                              {account.metadata.followers_count.toLocaleString()}
-                            </div>
-                          </div>
-                        )}
-                        {account.metadata?.following_count !== undefined && (
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
-                              <Eye className="h-3 w-3" />
-                              <span>Following</span>
-                            </div>
-                            <div className="font-semibold text-sm">
-                              {account.metadata.following_count.toLocaleString()}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">
@@ -682,117 +684,6 @@ export default function SocialAccounts() {
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter className="relative flex flex-col gap-3 pt-3 border-t border-border/50">
-                    {/* Team Assignment (Organization Mode Only) */}
-                    {/* {shouldUseOrganizationAccounts && canCreateTeams && (
-                      <TeamAssignmentDropdown
-                        currentTeamId={account.teamId}
-                        availableTeams={organizationTeams || []}
-                        onAssign={(teamId) =>
-                          assignToTeam({ teamId, accountId: account._id })
-                        }
-                        onUnassign={() =>
-                          unassignFromTeam({
-                            teamId: account.teamId,
-                            accountId: account._id,
-                          })
-                        }
-                        isLoading={isAssigning || isUnassigning}
-                      />
-                    )} */}
-
-                    <div className="flex justify-between items-center">
-                      {/* Quick Actions */}
-                      <div className="flex items-center gap-2">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-primary/10"
-                              >
-                                <BarChart3 className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>View Analytics</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-primary/10"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Open Platform</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {account.status === "expired" && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  disabled={isLoading}
-                                  onClick={() => handleReauthorize(account)}
-                                  className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/20 hover:border-orange-500/30 text-orange-600 hover:text-orange-700"
-                                >
-                                  <RefreshCw className="h-4 w-4 mr-2" />
-                                  Reauthorize
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>This account needs reauthorization</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  setDeleteConfig({
-                                    id: account._id,
-                                    isOpen: true,
-                                    platform: account.platform,
-                                  })
-                                }
-                                disabled={isDeletingPending}
-                                className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
-                              >
-                                {isDeletingPending ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Disconnect account</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </div>
-                  </CardFooter>
                 </Card>
               );
             })}
