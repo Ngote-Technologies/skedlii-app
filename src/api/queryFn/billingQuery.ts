@@ -49,25 +49,24 @@ export const useBillingQueries = (
     },
   });
 
+  // v2 direct cancel endpoint (schedules cancel at period end by default)
   const cancelSubscription = useMutation({
-    mutationFn: async () => {
-      return await apiRequest("POST", "/billing/cancel-subscription", {
-        customerId: billing?.stripeCustomerId,
-        subscriptionId: billing?.subscriptionId,
-      });
+    mutationFn: async (payload?: { reason?: string; details?: string; immediate?: boolean }) => {
+      return await apiRequest("POST", "/billing/cancel-subscription", payload || {});
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       fetchUserData();
-      toast({
-        title: "Subscription Cancelled",
-        description: data.message,
+      toast.success({
+        title: "Cancellation Requested",
+        description: data?.message || "Your subscription will end at period close.",
       });
+      queryClient.invalidateQueries({ queryKey: ["/billing/current"] });
     },
-    onError: () => {
-      toast({
+    onError: (err: any) => {
+      const description = err?.message || err?.response?.data?.message || "Something went wrong, please try again.";
+      toast.error({
         title: "Failed to cancel subscription",
-        description: "Something went wrong, please try again.",
-        variant: "destructive",
+        description,
       });
     },
   });
