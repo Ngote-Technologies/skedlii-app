@@ -11,7 +11,6 @@ import {
   Clock,
   Crown,
   Rocket,
-  Heart,
   TrendingUp,
 } from "lucide-react";
 

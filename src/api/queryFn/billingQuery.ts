@@ -8,7 +8,8 @@ export const useBillingQueries = (
   billing: any,
   billingInterval: any,
   fetchUserData: () => void,
-  toast: ReturnType<typeof useToast>["toast"]
+  toast: ReturnType<typeof useToast>["toast"],
+  refreshPermissions?: (orgId?: any) => Promise<any> | void
 ) => {
   type PlanInterval = "monthly" | "yearly";
   type CreateSessionInput = {
@@ -49,25 +50,24 @@ export const useBillingQueries = (
     },
   });
 
+  // v2 direct cancel endpoint (schedules cancel at period end by default)
   const cancelSubscription = useMutation({
-    mutationFn: async () => {
-      return await apiRequest("POST", "/billing/cancel-subscription", {
-        customerId: billing?.stripeCustomerId,
-        subscriptionId: billing?.subscriptionId,
-      });
+    mutationFn: async (payload?: { reason?: string; details?: string; immediate?: boolean }) => {
+      return await apiRequest("POST", "/billing/cancel-subscription", payload || {});
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       fetchUserData();
-      toast({
-        title: "Subscription Cancelled",
-        description: data.message,
+      toast.success({
+        title: "Cancellation Requested",
+        description: data?.message || "Your subscription will end at period close.",
       });
+      queryClient.invalidateQueries({ queryKey: ["/billing/current"] });
     },
-    onError: () => {
-      toast({
+    onError: (err: any) => {
+      const description = err?.message || err?.response?.data?.message || "Something went wrong, please try again.";
+      toast.error({
         title: "Failed to cancel subscription",
-        description: "Something went wrong, please try again.",
-        variant: "destructive",
+        description,
       });
     },
   });
@@ -116,10 +116,48 @@ export const useBillingQueries = (
     },
   });
 
+  // Preview a promotion code or internal trial extension
+  const previewPromotionCode = useMutation({
+    mutationFn: async ({ code }: { code: string }) => {
+      return await apiRequest("POST", "/billing/promo/preview", { code });
+    },
+  });
+
+  // Apply a promotion code or trial extension
+  const applyPromotionCode = useMutation({
+    mutationFn: async ({ code }: { code: string }) => {
+      return await apiRequest("POST", "/billing/promo/apply", { code });
+    },
+    onSuccess: async (resp: any) => {
+      try {
+        if (refreshPermissions && user?.defaultOrganizationId) {
+          await refreshPermissions(user.defaultOrganizationId);
+        } else {
+          await fetchUserData();
+        }
+      } catch (_) {}
+      toast.success({
+        title: "Code Applied",
+        description:
+          resp?.type === "trial_extension"
+            ? "Trial extended successfully."
+            : "Promotion code applied to your subscription.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/billing/current"] });
+    },
+    onError: (err: any) => {
+      const description =
+        err?.response?.data?.message || err?.message || "Unable to apply code.";
+      toast.error({ title: "Failed to apply code", description });
+    },
+  });
+
   return {
     createCheckoutSession,
     cancelSubscription,
     previewSubscriptionChange,
     performUpgrade,
+    previewPromotionCode,
+    applyPromotionCode,
   };
 };
