@@ -31,6 +31,7 @@ import { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Textarea } from "../ui/textarea";
 import { Link } from "react-router-dom";
+import PromotionCodeForm from "./PromotionCodeForm";
 
 const Subscriptions = ({
   billing,
@@ -39,6 +40,8 @@ const Subscriptions = ({
   cancelSubscription,
   setActiveTab,
   canManageBilling,
+  onPreviewPromo,
+  onApplyPromo,
 }: {
   billing: any;
   showCancelDialog: boolean;
@@ -50,6 +53,8 @@ const Subscriptions = ({
   }) => void;
   setActiveTab: (value: string) => void;
   canManageBilling?: boolean;
+  onPreviewPromo?: (code: string) => Promise<any> | void;
+  onApplyPromo?: (code: string) => Promise<any> | void;
 }) => {
   const { toast } = useToast();
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -240,6 +245,18 @@ const Subscriptions = ({
                 <span>Billing Information</span>
               </div>
               {renderBillingStatus()}
+
+              {/* Promotion code form */}
+              <div className="mt-4">
+                <div className="text-sm font-medium mb-1">Have a code?</div>
+                <PromotionCodeForm
+                  canManageBilling={canManageBilling}
+                  onPreview={async (code) =>
+                    onPreviewPromo ? await onPreviewPromo(code) : undefined}
+                  onApply={async (code) =>
+                    onApplyPromo ? await onApplyPromo(code) : undefined}
+                />
+              </div>
 
               {billing?.subscriptionId && (
                 <div className="text-sm w-full">

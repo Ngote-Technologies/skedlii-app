@@ -58,12 +58,15 @@ const Billing = () => {
     cancelSubscription,
     previewSubscriptionChange,
     performUpgrade,
+    previewPromotionCode,
+    applyPromotionCode,
   } = useBillingQueries(
     user,
     subscriptionInfo,
     billingInterval,
     fetchUserData,
-    toast
+    toast,
+    refreshPermissions
   );
 
   useEffect(() => {
@@ -412,6 +415,10 @@ const Billing = () => {
                 cancelSubscription={handleCancelSubscription}
                 setActiveTab={setActiveTab as any}
                 canManageBilling={canManageBilling}
+                onPreviewPromo={async (code: string) =>
+                  await previewPromotionCode.mutateAsync({ code })}
+                onApplyPromo={async (code: string) =>
+                  await applyPromotionCode.mutateAsync({ code })}
               />
             </CardContent>
           </Card>

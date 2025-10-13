@@ -8,7 +8,8 @@ export const useBillingQueries = (
   billing: any,
   billingInterval: any,
   fetchUserData: () => void,
-  toast: ReturnType<typeof useToast>["toast"]
+  toast: ReturnType<typeof useToast>["toast"],
+  refreshPermissions?: (orgId?: any) => Promise<any> | void
 ) => {
   type PlanInterval = "monthly" | "yearly";
   type CreateSessionInput = {
@@ -115,10 +116,48 @@ export const useBillingQueries = (
     },
   });
 
+  // Preview a promotion code or internal trial extension
+  const previewPromotionCode = useMutation({
+    mutationFn: async ({ code }: { code: string }) => {
+      return await apiRequest("POST", "/billing/promo/preview", { code });
+    },
+  });
+
+  // Apply a promotion code or trial extension
+  const applyPromotionCode = useMutation({
+    mutationFn: async ({ code }: { code: string }) => {
+      return await apiRequest("POST", "/billing/promo/apply", { code });
+    },
+    onSuccess: async (resp: any) => {
+      try {
+        if (refreshPermissions && user?.defaultOrganizationId) {
+          await refreshPermissions(user.defaultOrganizationId);
+        } else {
+          await fetchUserData();
+        }
+      } catch (_) {}
+      toast.success({
+        title: "Code Applied",
+        description:
+          resp?.type === "trial_extension"
+            ? "Trial extended successfully."
+            : "Promotion code applied to your subscription.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/billing/current"] });
+    },
+    onError: (err: any) => {
+      const description =
+        err?.response?.data?.message || err?.message || "Unable to apply code.";
+      toast.error({ title: "Failed to apply code", description });
+    },
+  });
+
   return {
     createCheckoutSession,
     cancelSubscription,
     previewSubscriptionChange,
     performUpgrade,
+    previewPromotionCode,
+    applyPromotionCode,
   };
 };
