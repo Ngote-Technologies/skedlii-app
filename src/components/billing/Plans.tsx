@@ -125,7 +125,7 @@ const Plans = ({
   };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-stretch">
+    <div className="mx-auto max-w-6xl grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
       {displayedPlans.map((plan) => {
         const cycle: "monthly" | "yearly" = isYearly ? "yearly" : "monthly";
         const interval = (plan.intervals || []).find(
@@ -151,18 +151,13 @@ const Plans = ({
             key={plan.id}
             className={`group relative overflow-hidden transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 h-full`}
           >
-            {/* Background Card */}
             <div
               className={`relative h-full rounded-xl border bg-gradient-to-br from-background to-muted/30 p-6 backdrop-blur-sm flex flex-col ${
                 isCurrentPlan ? "border-green-300" : "border-border/50"
               }`}
             >
-              {/* Background gradient */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-              {/* Top badges moved inline; removed ring/shiny badges */}
-
-              {/* Plan Header */}
               <div className="relative space-y-4 flex-1 flex flex-col">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg ${theme.iconBg}`}>
@@ -193,16 +188,15 @@ const Plans = ({
                   </div>
                 </div>
 
-                {/* Pricing */}
                 <div className="text-center py-4">
                   <div className="flex items-baseline justify-center">
-                    <span className="text-4xl font-bold bg-gradient-to-r from-primary to-accent-500 bg-clip-text text-transparent">
+                    <span className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-500 bg-clip-text text-transparent">
                       {typeof displayPrice === "string" &&
                       displayPrice.startsWith("$")
                         ? displayPrice
                         : `$${displayPrice}`}
                     </span>
-                    <span className="ml-2 text-sm text-muted-foreground font-medium">
+                    <span className="text-sm text-muted-foreground font-medium">
                       /{displayPeriod}
                     </span>
                   </div>
@@ -210,13 +204,12 @@ const Plans = ({
                     <div className="mt-1 flex items-center justify-center gap-1">
                       <TrendingUp className="h-3 w-3 text-green-500" />
                       <span className="text-xs text-green-600 font-medium">
-                        Save 20%
+                        Over 15% saved
                       </span>
                     </div>
                   )}
                 </div>
 
-                {/* Features */}
                 <div className="space-y-3 flex-1">
                   <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
                     What's included:
@@ -233,7 +226,6 @@ const Plans = ({
                   </ul>
                 </div>
 
-                {/* Action Button */}
                 <Button
                   className={`w-full mt-auto transition-all duration-200 h-10 font-semibold tracking-tight ${
                     isCurrentPlan

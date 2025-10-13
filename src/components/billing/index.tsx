@@ -58,12 +58,15 @@ const Billing = () => {
     cancelSubscription,
     previewSubscriptionChange,
     performUpgrade,
+    previewPromotionCode,
+    applyPromotionCode,
   } = useBillingQueries(
     user,
     subscriptionInfo,
     billingInterval,
     fetchUserData,
-    toast
+    toast,
+    refreshPermissions
   );
 
   useEffect(() => {
@@ -178,10 +181,23 @@ const Billing = () => {
   const invoices = (invoicesResp?.data as any[]) || [];
 
   // Handlers
-  const handleCancelSubscription = useCallback(() => {
-    cancelSubscription.mutate();
-    setShowCancelDialog(false);
-  }, [cancelSubscription]);
+  const handleCancelSubscription = useCallback(
+    (payload?: { reason?: string; details?: string; immediate?: boolean }) => {
+      cancelSubscription.mutate(payload, {
+        onSuccess: async () => {
+          try {
+            const activeOrgId = user?.defaultOrganizationId;
+            await refreshPermissions(activeOrgId);
+          } catch (error) {
+            console.log({ error });
+            await fetchUserData();
+          }
+        },
+      });
+      setShowCancelDialog(false);
+    },
+    [cancelSubscription, user, refreshPermissions, fetchUserData]
+  );
 
   const handlePreviewSuccess = useCallback(
     (data: any) => {
@@ -399,6 +415,10 @@ const Billing = () => {
                 cancelSubscription={handleCancelSubscription}
                 setActiveTab={setActiveTab as any}
                 canManageBilling={canManageBilling}
+                onPreviewPromo={async (code: string) =>
+                  await previewPromotionCode.mutateAsync({ code })}
+                onApplyPromo={async (code: string) =>
+                  await applyPromotionCode.mutateAsync({ code })}
               />
             </CardContent>
           </Card>
@@ -446,11 +466,9 @@ const Billing = () => {
                   >
                     Yearly
                   </span>
-                  {billingInterval === "yearly" && (
-                    <span className="ml-2 px-2 py-1 text-xs font-medium bg-green-500/10 text-green-600 rounded-full border border-green-500/20">
-                      Save 20%
-                    </span>
-                  )}
+                  <span className="ml-2 px-2 py-1 text-xs font-medium bg-green-500/10 text-green-600 rounded-full border border-green-500/20">
+                    over 15% saved
+                  </span>
                 </div>
               </div>
             </CardHeader>
