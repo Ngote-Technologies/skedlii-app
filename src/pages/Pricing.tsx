@@ -279,7 +279,15 @@ export default function Pricing() {
                     yearly?.currency ||
                     "usd";
                   const amountCents = interval?.amount ?? 0;
-                  const displayPrice = currencyFormatter(amountCents, currency);
+                  const isEnterprise = plan.id === "enterprise";
+                  const isComingSoon = !!plan.comingSoon;
+                  const showPrice =
+                    !isEnterprise && !isComingSoon && !!amountCents;
+                  const displayPrice = showPrice
+                    ? currencyFormatter(amountCents, currency)
+                    : isEnterprise
+                    ? "Contact Sales"
+                    : "—";
                   const savings = getSavingsPercent(plan);
                   const PlanIcon = getPlanIcon(plan.id);
                   const theme = getPlanTheme(plan.id, plan.isPopular);
@@ -347,11 +355,13 @@ export default function Pricing() {
                             <span className="text-4xl font-bold text-gray-900 dark:text-white">
                               {displayPrice}
                             </span>
-                            <span className="text-gray-500 dark:text-gray-400">
-                              /{cycle}
-                            </span>
+                            {showPrice && (
+                              <span className="text-gray-500 dark:text-gray-400">
+                                /{cycle}
+                              </span>
+                            )}
                           </div>
-                          {isYearly && savings != null && (
+                          {isYearly && savings != null && showPrice && (
                             <div className="flex items-center gap-2 text-sm">
                               {monthly?.amount ? (
                                 <span className="text-gray-400 line-through">
@@ -365,7 +375,7 @@ export default function Pricing() {
                               ) : null}
                             </div>
                           )}
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
+                          <p className="text-sm font-medium font-semibold text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
                             {plan.description}
                           </p>
                         </div>
@@ -402,11 +412,14 @@ export default function Pricing() {
                                 ? yearlyInt?.trialDays
                                 : monthlyInt?.trialDays) || 0;
                             const isTrial = trialDays > 0;
-                            const ctaLabel = plan.comingSoon
-                              ? "Coming Soon"
-                              : isTrial
-                              ? "Start Free Trial"
-                              : "Get Started";
+                            const ctaLabel =
+                              plan.id === "enterprise"
+                                ? "Contact Sales"
+                                : plan.comingSoon
+                                ? "Coming Soon"
+                                : isTrial
+                                ? "Start Free Trial"
+                                : "Get Started";
 
                             const base =
                               "w-full h-11 rounded-xl group/btn transition-all duration-200";
@@ -414,15 +427,22 @@ export default function Pricing() {
                               "bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl";
                             const outline =
                               "border border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/40";
-                            const disabledCls = plan.comingSoon
-                              ? "opacity-50 cursor-not-allowed"
-                              : "";
+                            const disabledCls =
+                              plan.comingSoon && plan.id !== "enterprise"
+                                ? "opacity-50 cursor-not-allowed"
+                                : "";
 
                             return (
                               <Link
-                                to="/register"
+                                to={
+                                  plan.id === "enterprise"
+                                    ? "/contact"
+                                    : "/register"
+                                }
                                 className={`block w-full ${
-                                  plan.comingSoon ? "pointer-events-none" : ""
+                                  plan.comingSoon && plan.id !== "enterprise"
+                                    ? "pointer-events-none"
+                                    : ""
                                 }`}
                               >
                                 <Button
@@ -431,9 +451,12 @@ export default function Pricing() {
                                   className={`${base} ${
                                     isTrial ? solid : outline
                                   } ${disabledCls}`}
-                                  disabled={plan.comingSoon}
+                                  disabled={
+                                    plan.comingSoon && plan.id !== "enterprise"
+                                  }
                                 >
-                                  {plan.comingSoon ? (
+                                  {plan.comingSoon &&
+                                  plan.id !== "enterprise" ? (
                                     <span className="inline-flex items-center">
                                       <Clock className="w-4 h-4 mr-2" />
                                       Coming Soon

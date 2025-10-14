@@ -20,10 +20,10 @@ export default function Contact() {
             request, partnership idea, or a simple hello 👋
           </p>
           <a
-            href="mailto:hello@skedlii.com"
+            href="mailto:hello@skedlii.xyz"
             className="inline-block bg-primary-600 text-white hover:bg-primary-700 transition-colors px-6 py-3 rounded-lg text-lg font-medium shadow"
           >
-            hello@skedlii.com
+            hello@skedlii.xyz
           </a>
           <p className="text-sm text-muted-foreground mt-4">
             We typically respond within 1 business day.
