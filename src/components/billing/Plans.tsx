@@ -131,12 +131,19 @@ const Plans = ({
         const interval = (plan.intervals || []).find(
           (i: any) => i.cycle === cycle
         );
-        const formatted = currencyFormatter(
-          interval?.amount,
-          interval?.currency
-        );
-        const displayPrice =
-          formatted ?? (isYearly ? plan.priceYearly : plan.priceMonthly) ?? "—";
+        const isEnterprise = plan.id === "enterprise";
+        const isComingSoon = !!plan.comingSoon;
+        const showPrice = !isEnterprise && !isComingSoon;
+        const formatted = showPrice
+          ? currencyFormatter(interval?.amount, interval?.currency)
+          : null;
+        const displayValue = showPrice
+          ? formatted ??
+            (isYearly ? plan.priceYearly : plan.priceMonthly) ??
+            "—"
+          : isEnterprise
+          ? "Contact Sales"
+          : "—";
         const displayPeriod = cycle;
         const isCurrentPlan: boolean =
           (billing?.subscriptionTier &&
@@ -191,16 +198,20 @@ const Plans = ({
                 <div className="text-center py-4">
                   <div className="flex items-baseline justify-center">
                     <span className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-500 bg-clip-text text-transparent">
-                      {typeof displayPrice === "string" &&
-                      displayPrice.startsWith("$")
-                        ? displayPrice
-                        : `$${displayPrice}`}
+                      {showPrice
+                        ? typeof displayValue === "string" &&
+                          displayValue.startsWith("$")
+                          ? displayValue
+                          : `$${displayValue}`
+                        : displayValue}
                     </span>
-                    <span className="text-sm text-muted-foreground font-medium">
-                      /{displayPeriod}
-                    </span>
+                    {showPrice && (
+                      <span className="text-sm text-muted-foreground font-medium">
+                        /{displayPeriod}
+                      </span>
+                    )}
                   </div>
-                  {isYearly && (
+                  {isYearly && showPrice && (
                     <div className="mt-1 flex items-center justify-center gap-1">
                       <TrendingUp className="h-3 w-3 text-green-500" />
                       <span className="text-xs text-green-600 font-medium">
@@ -234,7 +245,9 @@ const Plans = ({
                       ? `bg-gradient-to-r ${theme.gradient} hover:shadow-lg hover:shadow-primary/25 text-white border-0`
                       : "bg-primary/10 text-primary border border-primary/30 hover:bg-primary/15"
                   } ${
-                    !canManageBilling || plan.comingSoon
+                    !canManageBilling ||
+                    plan.comingSoon ||
+                    plan.id === "enterprise"
                       ? "disabled:opacity-50 disabled:cursor-not-allowed"
                       : ""
                   }`}
@@ -247,11 +260,16 @@ const Plans = ({
                   }
                   onClick={() => handleUpgradeDowngrade(plan, cycle)}
                   disabled={
-                    isCurrentPlan || !canManageBilling || !!plan.comingSoon
+                    isCurrentPlan ||
+                    !canManageBilling ||
+                    !!plan.comingSoon ||
+                    plan.id === "enterprise"
                   }
                   title={
                     !canManageBilling
                       ? "Only account owners can manage billing"
+                      : plan.id === "enterprise"
+                      ? "Contact our team for Enterprise"
                       : plan.comingSoon
                       ? "This plan is coming soon"
                       : ""
@@ -261,7 +279,9 @@ const Plans = ({
                   {plan.isPopular && !isCurrentPlan && (
                     <Zap className="h-4 w-4 mr-2" />
                   )}
-                  {plan.comingSoon
+                  {plan.id === "enterprise"
+                    ? "Contact Sales"
+                    : plan.comingSoon
                     ? "Coming Soon"
                     : !canManageBilling
                     ? "View Only"
