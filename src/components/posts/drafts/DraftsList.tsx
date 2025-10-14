@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -23,24 +23,12 @@ import { Loader2, FileText, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "../../../lib/utils";
 
-const STATUS_FILTERS = [
-  "all",
-  "draft",
-  "ready",
-  "scheduled",
-  "archived",
-] as const;
-
-type StatusFilter = (typeof STATUS_FILTERS)[number];
-
 const DraftsList = () => {
-  const [status, setStatus] = useState<StatusFilter>("all");
   const navigate = useNavigate();
 
   const queryKey = useMemo(() => {
-    if (status === "all") return "/post-drafts";
-    return `/post-drafts?status=${status}`;
-  }, [status]);
+    return "/post-drafts";
+  }, []);
 
   const { data, isLoading, isRefetching, refetch, error } = useQuery({
     queryKey: [queryKey],
@@ -190,12 +178,6 @@ const DraftsList = () => {
       <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
         <div className="relative flex flex-col sm:flex-row justify-between gap-4">
-          {/* <div>
-            <h1 className="text-3xl font-bold tracking-tight">Drafts</h1>
-            <p className="text-sm text-muted-foreground">
-              Manage saved drafts and continue where you left off.
-            </p>
-          </div> */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
@@ -222,40 +204,27 @@ const DraftsList = () => {
 
       <Card>
         <CardHeader className="space-y-1">
-          <CardTitle>Saved drafts</CardTitle>
+          <CardTitle>
+            <div className="flex justify-between">
+              Saved drafts
+              <Button variant="ghost" size="sm" onClick={() => refetch()}>
+                <Loader2
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    isRefetching ? "animate-spin" : "opacity-60"
+                  )}
+                />
+                Refresh
+              </Button>
+            </div>
+          </CardTitle>
           <CardDescription>
             {isRefetching
               ? "Refreshing..."
               : `${drafts.length} draft${drafts.length === 1 ? "" : "s"}`}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {STATUS_FILTERS.map((filter) => (
-              <Button
-                key={filter}
-                variant={status === filter ? "default" : "outline"}
-                size="sm"
-                onClick={() => setStatus(filter)}
-                className="capitalize"
-              >
-                {filter === "all" ? "All" : filter}
-              </Button>
-            ))}
-            <div className="flex-1" />
-            <Button variant="ghost" size="sm" onClick={() => refetch()}>
-              <Loader2
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  isRefetching ? "animate-spin" : "opacity-60"
-                )}
-              />
-              Refresh
-            </Button>
-          </div>
-
-          {renderContent()}
-        </CardContent>
+        <CardContent className="space-y-4">{renderContent()}</CardContent>
       </Card>
     </div>
   );
