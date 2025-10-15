@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -22,9 +22,14 @@ import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
 import { Loader2, FileText, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "../../../lib/utils";
+import DeleteDialog from "../../dialog/DeleteDialog";
+import postDraftsApi from "../../../api/postDrafts";
+import { toast } from "../../../hooks/use-toast";
 
 const DraftsList = () => {
   const navigate = useNavigate();
+  const [deleteConfig, setDeleteConfig] = useState<{ isOpen: boolean; id: string }>({ isOpen: false, id: "" });
+  const [deleting, setDeleting] = useState(false);
 
   const queryKey = useMemo(() => {
     return "/post-drafts";
@@ -43,6 +48,22 @@ const DraftsList = () => {
 
   const handleContinueDraft = (id: string) =>
     navigate(`/dashboard/post-flow?draftId=${id}`);
+
+  const requestDelete = (id: string) => setDeleteConfig({ isOpen: true, id });
+  const handleDelete = async () => {
+    if (!deleteConfig.id) return;
+    try {
+      setDeleting(true);
+      await postDraftsApi.archive(deleteConfig.id);
+      setDeleteConfig({ isOpen: false, id: "" });
+      toast.success({ title: "Draft deleted", description: "This draft was permanently removed." });
+      await refetch();
+    } catch (err: any) {
+      toast.error({ title: "Failed to delete draft", description: err?.message || "Please try again." });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -162,6 +183,13 @@ const DraftsList = () => {
                     >
                       Continue
                     </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => requestDelete(draft._id)}
+                    >
+                      Delete
+                    </Button>
                   </TableCell>
                 </TableRow>
               );
@@ -226,6 +254,15 @@ const DraftsList = () => {
         </CardHeader>
         <CardContent className="space-y-4">{renderContent()}</CardContent>
       </Card>
+
+      <DeleteDialog
+        config={deleteConfig}
+        setConfig={setDeleteConfig}
+        handleDelete={handleDelete}
+        title="Delete draft permanently?"
+        message="This action cannot be undone. This will permanently delete the draft and its revision history."
+        loading={deleting}
+      />
     </div>
   );
 };
