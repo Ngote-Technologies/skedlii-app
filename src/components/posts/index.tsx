@@ -342,14 +342,14 @@ const Posts = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
+        <div className="flex flex-col lg:flex-row justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Posts</h2>
             <p className="text-muted-foreground">
               Loading your social media posts...
             </p>
           </div>
-          <Button disabled>
+          <Button disabled className="w-full lg:w-auto">
             <Plus size={16} className="mr-2" />
             New Post
           </Button>
@@ -438,7 +438,7 @@ const Posts = () => {
     <div className="space-y-8">
       <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
-        <div className="relative flex flex-col sm:flex-row justify-between gap-4">
+        <div className="relative flex flex-col md:flex-row justify-between gap-4">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
@@ -454,12 +454,12 @@ const Posts = () => {
               </div>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
+          <div className="flex flex-col md:flex-row gap-2 md:gap-3 w-full md:w-auto">
             <Button
               variant="outline"
               size="lg"
               onClick={() => refetchPosts()}
-              className="gap-2"
+              className="w-full md:w-auto gap-2"
             >
               <RefreshCw
                 className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
@@ -471,7 +471,7 @@ const Posts = () => {
                 variant="default"
                 size="lg"
                 onClick={() => navigate("/dashboard/post-flow")}
-                className="gap-2"
+                className="w-full md:w-auto gap-2"
               >
                 <Plus size={16} />
                 New Post

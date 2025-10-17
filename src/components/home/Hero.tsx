@@ -5,7 +5,6 @@ import {
   BarChart2,
   Users,
   ArrowRight,
-  Star,
   Sparkles,
   Zap,
   Check,
@@ -223,7 +222,7 @@ export default function Hero() {
               ))}
             </div>
 
-            <div className="mt-6 flex flex-wrap justify-center lg:justify-start gap-8 animate-in slide-in-from-bottom-8 duration-700 delay-900">
+            {/* <div className="mt-6 flex flex-wrap justify-center lg:justify-start gap-8 animate-in slide-in-from-bottom-8 duration-700 delay-900">
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <div className="flex -space-x-1">
                   {[...Array(5)].map((_, i) => (
@@ -239,7 +238,7 @@ export default function Hero() {
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                 <span className="font-medium">Join 50,000+ happy creators</span>
               </div>
-            </div>
+            </div> */}
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
               * Requires card to begin. You won’t be charged until the 7-day
               trial ends.
