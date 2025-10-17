@@ -114,6 +114,27 @@ export default function PostFlow() {
     );
   const canProceedToMedia = canProceedToCaption && hasAnyCaption;
 
+  // Only show draft actions when there's something meaningful to save
+  const hasSavableDraft = useMemo(() => {
+    const hasTikTokConfig = Object.keys(tiktokAccountOptions || {}).length > 0;
+    return (
+      hasAnyCaption ||
+      media.length > 0 ||
+      selectedAccounts.length > 0 ||
+      (isScheduled && Boolean(scheduledDate)) ||
+      hasTikTokConfig ||
+      filledTikTokAccounts.length > 0
+    );
+  }, [
+    hasAnyCaption,
+    media.length,
+    selectedAccounts.length,
+    isScheduled,
+    scheduledDate,
+    tiktokAccountOptions,
+    filledTikTokAccounts.length,
+  ]);
+
   const {
     handleSaveDraft,
     handlePostNow,
@@ -321,7 +342,7 @@ export default function PostFlow() {
       <div className="space-y-6">
         <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
-          <div className="relative flex flex-col sm:flex-row justify-between gap-4">
+          <div className="relative flex flex-col md:flex-row justify-between gap-4">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
@@ -337,7 +358,7 @@ export default function PostFlow() {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
+            <div className="flex flex-col md:flex-row gap-2 md:gap-3 w-full md:w-auto">
               {lastSavedAt && (
                 <span className="text-xs text-muted-foreground">
                   Draft saved{" "}
@@ -347,29 +368,34 @@ export default function PostFlow() {
                   })}
                 </span>
               )}
-              <Button
-                variant="outline"
-                onClick={handleSaveDraft}
-                disabled={isSubmitting}
-              >
-                {isSubmitting && pendingAction === "save" ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="mr-2 h-4 w-4" />
-                )}
-                Save Draft
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  currentDraftId &&
-                  navigate(`/dashboard/drafts/${currentDraftId}`)
-                }
-                disabled={!currentDraftId}
-              >
-                <Eye className="mr-2 h-4 w-4" />
-                View Draft
-              </Button>
+              {hasSavableDraft && (
+                <Button
+                  variant="outline"
+                  onClick={handleSaveDraft}
+                  disabled={isSubmitting}
+                  className="w-full md:w-auto"
+                >
+                  {isSubmitting && pendingAction === "save" ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  Save Draft
+                </Button>
+              )}
+              {currentDraftId && (
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    currentDraftId &&
+                    navigate(`/dashboard/drafts/${currentDraftId}`)
+                  }
+                  className="w-full md:w-auto"
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  View Draft
+                </Button>
+              )}
             </div>
           </div>
         </div>

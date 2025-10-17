@@ -1,6 +1,12 @@
 import * as React from "react";
 
-import { BrowserRouter, Route, Routes, Navigate, useParams } from "react-router-dom";
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  Navigate,
+  useParams,
+} from "react-router-dom";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -82,7 +88,7 @@ const OrganizationMembers = React.lazy(
   () => import("../components/organization/OrganizationMembers")
 );
 const AcceptInvitation = React.lazy(() => import("../pages/AcceptInvitation"));
-const ToastDemo = React.lazy(() => import("../components/ui/toast-demo"));
+// const ToastDemo = React.lazy(() => import("../components/ui/toast-demo"));
 const AdminJobsDashboard = React.lazy(() => import("../components/admin/jobs"));
 
 // Redirect helpers to keep backward compatibility for old dashboard help routes
@@ -220,9 +226,9 @@ const AppRoutes = () => {
                 />
                 <Route path="admin/jobs" element={<AdminJobsDashboard />} />
                 {/* Development/Testing Routes */}
-                {import.meta.env.DEV && (
+                {/* {import.meta.env.DEV && (
                   <Route path="dev/toast-demo" element={<ToastDemo />} />
-                )}
+                )} */}
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

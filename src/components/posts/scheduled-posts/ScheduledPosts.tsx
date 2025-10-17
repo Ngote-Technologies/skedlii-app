@@ -182,7 +182,7 @@ export default function ScheduledPosts() {
     <div className="space-y-8">
       <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
-        <div className="relative flex flex-col sm:flex-row justify-between gap-4">
+        <div className="relative flex flex-col md:flex-row justify-between gap-4">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
@@ -199,7 +199,7 @@ export default function ScheduledPosts() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
+          <div className="flex flex-col md:flex-row gap-2 md:gap-3 w-full md:w-auto">
             <div className="flex items-center gap-4 px-4 py-2 bg-transparent dark:bg-gray-800/50 rounded-xl">
               <div className="text-center">
                 <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
@@ -219,7 +219,7 @@ export default function ScheduledPosts() {
               disabled={!hasValidSubscription}
               onClick={() => navigate("/dashboard/post-flow")}
               variant="default"
-              className="shadow-lg hover:shadow-xl transition-all duration-300 group"
+              className="w-full lg:w-auto shadow-lg hover:shadow-xl transition-all duration-300 group"
             >
               <Plus
                 size={16}
@@ -258,7 +258,7 @@ export default function ScheduledPosts() {
         </div>
 
         <TabsContent value="calendar" className="space-y-4">
-          <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex flex-col md:flex-row gap-6">
             <Card className="lg:w-[350px] border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
               <CardHeader>
                 <div className="flex items-center space-x-3">
@@ -368,7 +368,7 @@ export default function ScheduledPosts() {
         <TabsContent value="list">
           <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
             <CardHeader>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div className="flex items-center space-x-3">
                   <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
                     <List className="h-4 w-4 text-white" />
