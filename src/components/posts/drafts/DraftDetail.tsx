@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -22,6 +22,9 @@ import {
 } from "../../ui/table";
 import { Loader2, ArrowLeft, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
+import DeleteDialog from "../../dialog/DeleteDialog";
+import postDraftsApi from "../../../api/postDrafts";
+import { toast } from "../../../hooks/use-toast";
 
 const formatDate = (value?: string | Date) => {
   if (!value) return "—";
@@ -35,6 +38,8 @@ const formatDate = (value?: string | Date) => {
 const DraftDetail = () => {
   const { draftId } = useParams<{ draftId: string }>();
   const navigate = useNavigate();
+  const [deleteConfig, setDeleteConfig] = useState<{ isOpen: boolean; id: string }>({ isOpen: false, id: "" });
+  const [deleting, setDeleting] = useState(false);
 
   const {
     data,
@@ -149,6 +154,12 @@ const DraftDetail = () => {
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => refetch()}>
             <RefreshCw className="mr-2 h-4 w-4" /> Refresh
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => setDeleteConfig({ isOpen: true, id: draft._id })}
+          >
+            Delete Draft
           </Button>
         </div>
       </div>
@@ -299,6 +310,26 @@ const DraftDetail = () => {
           )}
         </CardContent>
       </Card>
+      <DeleteDialog
+        config={deleteConfig}
+        setConfig={setDeleteConfig}
+        handleDelete={async () => {
+          try {
+            setDeleting(true);
+            await postDraftsApi.archive(deleteConfig.id);
+            toast.success({ title: "Draft deleted", description: "This draft was permanently removed." });
+            setDeleteConfig({ isOpen: false, id: "" });
+            navigate("/dashboard/drafts");
+          } catch (err: any) {
+            toast.error({ title: "Failed to delete draft", description: err?.message || "Please try again." });
+          } finally {
+            setDeleting(false);
+          }
+        }}
+        title="Delete draft permanently?"
+        message="This action cannot be undone. This will permanently delete the draft and its revision history."
+        loading={deleting}
+      />
     </div>
   );
 };
