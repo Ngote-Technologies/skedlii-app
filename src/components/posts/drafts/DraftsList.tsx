@@ -19,16 +19,33 @@ import {
   TableRow,
 } from "../../ui/table";
 import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
-import { Loader2, FileText, Plus } from "lucide-react";
+import {
+  Loader2,
+  FileText,
+  Plus,
+  MoreVertical,
+  Eye,
+  Edit2,
+  Trash2,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "../../../lib/utils";
 import DeleteDialog from "../../dialog/DeleteDialog";
 import postDraftsApi from "../../../api/postDrafts";
 import { toast } from "../../../hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../ui/dropdown-menu";
 
 const DraftsList = () => {
   const navigate = useNavigate();
-  const [deleteConfig, setDeleteConfig] = useState<{ isOpen: boolean; id: string }>({ isOpen: false, id: "" });
+  const [deleteConfig, setDeleteConfig] = useState<{
+    isOpen: boolean;
+    id: string;
+  }>({ isOpen: false, id: "" });
   const [deleting, setDeleting] = useState(false);
 
   const queryKey = useMemo(() => {
@@ -56,10 +73,16 @@ const DraftsList = () => {
       setDeleting(true);
       await postDraftsApi.archive(deleteConfig.id);
       setDeleteConfig({ isOpen: false, id: "" });
-      toast.success({ title: "Draft deleted", description: "This draft was permanently removed." });
+      toast.success({
+        title: "Draft deleted",
+        description: "This draft was permanently removed.",
+      });
       await refetch();
     } catch (err: any) {
-      toast.error({ title: "Failed to delete draft", description: err?.message || "Please try again." });
+      toast.error({
+        title: "Failed to delete draft",
+        description: err?.message || "Please try again.",
+      });
     } finally {
       setDeleting(false);
     }
@@ -106,19 +129,30 @@ const DraftsList = () => {
     }
 
     return (
-      <ScrollArea className="h-[60vh] w-full pr-4">
-        <Table>
+      // Make the list feel on-brand and ensure mobile horizontal scroll.
+      // We keep a vertical ScrollArea for height control and add a horizontal
+      // scroll via a min-width table so small screens can scroll sideways.
+      <ScrollArea className="h-[60vh] w-full">
+        <Table className="min-w-[880px] md:min-w-0">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[45%]">Draft</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Updated</TableHead>
-              <TableHead>Platforms</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-[44%] text-foreground/90">
+                Draft
+              </TableHead>
+              <TableHead className="whitespace-nowrap text-foreground/70">
+                Updated
+              </TableHead>
+              <TableHead className="whitespace-nowrap text-foreground/70">
+                Platforms
+              </TableHead>
+              <TableHead className="text-right whitespace-nowrap text-foreground/70">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {drafts.map((draft: any) => {
+              console.log({ draft });
               const updated = draft.updatedAt
                 ? formatDistanceToNow(new Date(draft.updatedAt), {
                     addSuffix: true,
@@ -128,10 +162,10 @@ const DraftsList = () => {
                 ? Object.keys(draft.platformCaptions).length
                 : 0;
               return (
-                <TableRow key={draft._id}>
+                <TableRow key={draft._id} className="hover:bg-muted/40">
                   <TableCell>
                     <div className="space-y-1">
-                      <p className="font-medium">
+                      <p className="font-semibold tracking-[-0.01em]">
                         {draft.title || "Untitled draft"}
                       </p>
                       <p className="text-sm text-muted-foreground line-clamp-2">
@@ -140,12 +174,9 @@ const DraftsList = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="uppercase">
-                      {draft.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <p className="text-sm">{updated}</p>
+                    <p className="text-sm text-foreground/80 whitespace-nowrap">
+                      {updated}
+                    </p>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-2">
@@ -162,34 +193,43 @@ const DraftsList = () => {
                           )
                         )
                       ) : (
-                        <span className="text-sm text-muted-foreground">
-                          Using main caption
-                        </span>
+                        <span className="text-sm text-muted-foreground">-</span>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleViewDraft(draft._id)}
-                    >
-                      View
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleContinueDraft(draft._id)}
-                    >
-                      Continue
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => requestDelete(draft._id)}
-                    >
-                      Delete
-                    </Button>
+                  <TableCell className="text-right whitespace-nowrap">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          aria-label="Draft actions"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem
+                          className="text-sm"
+                          onClick={() => handleViewDraft(draft._id)}
+                        >
+                          <Eye className="mr-2 h-4 w-4" /> View
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-sm"
+                          onClick={() => handleContinueDraft(draft._id)}
+                        >
+                          <Edit2 className="mr-2 h-4 w-4" /> Continue
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-sm text-destructive focus:text-destructive"
+                          onClick={() => requestDelete(draft._id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               );
@@ -197,6 +237,7 @@ const DraftsList = () => {
           </TableBody>
         </Table>
         <ScrollBar orientation="vertical" />
+        <ScrollBar orientation="horizontal" />
       </ScrollArea>
     );
   };
@@ -205,7 +246,7 @@ const DraftsList = () => {
     <div className="space-y-8">
       <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
-        <div className="relative flex flex-col sm:flex-row justify-between gap-4">
+        <div className="relative flex flex-col md:flex-row justify-between gap-4">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
@@ -221,8 +262,8 @@ const DraftsList = () => {
               </div>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
-            <Button onClick={handleCreatePost}>
+          <div className="flex flex-col md:flex-row gap-2 md:gap-3 w-full md:w-auto">
+            <Button onClick={handleCreatePost} className="w-full md:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               New Post
             </Button>

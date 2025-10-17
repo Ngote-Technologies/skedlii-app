@@ -205,7 +205,7 @@ export const getStatusBadge = (status: string) => {
     case "published":
       return (
         <Badge
-          variant="secondary"
+          variant="success"
           className="flex items-center gap-1 w-fit"
           icon={<CheckCircle size={12} />}
         >
@@ -246,7 +246,7 @@ export const getStatusBadge = (status: string) => {
     case "canceled":
       return (
         <Badge
-          variant="secondary"
+          variant="destructive"
           className="flex items-center gap-1 w-fit"
           icon={<Clock size={12} />}
         >

@@ -154,7 +154,7 @@ export default function DashboardPage() {
         <div className="space-y-8">
           <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-background via-background to-background/50 border border-border/50 p-6">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/10" />
-            <div className="relative flex flex-col sm:flex-row justify-between gap-4">
+            <div className="relative flex flex-col md:flex-row justify-between gap-4">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
@@ -170,12 +170,12 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
+              <div className="flex flex-col md:flex-row gap-2 md:gap-3 w-full md:w-auto">
                 <Button
                   onClick={() => navigate("/dashboard/post-flow")}
                   variant="default"
                   size="lg"
-                  className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300 group"
+                  className="w-full md:w-auto shadow-lg hover:shadow-xl transition-all duration-300 group"
                   disabled={!hasValidSubscription}
                 >
                   <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
@@ -185,7 +185,7 @@ export default function DashboardPage() {
                   onClick={() => navigate("/dashboard/scheduled")}
                   variant="outline"
                   size="lg"
-                  className="w-full sm:w-auto"
+                  className="w-full md:w-auto"
                 >
                   <Calendar className="mr-2 h-5 w-5" />
                   View Schedule
