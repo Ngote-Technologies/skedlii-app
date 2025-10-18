@@ -22,9 +22,11 @@ import {
   CreditCard,
   Crown,
   Shield,
+  ShieldCheck,
   Zap,
   Clock,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface PreviewData {
   amountDue: number;
@@ -157,6 +159,12 @@ export function UpgradeConfirmationDialog({
           <AlertDialogDescription>
             Review the details of your subscription upgrade before confirming.
           </AlertDialogDescription>
+          <div className="mt-2 inline-flex items-center gap-1.5 text-xs text-green-700 bg-green-500/10 border border-green-500/20 px-2.5 py-1 rounded-full w-fit">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            <Link to="/refund" className="underline underline-offset-2 hover:opacity-90">
+              30-day money-back guarantee
+            </Link>
+          </div>
         </AlertDialogHeader>
 
         <div className="relative space-y-4 flex-1 overflow-y-auto pr-2 mr-2">

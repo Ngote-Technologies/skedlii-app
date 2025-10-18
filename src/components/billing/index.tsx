@@ -14,7 +14,7 @@ import { Button } from "../ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { getApiClient } from "../../api/axios";
 import { Switch } from "../ui/switch";
-import { CreditCard, FileText, Zap } from "lucide-react";
+import { CreditCard, FileText, Zap, ShieldCheck } from "lucide-react";
 import { InvoiceGrid } from "./InvoiceGrid";
 import { InvoiceTableFallback } from "./InvoiceTableFallback";
 import Subscriptions from "./Subscriptions";
@@ -22,6 +22,7 @@ import Plans from "./Plans";
 import { UpgradeConfirmationDialog } from "./UpgradeConfirmationDialog";
 import { useBillingQueries } from "../../api/queryFn/billingQuery";
 import { useUrlParams } from "../../hooks/useUrlParams";
+import { Link } from "react-router-dom";
 
 const PLAN_TIERS = ["test", "creator", "team", "enterprise"] as const;
 type PlanTier = (typeof PLAN_TIERS)[number];
@@ -469,6 +470,18 @@ const Billing = () => {
                   <span className="ml-2 px-2 py-1 text-xs font-medium bg-green-500/10 text-green-600 rounded-full border border-green-500/20">
                     over 15% saved
                   </span>
+                </div>
+
+                <div className="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <Link
+                    to="/refund"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 text-green-700 border border-green-500/20 hover:opacity-90 transition-opacity"
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    <span>30-day money-back guarantee</span>
+                  </Link>
+                  <span className="hidden sm:inline">•</span>
+                  <span className="hidden sm:inline">Cancel anytime</span>
                 </div>
               </div>
             </CardHeader>
