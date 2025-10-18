@@ -34,6 +34,7 @@ const RegisterPage = React.lazy(() => import("../pages/Register"));
 const TermsOfService = React.lazy(() => import("../pages/TermsOfService"));
 const PrivacyPolicy = React.lazy(() => import("../pages/PrivacyPolicy"));
 const About = React.lazy(() => import("../pages/About"));
+const RefundPolicy = React.lazy(() => import("../pages/RefundPolicy"));
 
 const DashboardLayout = React.lazy(() => import("../layouts/DashboardLayout"));
 const SocialAccounts = React.lazy(
@@ -131,6 +132,7 @@ const AppRoutes = () => {
               <Route path="/" element={<HomePage />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/refund" element={<RefundPolicy />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/pricing" element={<Pricing />} />

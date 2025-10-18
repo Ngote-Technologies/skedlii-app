@@ -13,6 +13,7 @@ import {
   Rocket,
   TrendingUp,
 } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 interface BackendPlan {
   id: string;
@@ -190,6 +191,18 @@ export default function Pricing() {
             enterprise team. All plans include our core features with no hidden
             fees.
           </p>
+
+          <div className="flex items-center justify-center gap-3 mb-8 text-sm text-gray-600 dark:text-gray-300 animate-in slide-in-from-bottom-6 duration-700 delay-300">
+            <Link
+              to="/refund"
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700 hover:opacity-90 transition-opacity"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span className="font-medium">30-day money-back guarantee</span>
+            </Link>
+            <span className="hidden sm:inline">•</span>
+            <span className="hidden sm:inline">Cancel anytime</span>
+          </div>
 
           <div className="flex items-center justify-center gap-4 animate-in slide-in-from-bottom-8 duration-700 delay-300">
             <span

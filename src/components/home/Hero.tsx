@@ -8,6 +8,7 @@ import {
   Sparkles,
   Zap,
   Check,
+  ShieldCheck,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { HashLink } from "react-router-hash-link";
@@ -196,6 +197,18 @@ export default function Hero() {
               </HashLink>
             </div>
 
+            <div className="flex items-center justify-center lg:justify-start gap-3 text-sm text-gray-600 dark:text-gray-300 mb-4">
+              <Link
+                to="/refund"
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700 hover:opacity-90 transition-opacity"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span className="font-medium">30-day money-back guarantee</span>
+              </Link>
+              <span className="hidden sm:inline">•</span>
+              <span className="hidden sm:inline">Cancel anytime</span>
+            </div>
+
             <div className="flex flex-wrap justify-center lg:justify-start gap-6 text-gray-600 dark:text-gray-400 text-sm animate-in slide-in-from-bottom-8 duration-700 delay-700">
               {[
                 { text: "Multiple platforms", delay: "0s" },
@@ -239,7 +252,7 @@ export default function Hero() {
                 <span className="font-medium">Join 50,000+ happy creators</span>
               </div>
             </div> */}
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               * Requires card to begin. You won’t be charged until the 7-day
               trial ends.
             </p>
