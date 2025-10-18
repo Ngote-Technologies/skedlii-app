@@ -213,6 +213,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link to="/refund">
+                  <span className="hover:text-white">Refund Policy</span>
+                </Link>
+              </li>
+              <li>
                 <Link to="/terms">
                   <span className="hover:text-white">Terms of Service</span>
                 </Link>
