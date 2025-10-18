@@ -14,7 +14,7 @@ import {
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
-import { AlertCircle, Sparkles, User, Mail, Lock } from "lucide-react";
+import { AlertCircle, Sparkles, User, Mail, Lock, ShieldCheck } from "lucide-react";
 import { useToast } from "../../hooks/use-toast";
 import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
 
@@ -245,6 +245,17 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
               {isLoading ? "Creating account..." : "Create Account"}
             </span>
           </Button>
+
+          <div className="mt-3 flex items-center justify-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>
+              7-day free trial. Then
+              <Link to="/refund" className="ml-1 underline underline-offset-2 hover:opacity-90">
+                30-day money-back guarantee
+              </Link>
+              .
+            </span>
+          </div>
         </form>
       </Form>
 
