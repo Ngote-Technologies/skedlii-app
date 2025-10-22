@@ -25,6 +25,9 @@ import { ScrollArea } from "../components/ui/scroll-area";
 import { Badge } from "../components/ui/badge";
 import { useAccessControl } from "../hooks/useAccessControl";
 
+const marketing_url =
+  import.meta.env.VITE_MARKETING_APP_BASE || "https://skedlii.xyz";
+
 export default function DashboardSidebar({
   closeMenu,
   isMobile = false,
@@ -66,7 +69,7 @@ export default function DashboardSidebar({
         },
         {
           label: "Help & Support",
-          href: "/help",
+          href: `${marketing_url}/help`,
           icon: <HelpCircle size={18} />,
           show: true, // Everyone can access help
         },
