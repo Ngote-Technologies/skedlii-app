@@ -4,11 +4,11 @@ import {
   BrowserRouter,
   Route,
   Routes,
-  Navigate,
-  useParams,
+  // Navigate,
+  // useParams,
 } from "react-router-dom";
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
+// import Header from "../components/layout/Header";
+// import Footer from "../components/layout/Footer";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../lib/queryClient";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
@@ -18,23 +18,23 @@ import { Toaster } from "../components/ui/toaster";
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
 import ProgressProvider from "../components/providers/ProgressProvider";
-import Contact from "../pages/Contact";
-import Pricing from "../pages/Pricing";
-import Roadmap from "../pages/Roadmap";
-import Help from "../pages/Help";
+// import Contact from "../pages/Contact";
+// import Pricing from "../pages/Pricing";
+// import Roadmap from "../pages/Roadmap";
+// import Help from "../pages/Help";
 
-const HomePage = React.lazy(() => import("../pages"));
-const WaitlistPage = React.lazy(() => import("../pages/waitlist"));
+// const HomePage = React.lazy(() => import("../pages"));
+// const WaitlistPage = React.lazy(() => import("../pages/waitlist"));
 const ForgotPasswordPage = React.lazy(() => import("../pages/forgot-password"));
 const DashboardPage = React.lazy(() => import("../components/dashboard"));
 const NotFound = React.lazy(() => import("../pages/not-found"));
 
 const LoginPage = React.lazy(() => import("../pages/Login"));
 const RegisterPage = React.lazy(() => import("../pages/Register"));
-const TermsOfService = React.lazy(() => import("../pages/TermsOfService"));
-const PrivacyPolicy = React.lazy(() => import("../pages/PrivacyPolicy"));
-const About = React.lazy(() => import("../pages/About"));
-const RefundPolicy = React.lazy(() => import("../pages/RefundPolicy"));
+// const TermsOfService = React.lazy(() => import("../pages/TermsOfService"));
+// const PrivacyPolicy = React.lazy(() => import("../pages/PrivacyPolicy"));
+// const About = React.lazy(() => import("../pages/About"));
+// const RefundPolicy = React.lazy(() => import("../pages/RefundPolicy"));
 
 const DashboardLayout = React.lazy(() => import("../layouts/DashboardLayout"));
 const SocialAccounts = React.lazy(
@@ -67,7 +67,7 @@ const SocialPostDetail = React.lazy(
   () => import("../components/posts/SocialPostDetail")
 );
 const Billing = React.lazy(() => import("../components/billing"));
-const HelpSupport = React.lazy(() => import("../components/help-support"));
+// const HelpSupport = React.lazy(() => import("../components/help-support"));
 const PostCreate = React.lazy(
   () => import("../components/posts/post-create/PostCreate")
 );
@@ -76,9 +76,9 @@ const ResetPasswordPage = React.lazy(() => import("../pages/reset-password"));
 const Collection = React.lazy(
   () => import("../components/collections/Collection")
 );
-const HelpArticlePage = React.lazy(
-  () => import("../components/help-support/platform/HelpArticlePage")
-);
+// const HelpArticlePage = React.lazy(
+//   () => import("../components/help-support/platform/HelpArticlePage")
+// );
 const OrganizationDashboard = React.lazy(
   () => import("../components/organization/OrganizationDashboard")
 );
@@ -93,32 +93,32 @@ const AcceptInvitation = React.lazy(() => import("../pages/AcceptInvitation"));
 const AdminJobsDashboard = React.lazy(() => import("../components/admin/jobs"));
 
 // Redirect helpers to keep backward compatibility for old dashboard help routes
-const RedirectDashboardHelp = () => <Navigate to="/help" replace />;
-const RedirectDashboardHelpArticle = () => {
-  const { articleId } = useParams();
-  return <Navigate to={`/help/${articleId}`} replace />;
-};
+// const RedirectDashboardHelp = () => <Navigate to="/help" replace />;
+// const RedirectDashboardHelpArticle = () => {
+//   const { articleId } = useParams();
+//   return <Navigate to={`/help/${articleId}`} replace />;
+// };
 
 // Public wrappers for Help pages (with marketing header/footer)
-const HelpPublic = () => (
-  <div className="min-h-screen flex flex-col">
-    <Header />
-    <main className="flex-grow container mx-auto px-4 py-10">
-      <HelpSupport />
-    </main>
-    <Footer />
-  </div>
-);
+// const HelpPublic = () => (
+//   <div className="min-h-screen flex flex-col">
+//     <Header />
+//     <main className="flex-grow container mx-auto px-4 py-10">
+//       <HelpSupport />
+//     </main>
+//     <Footer />
+//   </div>
+// );
 
-const HelpArticlePublic = () => (
-  <div className="min-h-screen flex flex-col">
-    <Header />
-    <main className="flex-grow container mx-auto px-4 py-10">
-      <HelpArticlePage />
-    </main>
-    <Footer />
-  </div>
-);
+// const HelpArticlePublic = () => (
+//   <div className="min-h-screen flex flex-col">
+//     <Header />
+//     <main className="flex-grow container mx-auto px-4 py-10">
+//       <HelpArticlePage />
+//     </main>
+//     <Footer />
+//   </div>
+// );
 
 const AppRoutes = () => {
   return (
@@ -129,7 +129,7 @@ const AppRoutes = () => {
             <Toaster />
             {/* <Analytics /> */}
             <Routes>
-              <Route path="/" element={<HomePage />} />
+              {/* <Route path="/" element={<HomePage />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/refund" element={<RefundPolicy />} />
@@ -138,10 +138,18 @@ const AppRoutes = () => {
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/roadmap" element={<Roadmap />} />
               <Route path="/help-center" element={<Help />} />
-              {/* Public Help Center (moved from /dashboard/help) */}
               <Route path="/help" element={<HelpPublic />} />
               <Route path="/help/:articleId" element={<HelpArticlePublic />} />
-              <Route path="/waitlist" element={<WaitlistPage />} />
+              <Route path="/waitlist" element={<WaitlistPage />} /> */}
+              {/* Base route: show login for unauthenticated users, redirect to dashboard if authenticated */}
+              <Route
+                path="/"
+                element={
+                  <PublicRoute>
+                    <LoginPage />
+                  </PublicRoute>
+                }
+              />
               <Route
                 path="/login"
                 element={
@@ -205,11 +213,11 @@ const AppRoutes = () => {
                 <Route path="settings" element={<UserSettings />} />
                 <Route path="billing" element={<Billing />} />
                 {/* Back-compat redirects to new public help routes */}
-                <Route path="help" element={<RedirectDashboardHelp />} />
-                <Route
+                {/* <Route path="help" element={<RedirectDashboardHelp />} /> */}
+                {/* <Route
                   path="help/:articleId"
                   element={<RedirectDashboardHelpArticle />}
-                />
+                /> */}
                 <Route
                   path="organizations"
                   element={<OrganizationDashboard />}

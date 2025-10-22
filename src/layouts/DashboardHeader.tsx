@@ -27,9 +27,12 @@ import DashboardSidebar from "./DashboardSidebar";
 import { Badge } from "../components/ui/badge";
 import { useDynamicBreadcrumbs } from "../hooks/useDynamicBreadcrumbs";
 
+const marketing_url =
+  import.meta.env.VITE_MARKETING_APP_BASE || "https://skedlii.xyz";
+
 export default function DashboardHeader() {
   const { user, logout, canManageBilling, subscriptionInfo } = useAuth();
-  const { canConnectSocialAccounts, hasValidSubscription } = useAccessControl();
+  const { canConnectSocialAccounts } = useAccessControl();
   const location = useLocation();
 
   const mobileMenuOpen = useMobileMenuStore(
@@ -156,7 +159,7 @@ export default function DashboardHeader() {
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/help" className="cursor-pointer">
+                <Link to={`${marketing_url}/help`} className="cursor-pointer">
                   <HelpCircle className="mr-2 h-4 w-4" />
                   Help & Support
                 </Link>
