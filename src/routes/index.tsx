@@ -1,40 +1,24 @@
 import * as React from "react";
 
-import {
-  BrowserRouter,
-  Route,
-  Routes,
-  // Navigate,
-  // useParams,
-} from "react-router-dom";
-// import Header from "../components/layout/Header";
-// import Footer from "../components/layout/Footer";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../lib/queryClient";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { Toaster } from "../components/ui/toaster";
-// import { Analytics } from "@vercel/analytics/react";
 
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
 import ProgressProvider from "../components/providers/ProgressProvider";
-// import Contact from "../pages/Contact";
-// import Pricing from "../pages/Pricing";
-// import Roadmap from "../pages/Roadmap";
-// import Help from "../pages/Help";
+import ErrorBoundary, {
+  AppErrorFallback,
+} from "../components/common/ErrorBoundary";
 
-// const HomePage = React.lazy(() => import("../pages"));
-// const WaitlistPage = React.lazy(() => import("../pages/waitlist"));
 const ForgotPasswordPage = React.lazy(() => import("../pages/forgot-password"));
 const DashboardPage = React.lazy(() => import("../components/dashboard"));
 const NotFound = React.lazy(() => import("../pages/not-found"));
 
 const LoginPage = React.lazy(() => import("../pages/Login"));
 const RegisterPage = React.lazy(() => import("../pages/Register"));
-// const TermsOfService = React.lazy(() => import("../pages/TermsOfService"));
-// const PrivacyPolicy = React.lazy(() => import("../pages/PrivacyPolicy"));
-// const About = React.lazy(() => import("../pages/About"));
-// const RefundPolicy = React.lazy(() => import("../pages/RefundPolicy"));
 
 const DashboardLayout = React.lazy(() => import("../layouts/DashboardLayout"));
 const SocialAccounts = React.lazy(
@@ -67,18 +51,11 @@ const SocialPostDetail = React.lazy(
   () => import("../components/posts/SocialPostDetail")
 );
 const Billing = React.lazy(() => import("../components/billing"));
-// const HelpSupport = React.lazy(() => import("../components/help-support"));
-const PostCreate = React.lazy(
-  () => import("../components/posts/post-create/PostCreate")
-);
 const UserSettings = React.lazy(() => import("../components/settings"));
 const ResetPasswordPage = React.lazy(() => import("../pages/reset-password"));
 const Collection = React.lazy(
   () => import("../components/collections/Collection")
 );
-// const HelpArticlePage = React.lazy(
-//   () => import("../components/help-support/platform/HelpArticlePage")
-// );
 const OrganizationDashboard = React.lazy(
   () => import("../components/organization/OrganizationDashboard")
 );
@@ -89,59 +66,22 @@ const OrganizationMembers = React.lazy(
   () => import("../components/organization/OrganizationMembers")
 );
 const AcceptInvitation = React.lazy(() => import("../pages/AcceptInvitation"));
-// const ToastDemo = React.lazy(() => import("../components/ui/toast-demo"));
 const AdminJobsDashboard = React.lazy(() => import("../components/admin/jobs"));
 
-// Redirect helpers to keep backward compatibility for old dashboard help routes
-// const RedirectDashboardHelp = () => <Navigate to="/help" replace />;
-// const RedirectDashboardHelpArticle = () => {
-//   const { articleId } = useParams();
-//   return <Navigate to={`/help/${articleId}`} replace />;
-// };
-
-// Public wrappers for Help pages (with marketing header/footer)
-// const HelpPublic = () => (
-//   <div className="min-h-screen flex flex-col">
-//     <Header />
-//     <main className="flex-grow container mx-auto px-4 py-10">
-//       <HelpSupport />
-//     </main>
-//     <Footer />
-//   </div>
-// );
-
-// const HelpArticlePublic = () => (
-//   <div className="min-h-screen flex flex-col">
-//     <Header />
-//     <main className="flex-grow container mx-auto px-4 py-10">
-//       <HelpArticlePage />
-//     </main>
-//     <Footer />
-//   </div>
-// );
-
-const AppRoutes = () => {
+const InnerApp = () => {
+  const location = useLocation();
   return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <ProgressProvider>
-            <Toaster />
-            {/* <Analytics /> */}
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <ProgressProvider>
+          <Toaster />
+          <ErrorBoundary
+            key={location.key}
+            fallbackRender={({ error, reset }) => (
+              <AppErrorFallback error={error} reset={reset} />
+            )}
+          >
             <Routes>
-              {/* <Route path="/" element={<HomePage />} />
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/refund" element={<RefundPolicy />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/roadmap" element={<Roadmap />} />
-              <Route path="/help-center" element={<Help />} />
-              <Route path="/help" element={<HelpPublic />} />
-              <Route path="/help/:articleId" element={<HelpArticlePublic />} />
-              <Route path="/waitlist" element={<WaitlistPage />} /> */}
-              {/* Base route: show login for unauthenticated users, redirect to dashboard if authenticated */}
               <Route
                 path="/"
                 element={
@@ -192,7 +132,6 @@ const AppRoutes = () => {
                 }
               >
                 <Route index element={<DashboardPage />} />
-                <Route path="create-post" element={<PostCreate />} />
                 <Route path="accounts" element={<SocialAccounts />} />
                 <Route path="collections" element={<Collections />} />
                 <Route
@@ -212,12 +151,6 @@ const AppRoutes = () => {
                 <Route path="drafts/:draftId" element={<DraftDetail />} />
                 <Route path="settings" element={<UserSettings />} />
                 <Route path="billing" element={<Billing />} />
-                {/* Back-compat redirects to new public help routes */}
-                {/* <Route path="help" element={<RedirectDashboardHelp />} /> */}
-                {/* <Route
-                  path="help/:articleId"
-                  element={<RedirectDashboardHelpArticle />}
-                /> */}
                 <Route
                   path="organizations"
                   element={<OrganizationDashboard />}
@@ -235,6 +168,8 @@ const AppRoutes = () => {
                   element={<TeamManagement />}
                 />
                 <Route path="admin/jobs" element={<AdminJobsDashboard />} />
+                {/* Catch-all inside dashboard ensures 404 renders within layout */}
+                <Route path="*" element={<NotFound />} />
                 {/* Development/Testing Routes */}
                 {/* {import.meta.env.DEV && (
                   <Route path="dev/toast-demo" element={<ToastDemo />} />
@@ -242,9 +177,17 @@ const AppRoutes = () => {
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </ProgressProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
+          </ErrorBoundary>
+        </ProgressProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
+
+const AppRoutes = () => {
+  return (
+    <BrowserRouter>
+      <InnerApp />
     </BrowserRouter>
   );
 };

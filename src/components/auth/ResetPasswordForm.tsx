@@ -64,7 +64,7 @@ export default function ResetPasswordForm({
       const result = await apiRequest("POST", "/auth/reset-password", body);
       return result;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       setIsSuccess(true);
       setIsLoading(false);
       toast.success({
