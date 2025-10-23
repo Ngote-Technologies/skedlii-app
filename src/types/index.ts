@@ -37,6 +37,7 @@ export interface User {
   lastName: string;
   userType: "individual" | "organization";
   organizationId?: string; // Optional for individual users
+  defaultOrganizationId?: string;
   role?: "super_admin" | "org_owner" | "team_manager" | "user"; // Optional for individual users
   teamIds?: string[]; // Optional for individual users
   status: "pending" | "active" | "inactive";

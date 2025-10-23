@@ -42,7 +42,7 @@ export default function ScheduledPosts() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
   );
-  const [hideCanceled, setHideCanceled] = useState(true);
+  // const [hideCanceled, setHideCanceled] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const { toast } = useToast();
@@ -66,19 +66,19 @@ export default function ScheduledPosts() {
     ((scheduledResp as any)?.data as any[]) ||
     [];
 
-  const visibleItems = hideCanceled
-    ? scheduledItems.filter((post: any) => {
-        const platforms: any[] = Array.isArray(post.platforms)
-          ? post.platforms
-          : [];
-        const hasActive = platforms.some(
-          (p: any) => p?.status === "pending" || p?.status === "publishing"
-        );
-        const isCanceled = Boolean(post.canceledAt);
-        if (isCanceled && !hasActive) return false;
-        return true;
-      })
-    : scheduledItems;
+  // const visibleItems = hideCanceled
+  //   ? scheduledItems.filter((post: any) => {
+  //       const platforms: any[] = Array.isArray(post.platforms)
+  //         ? post.platforms
+  //         : [];
+  //       const hasActive = platforms.some(
+  //         (p: any) => p?.status === "pending" || p?.status === "publishing"
+  //       );
+  //       const isCanceled = Boolean(post.canceledAt);
+  //       if (isCanceled && !hasActive) return false;
+  //       return true;
+  //     })
+  //   : scheduledItems;
 
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
     mutationFn: async (id: number) => {
@@ -138,7 +138,7 @@ export default function ScheduledPosts() {
   const filterPostsByDate = (date: Date | undefined) => {
     if (!date) return [];
 
-    return visibleItems.filter((post: any) => {
+    return scheduledItems.filter((post: any) => {
       if (!post.scheduledFor) return false;
       const postDate = new Date(post.scheduledFor);
       return (
@@ -152,7 +152,7 @@ export default function ScheduledPosts() {
   const getPostsByDate = () => {
     const postsByDate: Record<string, number> = {};
 
-    visibleItems.forEach((post: any) => {
+    scheduledItems.forEach((post: any) => {
       if (post.scheduledFor) {
         const dateKey = getDateKey(post.scheduledFor);
         postsByDate[dateKey] = (postsByDate[dateKey] || 0) + 1;
@@ -203,7 +203,7 @@ export default function ScheduledPosts() {
             <div className="flex items-center gap-4 px-4 py-2 bg-transparent dark:bg-gray-800/50 rounded-xl">
               <div className="text-center">
                 <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                  {visibleItems.length}
+                  {scheduledItems.length}
                 </div>
                 <div className="text-xs text-gray-500">Total</div>
               </div>
@@ -383,11 +383,11 @@ export default function ScheduledPosts() {
                   </div>
                 </div>
 
-                {visibleItems.length > 0 && (
+                {scheduledItems.length > 0 && (
                   <div className="flex items-center gap-3">
                     <div className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 px-3 py-1 rounded-full text-sm font-medium">
-                      {visibleItems.length} total post
-                      {visibleItems.length !== 1 ? "s" : ""}
+                      {scheduledItems.length} total post
+                      {scheduledItems.length !== 1 ? "s" : ""}
                     </div>
                   </div>
                 )}
@@ -397,7 +397,7 @@ export default function ScheduledPosts() {
               <div className="block lg:hidden">
                 {getScheduledPostListView(
                   isFetchingScheduledPosts,
-                  visibleItems,
+                  scheduledItems,
                   cancelPost,
                   handleDeletePost,
                   navigate
@@ -407,7 +407,7 @@ export default function ScheduledPosts() {
                 <ScrollArea className="h-[70vh] pr-2">
                   {getScheduledPostListView(
                     isFetchingScheduledPosts,
-                    visibleItems,
+                    scheduledItems,
                     cancelPost,
                     handleDeletePost,
                     navigate
