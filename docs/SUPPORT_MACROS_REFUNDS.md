@@ -10,7 +10,7 @@ Hi {first_name},
 
 Thanks for reaching out. I can help with your refund under our 30‑day money‑back guarantee. To locate the subscription, please confirm the account email used for billing and (optional) the last invoice number if you have it. Once I verify, I’ll process the refund and confirm.
 
-Policy: https://skedlii.xyz/refund
+Policy: https://www.skedlii.xyz/refund
 
 Best,
 {agent_name}
@@ -25,7 +25,7 @@ I’ve issued a full refund under our 30‑day guarantee and canceled your subsc
 
 If you’re open, what wasn’t a fit this time? Your feedback helps a lot.
 
-Policy: https://skedlii.xyz/refund
+Policy: https://www.skedlii.xyz/refund
 
 Best,
 {agent_name}
@@ -38,7 +38,7 @@ Hi {first_name},
 
 Our 30‑day guarantee covers the first charge within 30 days. Your request is outside that window. I can offer a one‑time {X% partial refund / account credit of $Y} as a goodwill gesture. Would you like me to proceed?
 
-Policy: https://skedlii.xyz/refund
+Policy: https://www.skedlii.xyz/refund
 
 Best,
 {agent_name}
