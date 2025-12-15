@@ -28,7 +28,7 @@ import { Badge } from "../components/ui/badge";
 import { useDynamicBreadcrumbs } from "../hooks/useDynamicBreadcrumbs";
 
 const marketing_url =
-  import.meta.env.VITE_MARKETING_APP_BASE || "https://skedlii.xyz";
+  import.meta.env.VITE_MARKETING_APP_BASE || "https://www.skedlii.xyz";
 
 export default function DashboardHeader() {
   const { user, logout, canManageBilling, subscriptionInfo } = useAuth();
