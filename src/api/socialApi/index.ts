@@ -66,7 +66,7 @@ export const socialApi = {
   connectTwitter: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/twitter/direct-auth`
+      `/social-accounts/twitter/connect`
     );
     return response;
   },
