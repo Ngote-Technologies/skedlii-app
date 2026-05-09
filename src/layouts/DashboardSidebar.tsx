@@ -26,7 +26,7 @@ import { Badge } from "../components/ui/badge";
 import { useAccessControl } from "../hooks/useAccessControl";
 
 const marketing_url =
-  import.meta.env.VITE_MARKETING_APP_BASE || "https://www.skedlii.xyz";
+  import.meta.env.VITE_MARKETING_APP_BASE || "https://www.skedlii.com";
 
 export default function DashboardSidebar({
   closeMenu,

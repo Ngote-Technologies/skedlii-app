@@ -1,5 +1,7 @@
 # API Migration Guide: V1 to V2 Transition Strategy
 
+> Historical note: this guide documents the transitional v1-to-v2 migration strategy. API v1 is now deprecated; use `../PROJECT-CURRENT-STATE.md` and the active v2/app code as the current source of truth.
+
 ## Overview
 
 This document outlines the comprehensive migration strategy implemented to transition the Skedlii frontend application from V1 to V2 API endpoints while maintaining backwards compatibility and zero downtime.

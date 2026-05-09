@@ -363,7 +363,7 @@ Focus on foundational components that affect the entire application.
 
 **Verification Date**: August 12, 2025  
 **Test Environment**: Browser testing at http://localhost:5173  
-**Login Credentials**: testaccount@skedlii.xyz
+**Login Credentials**: testaccount@skedlii.com
 
 **Verified Components:**
 
