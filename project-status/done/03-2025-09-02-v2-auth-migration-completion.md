@@ -1,5 +1,7 @@
 # V2 Authentication Migration Completion
 
+> Historical note: this completion note captures the September 2025 auth migration state. API v1 is now deprecated, and organizations, memberships, invitations, audit logs, and teams are supported current capabilities. Prefer `../../../PROJECT-CURRENT-STATE.md` when this note conflicts with current state.
+
 **Date**: 2025-09-02  
 **Status**: ✅ Complete
 

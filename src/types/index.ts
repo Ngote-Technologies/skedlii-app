@@ -3,6 +3,7 @@ export interface Organization {
   name: string;
   description?: string;
   role?: "owner" | "admin" | "member" | "viewer";
+  timezone?: string;
   logo?: string;
   status: "active" | "inactive" | "suspended";
   type: "enterprise" | "business" | "startup";

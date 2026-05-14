@@ -1,5 +1,7 @@
 # Next Steps (Queue) - Updated 2025-09-02
 
+> Historical note: this queue reflects the September 2025 migration state. The current source of truth is `../../../PROJECT-CURRENT-STATE.md`; organizations, memberships, invitations, audit logs, and teams are supported current capabilities, with any remaining UI work tracked as polish or follow-up implementation quality.
+
 ## 🎉 MAJOR MILESTONE: V2 Authentication Migration COMPLETE
 
 **Frontend Migration Status**: Phase 1 (Authentication) **✅ FULLY COMPLETE** 
