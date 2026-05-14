@@ -29,9 +29,14 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Loader2, Building } from "lucide-react";
-// import { useOrganizationStore } from '../../store/organizationStore';
-// import { CreateOrganizationData } from "../../api/organizations";
+import { CreateOrganizationData, organizationsApi } from "../../api/organizations";
 import { useToast } from "../../hooks/use-toast";
+import {
+  getDetectedTimeZone,
+  getTimeZoneOptions,
+  isValidTimeZone,
+} from "../../lib/timezones";
+import { useAuth } from "../../store/hooks";
 
 const createOrganizationSchema = z.object({
   name: z.string().min(1, "Organization name is required"),
@@ -39,6 +44,10 @@ const createOrganizationSchema = z.object({
   industry: z.string().optional(),
   size: z.enum(["1-10", "11-50", "51-200", "201-500", "500+"]).optional(),
   country: z.string().optional(),
+  timezone: z
+    .string()
+    .min(1, "Timezone is required")
+    .refine(isValidTimeZone, "Select a valid timezone"),
 });
 
 type CreateOrganizationFormData = z.infer<typeof createOrganizationSchema>;
@@ -53,8 +62,10 @@ export default function CreateOrganizationDialog({
   onOpenChange,
 }: CreateOrganizationDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  // const { createOrganization } = useOrganizationStore();
   const { toast } = useToast();
+  const { setActiveOrganization } = useAuth();
+  const detectedTimezone = getDetectedTimeZone();
+  const timezoneOptions = getTimeZoneOptions(detectedTimezone);
 
   const form = useForm<CreateOrganizationFormData>({
     resolver: zodResolver(createOrganizationSchema),
@@ -64,14 +75,23 @@ export default function CreateOrganizationDialog({
       industry: "",
       size: undefined,
       country: "",
+      timezone: detectedTimezone,
     },
   });
 
   const onSubmit = async (data: CreateOrganizationFormData) => {
-    console.log({ data });
     setIsLoading(true);
     try {
-      // await createOrganization(data as CreateOrganizationData);
+      const organization = await organizationsApi.createOrganization(
+        data as CreateOrganizationData
+      );
+      await setActiveOrganization({
+        _id: organization._id,
+        name: organization.name,
+        status: organization.status,
+        timezone: organization.timezone,
+        role: "owner",
+      });
       toast.success({
         title: "Organization Created",
         description: "Your organization has been created successfully.",
@@ -192,6 +212,31 @@ export default function CreateOrganizationDialog({
                   <FormControl>
                     <Input placeholder="United States" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="timezone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Timezone *</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select timezone" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="max-h-72">
+                      {timezoneOptions.map((timezone) => (
+                        <SelectItem key={timezone} value={timezone}>
+                          {timezone.replace(/_/g, " ")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

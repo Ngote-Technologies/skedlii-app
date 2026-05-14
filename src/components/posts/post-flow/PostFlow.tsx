@@ -47,6 +47,7 @@ import {
 import { handleMediaChange, handleSchedulingChange } from "../../../lib/utils";
 import { useGetOrganizationSocialAccounts } from "../../../hooks/useSocialAccounts";
 import { toast } from "../../../hooks/use-toast";
+import { useBestPostingTimes } from "../../../hooks/useBestPostingTimes";
 
 export default function PostFlow() {
   const { organization } = useAuth();
@@ -82,6 +83,46 @@ export default function PostFlow() {
     isLoading: isFetchingOrganizationAccounts,
   } = useGetOrganizationSocialAccounts(organization?._id || "");
   const socialAccounts: any[] = (organizationAccounts as any)?.items ?? [];
+
+  const selectedAccountRecords = useMemo(
+    () =>
+      socialAccounts.filter((account) =>
+        selectedAccounts.includes(String(account._id))
+      ),
+    [selectedAccounts, socialAccounts]
+  );
+
+  const bestPostingTimeParams = useMemo(() => {
+    const platforms = Array.from(
+      new Set(
+        selectedAccountRecords
+          .map((account) => String(account.platform || "").toLowerCase())
+          .filter(Boolean)
+      )
+    );
+
+    return {
+      timezone: organization?.timezone,
+      limit: 5,
+      platform: platforms.length === 1 ? platforms[0] : undefined,
+      socialAccountId:
+        selectedAccountRecords.length === 1
+          ? String(selectedAccountRecords[0]._id)
+          : undefined,
+    };
+  }, [organization?.timezone, selectedAccountRecords]);
+
+  const shouldFetchBestPostingTimes =
+    activeTab === "schedule" &&
+    isScheduled &&
+    selectedAccounts.length > 0 &&
+    Boolean(organization?.timezone);
+
+  const {
+    data: bestPostingTimes,
+    isFetching: isFetchingBestPostingTimes,
+    isError: isBestPostingTimesError,
+  } = useBestPostingTimes(bestPostingTimeParams, shouldFetchBestPostingTimes);
 
   const [searchParams] = useSearchParams();
   const rawDraftId = searchParams.get("draftId");
@@ -608,6 +649,17 @@ export default function PostFlow() {
               <SchedulingOptions
                 isScheduled={isScheduled}
                 scheduledDate={scheduledDate}
+                bestPostingTimes={bestPostingTimes}
+                isLoadingBestPostingTimes={isFetchingBestPostingTimes}
+                bestPostingTimesUnavailable={isBestPostingTimesError}
+                onApplySuggestion={(date) =>
+                  handleSchedulingChange(
+                    true,
+                    date,
+                    setIsScheduled,
+                    setScheduledDate
+                  )
+                }
                 onSchedulingChange={(scheduled, date) =>
                   handleSchedulingChange(
                     scheduled,

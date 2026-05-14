@@ -104,6 +104,13 @@ export interface LoginResponseV2 {
   subscriptionInfo: SubscriptionInfo;
   userRole: "owner" | "admin" | "member" | "viewer";
   userType: "individual" | "organization";
+  organization?: {
+    _id: string;
+    name?: string | null;
+    status?: string;
+    timezone?: string;
+    role?: "owner" | "admin" | "member" | "viewer";
+  };
 }
 
 export interface GetMeResponseV2 {
@@ -120,12 +127,20 @@ export interface GetMeResponseV2 {
     orgId: string;
     role: string;
   }>;
+  organization?: {
+    _id: string;
+    name?: string | null;
+    status?: string;
+    timezone?: string;
+    role?: string;
+  };
 }
 
 export interface RegisterData {
   name: string;
   email: string;
   password: string;
+  timezone: string;
 }
 
 // V2 Forgot Password Request

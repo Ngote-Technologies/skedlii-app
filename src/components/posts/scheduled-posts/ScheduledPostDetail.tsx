@@ -39,7 +39,7 @@ import {
   SocialPostSummary,
   useScheduledPostDetail,
 } from "../../../hooks/useScheduledPostDetail";
-import { getStatusBadge } from "./listView";
+import { getStatusBadge } from "./statusUtils";
 
 type CancelResponse = {
   jobResults?: Array<{ removed?: boolean }>;

@@ -12,6 +12,7 @@ export interface Organization {
   country?: string;
   timezone?: string;
   ownerId: string;
+  status?: string;
   subscriptionStatus?: string;
   isActive: boolean;
   settings?: {
@@ -114,7 +115,8 @@ export const organizationsApi = {
   createOrganization: async (
     data: CreateOrganizationData
   ): Promise<Organization> => {
-    return await apiRequest("POST", "/organizations", data);
+    const response = await apiRequest<any>("POST", "/organizations", data);
+    return response.organization ?? response;
   },
 
   /**
@@ -133,7 +135,12 @@ export const organizationsApi = {
     organizationId: string,
     data: UpdateOrganizationData
   ): Promise<Organization> => {
-    return await apiRequest("PATCH", `/organizations/${organizationId}`, data);
+    const response = await apiRequest<any>(
+      "PATCH",
+      `/organizations/${organizationId}`,
+      data
+    );
+    return response.organization ?? response;
   },
 
   /**

@@ -1,13 +1,4 @@
-import {
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  Edit,
-  FileText,
-  Loader2,
-  MoreHorizontal,
-  Trash2,
-} from "lucide-react";
+import { CheckCircle, Clock, Edit, Loader2, MoreHorizontal, Trash2 } from "lucide-react";
 import { Button } from "../../ui/button";
 import { Link } from "react-router-dom";
 import {
@@ -17,16 +8,23 @@ import {
   CardHeader,
   CardTitle,
 } from "../../ui/card";
-import { Badge } from "../../ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../ui/dropdown-menu";
-import { formatDate, getSocialIcon } from "../../../lib/utils";
+import { formatDate } from "../../../lib/utils";
 import { toast } from "../../../hooks/use-toast";
 import { useAccessControl } from "../../../hooks/useAccessControl";
+import {
+  PlatformStatusPill,
+  getAggregatePostStatus,
+  getStatusBadge,
+  hasActiveTarget,
+  hasPendingTarget,
+  hasPublishingTarget,
+} from "./statusUtils";
 
 export function getScheduledPostListView(
   isFetchingScheduledPosts: boolean,
@@ -74,194 +72,95 @@ export function getScheduledPostListView(
   if (scheduledItems.length > 0) {
     return (
       <div className="space-y-4">
-        {scheduledItems.map((post: any) => (
-          <Card key={post._id} className="overflow-hidden">
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-start">
-                <div>
-                  {getStatusBadge(post.platforms[0].status)}
-                  <CardTitle className="mt-2 text-base">
-                    {post.content.length > 60
-                      ? post.content.substring(0, 60) + "..."
-                      : post.content ?? "No content"}
-                  </CardTitle>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreHorizontal size={16} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {post.platforms[0].status !== "published" && (
+        {scheduledItems.map((post: any) => {
+          const platforms = Array.isArray(post.platforms) ? post.platforms : [];
+          const aggregateStatus = getAggregatePostStatus(platforms);
+          const canEdit = hasPendingTarget(platforms);
+          const canCancel = hasPendingTarget(platforms) && !hasPublishingTarget(platforms);
+          const canDelete = !hasActiveTarget(platforms);
+          const content = post.content || "No content";
+
+          return (
+            <Card key={post._id} className="overflow-hidden">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    {getStatusBadge(aggregateStatus)}
+                    <CardTitle className="mt-2 text-base">
+                      {content.length > 60 ? `${content.substring(0, 60)}...` : content}
+                    </CardTitle>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal size={16} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
-                        <Link to={`/dashboard/posts/${post._id}/edit`}>
-                          <Edit size={14} className="mr-2" />
-                          Edit Post
+                        <Link to={`/dashboard/scheduled/${post._id}`}>
+                          <Clock size={14} className="mr-2" />
+                          View details
                         </Link>
                       </DropdownMenuItem>
-                    )}
-                    {/* Cancel is allowed when there are pending targets and none are publishing */}
-                    {Array.isArray(post.platforms) &&
-                      post.platforms.some(
-                        (p: any) => p?.status === "pending"
-                      ) &&
-                      !post.platforms.some(
-                        (p: any) => p?.status === "publishing"
-                      ) && (
-                        <DropdownMenuItem
-                          onClick={() => cancelPost(String(post._id))}
-                        >
+                      {canEdit && (
+                        <DropdownMenuItem asChild>
+                          <Link to={`/dashboard/posts/${post._id}/edit`}>
+                            <Edit size={14} className="mr-2" />
+                            Edit Post
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      {canCancel && (
+                        <DropdownMenuItem onClick={() => cancelPost(String(post._id))}>
                           <CheckCircle size={14} className="mr-2" />
                           Cancel Post
                         </DropdownMenuItem>
                       )}
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      disabled={
-                        Array.isArray(post.platforms) &&
-                        post.platforms.some(
-                          (p: any) =>
-                            p?.status === "pending" ||
-                            p?.status === "publishing"
-                        )
-                      }
-                      onClick={() => handleDeletePost(post)}
-                    >
-                      <Trash2 size={14} className="mr-2" />
-                      Delete Post
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardHeader>
-            <CardContent className="pb-2">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-muted-foreground">
-                {post.scheduledFor && (
-                  <p className="flex items-center">
-                    <Clock size={14} className="mr-1.5" />
-                    {formatDate(post.scheduledFor, "PPP 'at' p")}
-                  </p>
-                )}
-                {post.platforms[0].publishedAt && (
-                  <p className="flex items-center">
-                    <CheckCircle size={14} className="mr-1.5" />
-                    Published:{" "}
-                    {formatDate(post.platforms[0].publishedAt, "PPP 'at' p")}
-                  </p>
-                )}
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-wrap items-center justify-between gap-2 border-t pt-2 bg-muted/30">
-              <Link
-                to={`/dashboard/scheduled/${post._id}`}
-                className="text-xs text-primary hover:underline"
-              >
-                View details
-              </Link>
-              <div className="flex flex-wrap gap-1">
-                {post.platforms?.map((platform: any) => {
-                  const name = (
-                    platform.platformName ||
-                    platform.platform ||
-                    ""
-                  )
-                    .toString()
-                    .toLowerCase();
-                  return (
-                    <div
-                      key={platform.accountId}
-                      className="text-xs bg-muted px-2 py-1 rounded-full flex items-center"
-                    >
-                      <i className={`${getSocialIcon(name)} mr-1`}></i>
-                      <span className="capitalize">
-                        {name || platform.platformId}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        disabled={!canDelete}
+                        onClick={() => handleDeletePost(post)}
+                      >
+                        <Trash2 size={14} className="mr-2" />
+                        Delete Post
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CardHeader>
+              <CardContent className="pb-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-muted-foreground">
+                  {post.scheduledFor && (
+                    <p className="flex items-center">
+                      <Clock size={14} className="mr-1.5" />
+                      {formatDate(post.scheduledFor, "PPP 'at' p")}
+                    </p>
+                  )}
+                  {aggregateStatus === "partial" && (
+                    <p className="flex items-center">
+                      <CheckCircle size={14} className="mr-1.5" />
+                      Some platforms need attention
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter className="flex flex-wrap gap-1.5 border-t pt-2 bg-muted/30">
+                <div className="flex flex-wrap gap-1.5">
+                  {platforms.map((platform: any, index: number) => (
+                    <PlatformStatusPill
+                      key={platform.accountId || `${platform.platformName || platform.platform}-${index}`}
+                      platform={platform}
+                      scheduledFor={post.scheduledFor}
+                    />
+                  ))}
+                </div>
+              </CardFooter>
+            </Card>
+          );
+        })}
       </div>
     );
   }
   return null;
 }
-
-export const getStatusBadge = (status: string) => {
-  switch (status) {
-    case "draft":
-      return (
-        <Badge
-          variant="outline"
-          className="flex items-center gap-1 w-fit"
-          icon={<FileText size={12} />}
-        >
-          Draft
-        </Badge>
-      );
-    case "published":
-      return (
-        <Badge
-          variant="success"
-          className="flex items-center gap-1 w-fit"
-          icon={<CheckCircle size={12} />}
-        >
-          Published
-        </Badge>
-      );
-    case "scheduled":
-    case "pending": // backend initial state
-      return (
-        <Badge
-          variant="default"
-          className="flex items-center gap-1 w-fit"
-          icon={<Clock size={12} />}
-        >
-          Scheduled
-        </Badge>
-      );
-    case "publishing": // backend while job runs
-      return (
-        <Badge
-          variant="info"
-          className="flex items-center gap-1 w-fit"
-          icon={<Loader2 size={12} className="animate-spin" />}
-        >
-          Publishing
-        </Badge>
-      );
-    case "failed":
-      return (
-        <Badge
-          variant="destructive"
-          className="flex items-center gap-1 w-fit"
-          icon={<AlertCircle size={12} />}
-        >
-          Failed
-        </Badge>
-      );
-    case "canceled":
-      return (
-        <Badge
-          variant="destructive"
-          className="flex items-center gap-1 w-fit"
-          icon={<Clock size={12} />}
-        >
-          Canceled
-        </Badge>
-      );
-    default:
-      return (
-        <Badge
-          variant="outline"
-          className="flex items-center gap-1 w-fit"
-          icon={<FileText size={12} />}
-        >
-          {status}
-        </Badge>
-      );
-  }
-};

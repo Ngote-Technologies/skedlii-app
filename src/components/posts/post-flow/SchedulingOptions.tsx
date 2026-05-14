@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -15,16 +16,22 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import { format, addDays, isToday, isAfter, isBefore } from "date-fns";
 import {
   Clock,
+  Sparkles,
   Calendar as CalendarIcon,
   CalendarCheck,
   Rocket,
   RotateCw,
 } from "lucide-react";
+import type { BestPostingTimesResponse } from "../../../api/analytics";
 
 interface SchedulingOptionsProps {
   isScheduled: boolean;
   scheduledDate: Date | null;
   onSchedulingChange: (isScheduled: boolean, date: Date | null) => void;
+  bestPostingTimes?: BestPostingTimesResponse;
+  isLoadingBestPostingTimes?: boolean;
+  bestPostingTimesUnavailable?: boolean;
+  onApplySuggestion?: (date: Date) => void;
 }
 
 // Get AM/PM time options
@@ -35,6 +42,10 @@ export default function SchedulingOptions({
   isScheduled,
   scheduledDate,
   onSchedulingChange,
+  bestPostingTimes,
+  isLoadingBestPostingTimes = false,
+  bestPostingTimesUnavailable = false,
+  onApplySuggestion,
 }: Readonly<SchedulingOptionsProps>) {
   const [date, setDate] = useState<Date | null>(scheduledDate || new Date());
   const [time, setTime] = useState<string>(
@@ -194,6 +205,39 @@ export default function SchedulingOptions({
     setIsDatePickerOpen(false);
   };
 
+  const applySuggestedTime = (value: string) => {
+    const suggestedDate = new Date(value);
+    if (!Number.isFinite(suggestedDate.getTime())) return;
+    setDate(suggestedDate);
+    setTime(format(suggestedDate, "HH:mm"));
+    setTimeTouched(false);
+    if (onApplySuggestion) {
+      onApplySuggestion(suggestedDate);
+    } else {
+      onSchedulingChange(true, suggestedDate);
+    }
+  };
+
+  const formatSuggestionLabel = (value: string, timezone?: string) => {
+    const suggestedDate = new Date(value);
+    if (!Number.isFinite(suggestedDate.getTime())) return "Suggested time";
+
+    try {
+      return new Intl.DateTimeFormat(undefined, {
+        weekday: "short",
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: timezone,
+      }).format(suggestedDate);
+    } catch {
+      return format(suggestedDate, "EEE, h:mm a");
+    }
+  };
+
+  const suggestedTimes =
+    bestPostingTimes?.recommendations?.filter(
+      (item) => typeof item.recommendedAt === "string" && item.recommendedAt
+    ) ?? [];
   const resolvedScheduledDate = getFullScheduledDate();
 
   return (
@@ -215,6 +259,69 @@ export default function SchedulingOptions({
       {isScheduled && (
         <CardContent>
           <div className="space-y-6">
+            {(isLoadingBestPostingTimes ||
+              bestPostingTimesUnavailable ||
+              bestPostingTimes) && (
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Suggested Times
+                </Label>
+
+                {isLoadingBestPostingTimes ? (
+                  <p className="rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                    Loading suggested posting times...
+                  </p>
+                ) : bestPostingTimesUnavailable ? (
+                  <p className="rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                    Suggested times are unavailable right now. You can still
+                    choose a time manually.
+                  </p>
+                ) : bestPostingTimes?.personalized && suggestedTimes.length ? (
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      {suggestedTimes.slice(0, 5).map((suggestion) => (
+                        <Button
+                          key={`${suggestion.recommendedAt}-${suggestion.localDayOfWeek}-${suggestion.localHour}`}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            applySuggestedTime(suggestion.recommendedAt!)
+                          }
+                        >
+                          <Clock className="mr-1 h-3.5 w-3.5" />
+                          {formatSuggestionLabel(
+                            suggestion.recommendedAt!,
+                            bestPostingTimes.timezone
+                          )}
+                        </Button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Based on {bestPostingTimes.sampleSize ?? "recent"} posts
+                      in {bestPostingTimes.timezone}.
+                    </p>
+                  </div>
+                ) : bestPostingTimes?.basis === "timezone_missing" ? (
+                  <p className="rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                    Set an organization timezone to enable suggestions.{" "}
+                    <Link
+                      to="/dashboard/organizations/settings"
+                      className="font-medium text-primary underline underline-offset-4"
+                    >
+                      Open settings
+                    </Link>
+                  </p>
+                ) : bestPostingTimes ? (
+                  <p className="rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                    Suggestions improve after more published posts. You can
+                    still choose any time manually.
+                  </p>
+                ) : null}
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 space-y-2">
                 <Label htmlFor="scheduled-date">Date</Label>
