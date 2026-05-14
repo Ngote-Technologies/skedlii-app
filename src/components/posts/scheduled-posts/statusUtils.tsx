@@ -50,6 +50,7 @@ export function getAggregatePostStatus(platforms: any[]): AggregatePostStatus {
   );
 
   if (statuses.every((status) => status === "published")) return "published";
+  if (statuses.every((status) => status === "canceled")) return "canceled";
   if (hasPublishing) return "publishing";
   if (hasPublished && hasFailedOrCanceled) return "partial";
   if (hasPending) return "scheduled";
