@@ -4,6 +4,7 @@ export type OrganizationRole = "owner" | "admin" | "member" | "viewer";
 export interface Organization {
   _id: string;
   name: string;
+  recommendationProfile?: RecommendationProfile | null;
   description?: string;
   logo?: string;
   website?: string;
@@ -26,6 +27,17 @@ export interface Organization {
   };
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface RecommendationProfile {
+  industryOrNiche?: string | null;
+  targetAudience?: string | null;
+  contentGoals?: string[];
+  brandTone?: string | null;
+  contentPillars?: string[];
+  keywords?: string[];
+  topicsToAvoid?: string[];
+  primaryLocation?: string | null;
 }
 
 export interface OrganizationWithRole extends Organization {
@@ -64,6 +76,8 @@ export interface UpdateOrganizationData {
     };
   };
 }
+
+export type UpdateRecommendationProfileData = RecommendationProfile;
 
 export interface AddMemberData {
   email: string;
@@ -138,6 +152,18 @@ export const organizationsApi = {
     const response = await apiRequest<any>(
       "PATCH",
       `/organizations/${organizationId}`,
+      data
+    );
+    return response.organization ?? response;
+  },
+
+  updateRecommendationProfile: async (
+    organizationId: string,
+    data: UpdateRecommendationProfileData
+  ): Promise<Organization> => {
+    const response = await apiRequest<any>(
+      "PATCH",
+      `/organizations/${organizationId}/recommendation-profile`,
       data
     );
     return response.organization ?? response;

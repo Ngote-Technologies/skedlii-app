@@ -25,6 +25,16 @@ export interface AIAssistantRequest {
     purpose: ContentPurpose;
     targetAudience: string;
     keywords: string[];
+    brandProfile?: {
+      industryOrNiche?: string | null;
+      targetAudience?: string | null;
+      contentGoals?: string[];
+      brandTone?: string | null;
+      contentPillars?: string[];
+      keywords?: string[];
+      topicsToAvoid?: string[];
+      primaryLocation?: string | null;
+    };
     ctaType?: string;
     contentStyle?: string;
     length?: {

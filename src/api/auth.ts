@@ -109,6 +109,7 @@ export interface LoginResponseV2 {
     name?: string | null;
     status?: string;
     timezone?: string;
+    recommendationProfile?: any;
     role?: "owner" | "admin" | "member" | "viewer";
   };
 }
@@ -132,6 +133,7 @@ export interface GetMeResponseV2 {
     name?: string | null;
     status?: string;
     timezone?: string;
+    recommendationProfile?: any;
     role?: string;
   };
 }

@@ -4,6 +4,7 @@ export interface Organization {
   description?: string;
   role?: "owner" | "admin" | "member" | "viewer";
   timezone?: string;
+  recommendationProfile?: RecommendationProfile | null;
   logo?: string;
   status: "active" | "inactive" | "suspended";
   type: "enterprise" | "business" | "startup";
@@ -16,6 +17,17 @@ export interface Organization {
   createdAt: string;
   updatedAt: string;
   memberIds: string[];
+}
+
+export interface RecommendationProfile {
+  industryOrNiche?: string | null;
+  targetAudience?: string | null;
+  contentGoals?: string[];
+  brandTone?: string | null;
+  contentPillars?: string[];
+  keywords?: string[];
+  topicsToAvoid?: string[];
+  primaryLocation?: string | null;
 }
 
 export interface Team {

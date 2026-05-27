@@ -152,6 +152,10 @@ const InnerApp = () => {
                 <Route path="settings" element={<UserSettings />} />
                 <Route path="billing" element={<Billing />} />
                 <Route
+                  path="brand-settings"
+                  element={<OrganizationSettings />}
+                />
+                <Route
                   path="organizations"
                   element={<OrganizationDashboard />}
                 />

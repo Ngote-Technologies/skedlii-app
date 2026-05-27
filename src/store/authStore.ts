@@ -139,6 +139,7 @@ interface AuthState {
     name?: string | null;
     status?: string;
     timezone?: string;
+    recommendationProfile?: any;
     role?: UserRole | string | null;
   }) => Promise<void>;
 }
@@ -157,6 +158,7 @@ const adaptLoginResponse = (
           name?: string | null;
           status?: string;
           timezone?: string;
+          recommendationProfile?: any;
           role?: any;
         }
       | undefined;
@@ -223,6 +225,7 @@ const adaptGetMeResponse = (response: any, isV2: boolean) => {
           name?: string | null;
           status?: string;
           timezone?: string;
+          recommendationProfile?: any;
           role?: any;
         }
       | undefined;

@@ -8,6 +8,7 @@ import {
   Home,
   Link2,
   Settings,
+  Palette,
   CalendarSync,
   Plus,
   HelpCircle,
@@ -62,6 +63,12 @@ export default function DashboardSidebar({
           show: true, // Everyone can access settings
         },
         {
+          label: "Brand Settings",
+          href: "/dashboard/brand-settings",
+          icon: <Palette size={18} />,
+          show: hasValidSub,
+        },
+        {
           label: "Billing",
           href: "/dashboard/billing",
           icon: <CreditCard size={18} />,
@@ -74,7 +81,7 @@ export default function DashboardSidebar({
           show: true, // Everyone can access help
         },
       ].filter((item) => item.show),
-    [canManageBilling]
+    [canManageBilling, hasValidSub]
   );
 
   const menuItems = useMemo(() => {

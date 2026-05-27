@@ -23,6 +23,7 @@ import {
   RotateCw,
 } from "lucide-react";
 import type { BestPostingTimesResponse } from "../../../api/analytics";
+import { useAuth } from "../../../store/hooks";
 
 interface SchedulingOptionsProps {
   isScheduled: boolean;
@@ -47,6 +48,7 @@ export default function SchedulingOptions({
   bestPostingTimesUnavailable = false,
   onApplySuggestion,
 }: Readonly<SchedulingOptionsProps>) {
+  const { organization } = useAuth();
   const [date, setDate] = useState<Date | null>(scheduledDate || new Date());
   const [time, setTime] = useState<string>(
     scheduledDate ? format(scheduledDate, "HH:mm") : format(new Date(), "HH:mm")
@@ -239,6 +241,10 @@ export default function SchedulingOptions({
       (item) => typeof item.recommendedAt === "string" && item.recommendedAt
     ) ?? [];
   const resolvedScheduledDate = getFullScheduledDate();
+  const hasBrandProfile = hasMeaningfulBrandProfile(
+    organization?.recommendationProfile
+  );
+  const settingsHref = "/dashboard/brand-settings";
 
   return (
     <Card>
@@ -305,19 +311,33 @@ export default function SchedulingOptions({
                   </div>
                 ) : bestPostingTimes?.basis === "timezone_missing" ? (
                   <p className="rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-                    Set an organization timezone to enable suggestions.{" "}
+                    Set your workspace timezone to enable suggestions.{" "}
                     <Link
-                      to="/dashboard/organizations/settings"
+                      to={settingsHref}
                       className="font-medium text-primary underline underline-offset-4"
                     >
                       Open settings
                     </Link>
                   </p>
                 ) : bestPostingTimes ? (
-                  <p className="rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-                    Suggestions improve after more published posts. You can
-                    still choose any time manually.
-                  </p>
+                  <div className="space-y-2 rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                    <p>
+                      Suggestions improve after more published posts. You can
+                      still choose any time manually.
+                    </p>
+                    {!hasBrandProfile && (
+                      <p>
+                        Personalize content suggestions by adding your{" "}
+                        <Link
+                          to={settingsHref}
+                          className="font-medium text-primary underline underline-offset-4"
+                        >
+                          brand profile
+                        </Link>
+                        .
+                      </p>
+                    )}
+                  </div>
                 ) : null}
               </div>
             )}
@@ -449,5 +469,12 @@ export default function SchedulingOptions({
         </CardContent>
       )}
     </Card>
+  );
+}
+
+function hasMeaningfulBrandProfile(profile: any) {
+  if (!profile || typeof profile !== "object") return false;
+  return Object.values(profile).some((value) =>
+    Array.isArray(value) ? value.length > 0 : Boolean(value)
   );
 }
