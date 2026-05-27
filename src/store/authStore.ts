@@ -126,7 +126,7 @@ interface AuthState {
   // Actions
   login: (email: string, password: string) => Promise<any>;
   logout: () => Promise<void>;
-  register: (data: any) => Promise<void>;
+  register: (data: any) => Promise<any>;
   fetchUserData: () => Promise<void>;
   clearError: () => void;
   updateSubscriptionInfo: (
@@ -138,6 +138,8 @@ interface AuthState {
     _id: string;
     name?: string | null;
     status?: string;
+    timezone?: string;
+    recommendationProfile?: any;
     role?: UserRole | string | null;
   }) => Promise<void>;
 }
@@ -151,7 +153,14 @@ const adaptLoginResponse = (
     const v2Response = response as LoginResponseV2;
     // Prefer enriched organization summary if provided by API
     const enrichedOrg = (v2Response as any).organization as
-      | { _id: string; name?: string | null; status?: string; role?: any }
+      | {
+          _id: string;
+          name?: string | null;
+          status?: string;
+          timezone?: string;
+          recommendationProfile?: any;
+          role?: any;
+        }
       | undefined;
     return {
       token: v2Response.accessToken,
@@ -211,7 +220,14 @@ const adaptGetMeResponse = (response: any, isV2: boolean) => {
 
     // Prefer enriched organization summary when provided by API
     const enrichedOrg = (v2Response as any).organization as
-      | { _id: string; name?: string | null; status?: string; role?: any }
+      | {
+          _id: string;
+          name?: string | null;
+          status?: string;
+          timezone?: string;
+          recommendationProfile?: any;
+          role?: any;
+        }
       | undefined;
 
     return {
@@ -415,8 +431,17 @@ export const useAuthStore = create<AuthState>()(
             // Use backend-computed permissions directly (single source of truth)
             ...response.computedPermissions,
           });
+          return { success: true, data: response };
         } catch (error: any) {
-          set({ error: error.message, isLoading: false });
+          const response = error?.response;
+          const status = response?.status;
+          const message =
+            response?.data?.message ??
+            response?.data?.error ??
+            error.message ??
+            "Registration failed";
+          set({ error: message, isLoading: false });
+          return { success: false, status, message };
         }
       },
 

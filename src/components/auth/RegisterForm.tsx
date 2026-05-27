@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,14 +9,35 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
-import { AlertCircle, Sparkles, User, Mail, Lock, ShieldCheck } from "lucide-react";
+import {
+  AlertCircle,
+  Globe2,
+  Sparkles,
+  User,
+  Mail,
+  Lock,
+  ShieldCheck,
+} from "lucide-react";
 import { useToast } from "../../hooks/use-toast";
 import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
+import {
+  getDetectedTimeZone,
+  getTimeZoneOptions,
+  isValidTimeZone,
+} from "../../lib/timezones";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 
 const registerSchema = z
   .object({
@@ -24,6 +45,10 @@ const registerSchema = z
     email: z.string().email("Please enter a valid email"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
+    timezone: z
+      .string()
+      .min(1, "Timezone is required")
+      .refine(isValidTimeZone, "Select a valid timezone"),
     terms: z
       .boolean()
       .default(false)
@@ -47,6 +72,11 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
   const { register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const detectedTimezone = useMemo(() => getDetectedTimeZone(), []);
+  const timezoneOptions = useMemo(
+    () => getTimeZoneOptions(detectedTimezone),
+    [detectedTimezone]
+  );
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -55,6 +85,7 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
       email: "",
       password: "",
       confirmPassword: "",
+      timezone: detectedTimezone,
       terms: false,
     },
   });
@@ -187,6 +218,37 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
                     {...field}
                   />
                 </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="timezone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                  <Globe2 className="h-4 w-4" />
+                  Organization timezone
+                </FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select timezone" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="max-h-72">
+                    {timezoneOptions.map((timezone) => (
+                      <SelectItem key={timezone} value={timezone}>
+                        {timezone.replace(/_/g, " ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Used for scheduling and future best-time insights.
+                </p>
+                <FormMessage />
               </FormItem>
             )}
           />

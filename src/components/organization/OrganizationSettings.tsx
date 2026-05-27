@@ -1,8 +1,10 @@
-// import { useState } from "react";
-// import { useForm } from "react-hook-form";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { z } from "zod";
-// import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { Building, Globe2, Lightbulb, Save, Sparkles } from "lucide-react";
+import { getApiClient, useV2Api } from "../../api/axios";
+import { useToast } from "../../hooks/use-toast";
+import { useAuth } from "../../store/hooks";
+import { useAuthStore } from "../../store/authStore";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
@@ -10,560 +12,523 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Button } from "../ui/button";
-// import { Input } from "../ui/input";
-// import { Textarea } from "../ui/textarea";
-// import { Label } from "../ui/label";
-// import { Switch } from "../ui/switch";
-import { Badge } from "../ui/badge";
-// import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-// import {
-//   Form,
-//   FormControl,
-//   FormDescription,
-//   FormField,
-//   FormItem,
-//   FormLabel,
-//   FormMessage,
-// } from "../ui/form";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "../ui/select";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../ui/alert-dialog";
-import { Trash2 } from "lucide-react";
-// import { Building, Save, Trash2, Upload, AlertTriangle } from "lucide-react";
-// import {
-//   useActiveOrganization,
-//   useOrganizationPermissions,
-//   useOrganizationStore,
-// } from "../../store/organizationStore";
-// import { UpdateOrganizationData } from "../../api/organizations";
-// import { useToast } from "../../hooks/use-toast";
-// import { getInitials } from "../../lib/utils";
-import { useAccessControl } from "../../hooks/useAccessControl";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { Badge } from "../ui/badge";
+import {
+  getDetectedTimeZone,
+  getTimeZoneOptions,
+  isValidTimeZone,
+} from "../../lib/timezones";
 
-// const organizationSettingsSchema = z.object({
-//   name: z.string().min(1, "Organization name is required"),
-//   description: z.string().optional(),
-//   website: z.string().url().optional().or(z.literal("")),
-//   industry: z.string().optional(),
-//   size: z.enum(["1-10", "11-50", "51-200", "201-500", "500+"]).optional(),
-//   country: z.string().optional(),
-//   timezone: z.string().optional(),
-//   settings: z
-//     .object({
-//       allowMemberInvitations: z.boolean().optional(),
-//       requireEmailVerification: z.boolean().optional(),
-//       defaultUserRole: z.enum(["admin", "member", "viewer"]).optional(),
-//       brandColors: z
-//         .object({
-//           primary: z.string().optional(),
-//           secondary: z.string().optional(),
-//         })
-//         .optional(),
-//     })
-//     .optional(),
-// });
+type BrandProfileForm = {
+  industryOrNiche: string;
+  targetAudience: string;
+  contentGoals: string;
+  brandTone: string;
+  contentPillars: string;
+  keywords: string;
+  topicsToAvoid: string;
+  primaryLocation: string;
+};
 
-// type OrganizationSettingsFormData = z.infer<typeof organizationSettingsSchema>;
+const EMPTY_BRAND_PROFILE: BrandProfileForm = {
+  industryOrNiche: "",
+  targetAudience: "",
+  contentGoals: "",
+  brandTone: "",
+  contentPillars: "",
+  keywords: "",
+  topicsToAvoid: "",
+  primaryLocation: "",
+};
+
+const BRAND_TONES = [
+  "Professional",
+  "Friendly",
+  "Casual",
+  "Informative",
+  "Persuasive",
+  "Humorous",
+  "Bold",
+];
 
 export default function OrganizationSettings() {
-  // const [isLoading, setIsLoading] = useState(false);
-  // const activeOrganization = useActiveOrganization();
-  // const permissions = useOrganizationPermissions();
-  // const { updateOrganization, deleteOrganization } = useOrganizationStore();
-  const { userContext } = useAccessControl();
-  // const { toast } = useToast();
-  // const queryClient = useQueryClient();
+  const {
+    organization,
+    userRole,
+    userType,
+    subscriptionInfo,
+    canManageOrganization,
+  } = useAuth();
+  const { toast } = useToast();
+  const useV2 = useV2Api("organizations");
+  const api = useMemo(() => getApiClient(useV2 ? "v2" : undefined), [useV2]);
+  const detectedTimezone = useMemo(() => getDetectedTimeZone(), []);
+  const timezoneOptions = useMemo(
+    () => getTimeZoneOptions(organization?.timezone || detectedTimezone),
+    [organization?.timezone, detectedTimezone]
+  );
 
-  // const form = useForm<OrganizationSettingsFormData>({
-  //   resolver: zodResolver(organizationSettingsSchema),
-  //   defaultValues: {
-  //     name: activeOrganization?.name || "",
-  //     description: activeOrganization?.description || "",
-  //     website: (activeOrganization as any)?.website || "",
-  //     industry: (activeOrganization as any)?.industry || "",
-  //     size: (activeOrganization as any)?.size || undefined,
-  //     country: (activeOrganization as any)?.country || "",
-  //     timezone: (activeOrganization as any)?.timezone || "",
-  //     settings: {
-  //       allowMemberInvitations:
-  //         activeOrganization?.settings?.allowMemberInvitations ?? true,
-  //       requireEmailVerification:
-  //         activeOrganization?.settings?.requireEmailVerification ?? false,
-  //       defaultUserRole:
-  //         (activeOrganization?.settings?.defaultUserRole as any) || "member",
-  //       brandColors: {
-  //         primary: activeOrganization?.settings?.brandColors?.primary || "",
-  //         secondary: activeOrganization?.settings?.brandColors?.secondary || "",
-  //       },
-  //     },
-  //   },
-  // });
+  const [name, setName] = useState("");
+  const [timezone, setTimezone] = useState(detectedTimezone);
+  const [saving, setSaving] = useState(false);
+  const [brandProfile, setBrandProfile] =
+    useState<BrandProfileForm>(EMPTY_BRAND_PROFILE);
+  const [savingBrandProfile, setSavingBrandProfile] = useState(false);
 
-  // const updateMutation = useMutation({
-  //   mutationFn: async (data: UpdateOrganizationData) => {
-  //     if (!activeOrganization) throw new Error("No active organization");
-  //     return await updateOrganization(activeOrganization._id, data);
-  //   },
-  //   onSuccess: () => {
-  //     toast.success({
-  //       title: "Settings Updated",
-  //       description: "Organization settings have been saved successfully.",
-  //     });
-  //     queryClient.invalidateQueries({
-  //       queryKey: ["organization", activeOrganization?._id],
-  //     });
-  //   },
-  //   onError: (error: any) => {
-  //     toast.error({
-  //       title: "Settings Update Failed",
-  //       description: error.message || "Failed to update organization settings.",
-  //     });
-  //   },
-  // });
+  useEffect(() => {
+    setName(organization?.name || "");
+    setTimezone(
+      isValidTimeZone(organization?.timezone)
+        ? organization!.timezone!
+        : detectedTimezone
+    );
+    setBrandProfile(formatBrandProfileForForm(organization?.recommendationProfile));
+  }, [detectedTimezone, organization]);
 
-  // const deleteMutation = useMutation({
-  //   mutationFn: async () => {
-  //     if (!activeOrganization) throw new Error("No active organization");
-  //     return await deleteOrganization(activeOrganization._id);
-  //   },
-  //   onSuccess: () => {
-  //     toast.success({
-  //       title: "Organization Deleted",
-  //       description: "Organization has been permanently deleted.",
-  //     });
-  //   },
-  //   onError: (error: any) => {
-  //     toast.error({
-  //       title: "Organization Deletion Failed",
-  //       description: error.message || "Failed to delete organization.",
-  //     });
-  //   },
-  // });
+  const canEdit =
+    canManageOrganization || userRole === "owner" || userRole === "admin";
+  const isCreatorWorkspace =
+    userType === "individual" ||
+    subscriptionInfo?.subscriptionTier === "creator" ||
+    subscriptionInfo?.selectedTier === "creator";
+  const workspaceLabel = isCreatorWorkspace ? "workspace" : "organization";
+  const pageTitle = isCreatorWorkspace
+    ? "Brand Settings"
+    : "Organization Settings";
+  const nameLabel = isCreatorWorkspace ? "Workspace name" : "Organization name";
 
-  // const onSubmit = async (data: OrganizationSettingsFormData) => {
-  //   setIsLoading(true);
-  //   try {
-  //     // await updateMutation.mutateAsync(data);
-  //     console.log(data);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+  const handleSave = async () => {
+    if (!organization?._id || !canEdit) return;
+    if (!isValidTimeZone(timezone)) {
+      toast.error({
+        title: "Invalid timezone",
+        description: "Select a valid IANA timezone.",
+      });
+      return;
+    }
 
-  const handleDeleteOrganization = async () => {
-    // await deleteMutation.mutateAsync();
-    console.log("Delete organization");
+    setSaving(true);
+    try {
+      const response = await api.patch(`/organizations/${organization._id}/profile`, {
+        name: name.trim() || undefined,
+        timezone,
+      });
+      const updated = response.data?.organization || response.data;
+      useAuthStore.setState({
+        organization: {
+          ...organization,
+          ...updated,
+          role: organization.role || userRole || updated.role,
+        } as any,
+      });
+      toast.success({
+        title: "Settings saved",
+        description: `Your ${workspaceLabel} defaults have been updated.`,
+      });
+    } catch (error: any) {
+      toast.error({
+        title: "Settings update failed",
+        description:
+          error?.response?.data?.message ||
+          error?.message ||
+          `Failed to update ${workspaceLabel} settings.`,
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  // if (!activeOrganization) {
-  //   return (
-  //     <div className="flex items-center justify-center h-64">
-  //       <div className="text-center">
-  //         <Building className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-  //         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-  //           No Organization Selected
-  //         </h3>
-  //         <p className="text-gray-500 dark:text-gray-400 mt-2">
-  //           Please select an organization to manage settings
-  //         </p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  const updateBrandProfileField = (
+    field: keyof BrandProfileForm,
+    value: string
+  ) => {
+    setBrandProfile((current) => ({ ...current, [field]: value }));
+  };
 
-  // if (!permissions.canManageOrganization) {
-  //   return (
-  //     <div className="flex items-center justify-center h-64">
-  //       <div className="text-center">
-  //         <AlertTriangle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-  //         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-  //           Access Restricted
-  //         </h3>
-  //         <p className="text-gray-500 dark:text-gray-400 mt-2">
-  //           You don't have permission to manage organization settings
-  //         </p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  const handleSaveBrandProfile = async () => {
+    if (!organization?._id || !canEdit) return;
+
+    setSavingBrandProfile(true);
+    try {
+      const response = await api.patch(
+        `/organizations/${organization._id}/recommendation-profile`,
+        buildBrandProfilePayload(brandProfile)
+      );
+      const updated = response.data?.organization || response.data;
+      useAuthStore.setState({
+        organization: {
+          ...organization,
+          ...updated,
+          role: organization.role || userRole || updated.role,
+        } as any,
+      });
+      toast.success({
+        title: "Brand profile saved",
+        description: "Personalized suggestion context has been updated.",
+      });
+    } catch (error: any) {
+      toast.error({
+        title: "Brand profile update failed",
+        description:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to update brand profile.",
+      });
+    } finally {
+      setSavingBrandProfile(false);
+    }
+  };
+
+  if (!organization) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Building className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium">No workspace selected</h3>
+          <p className="text-sm text-muted-foreground mt-2">
+            Select a workspace to manage its settings.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const hasBrandProfile = hasMeaningfulBrandProfile(
+    organization.recommendationProfile
+  );
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Organization Settings
+            {pageTitle}
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Manage your organization's profile and preferences
+            Manage the timezone and brand profile used by scheduling and
+            personalized suggestions.
           </p>
         </div>
-        <Badge variant="outline">
-          {/* {activeOrganization.userRole.charAt(0).toUpperCase() +
-            activeOrganization.userRole.slice(1)} */}
-        </Badge>
+        {userRole && <Badge variant="outline">{userRole}</Badge>}
       </div>
 
-      {/* <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          Basic Information
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>
-                Update your organization's basic details and branding
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage
-                    src={activeOrganization.logo}
-                    alt={activeOrganization.name}
-                  />
-                  <AvatarFallback className="text-lg">
-                    {getInitials(activeOrganization.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="space-y-2">
-                  <Label>Organization Logo</Label>
-                  <Button variant="outline" size="sm">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Change Logo
-                  </Button>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    PNG, JPG up to 2MB
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Organization Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Acme Corporation" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="website"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Website</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Tell us about your organization"
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            {isCreatorWorkspace ? "Workspace Defaults" : "Scheduling Defaults"}
+          </CardTitle>
+          <CardDescription>
+            This timezone is used for scheduled posts and future best-time
+            recommendations.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="organization-name">{nameLabel}</Label>
+              <Input
+                id="organization-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                disabled={!canEdit || saving}
+                placeholder={nameLabel}
               />
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="industry"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Industry</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Technology" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2" htmlFor="timezone">
+                <Globe2 className="h-4 w-4" />
+                {isCreatorWorkspace
+                  ? "Workspace timezone"
+                  : "Organization timezone"}
+              </Label>
+              <Select
+                value={timezone}
+                onValueChange={setTimezone}
+                disabled={!canEdit || saving}
+              >
+                <SelectTrigger id="timezone">
+                  <SelectValue placeholder="Select timezone" />
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {timezoneOptions.map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {value.replace(/_/g, " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-                <FormField
-                  control={form.control}
-                  name="size"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Company Size</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select size" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="1-10">1-10 employees</SelectItem>
-                          <SelectItem value="11-50">11-50 employees</SelectItem>
-                          <SelectItem value="51-200">
-                            51-200 employees
-                          </SelectItem>
-                          <SelectItem value="201-500">
-                            201-500 employees
-                          </SelectItem>
-                          <SelectItem value="500+">500+ employees</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          {!canEdit && (
+            <p className="text-sm text-muted-foreground">
+              {isCreatorWorkspace
+                ? "Only the workspace owner can change scheduling defaults."
+                : "Only organization owners and admins can change scheduling defaults."}
+            </p>
+          )}
 
-                <FormField
-                  control={form.control}
-                  name="country"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Country</FormLabel>
-                      <FormControl>
-                        <Input placeholder="United States" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          Organization Preferences
-          <Card>
-            <CardHeader>
-              <CardTitle>Organization Preferences</CardTitle>
-              <CardDescription>
-                Configure how your organization operates
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <FormField
-                control={form.control}
-                name="settings.allowMemberInvitations"
-                render={({ field }) => (
-                  <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">
-                        Member Invitations
-                      </FormLabel>
-                      <FormDescription>
-                        Allow members to invite new users to the organization
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="settings.requireEmailVerification"
-                render={({ field }) => (
-                  <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">
-                        Email Verification
-                      </FormLabel>
-                      <FormDescription>
-                        Require email verification for new members
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="settings.defaultUserRole"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Default Member Role</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-48">
-                          <SelectValue placeholder="Select default role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="viewer">Viewer</SelectItem>
-                        <SelectItem value="member">Member</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Default role assigned to new organization members
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
-
-          Brand Colors
-          <Card>
-            <CardHeader>
-              <CardTitle>Brand Colors</CardTitle>
-              <CardDescription>
-                Customize your organization's brand colors
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="settings.brandColors.primary"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Primary Color</FormLabel>
-                      <FormControl>
-                        <div className="flex space-x-2">
-                          <Input placeholder="#3B82F6" {...field} />
-                          <div
-                            className="w-10 h-10 rounded border border-gray-200 dark:border-gray-700"
-                            style={{
-                              backgroundColor: field.value || "#3B82F6",
-                            }}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="settings.brandColors.secondary"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Secondary Color</FormLabel>
-                      <FormControl>
-                        <div className="flex space-x-2">
-                          <Input placeholder="#10B981" {...field} />
-                          <div
-                            className="w-10 h-10 rounded border border-gray-200 dark:border-gray-700"
-                            style={{
-                              backgroundColor: field.value || "#10B981",
-                            }}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          Actions
-          <div className="flex items-center justify-between">
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="flex items-center space-x-2"
-            >
-              <Save className="h-4 w-4" />
-              <span>{isLoading ? "Saving..." : "Save Changes"}</span>
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={!canEdit || saving}>
+              <Save className="mr-2 h-4 w-4" />
+              {saving ? "Saving..." : "Save changes"}
             </Button>
           </div>
-        </form>
-      </Form> */}
+        </CardContent>
+      </Card>
 
-      {/* Danger Zone - Only for org owners */}
-      {userContext.userRole === "org_owner" && (
-        <Card className="border-red-200 dark:border-red-800">
-          <CardHeader>
-            <CardTitle className="text-red-600 dark:text-red-400">
-              Danger Zone
-            </CardTitle>
-            <CardDescription>
-              Irreversible and destructive actions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Organization
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    the organization "Organization Name" and remove all
-                    associated data including teams, members, and content.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteOrganization}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    Delete Organization
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start gap-3">
+            <div className="rounded-md border border-primary/20 bg-primary/10 p-2">
+              <Lightbulb className="h-5 w-5 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <CardTitle>Brand Profile</CardTitle>
+              <CardDescription>
+                Optional context used to personalize content suggestions. This
+                is not shown publicly.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {!hasBrandProfile && (
+            <div className="flex items-start gap-3 rounded-md border border-primary/20 bg-primary/5 px-3 py-3 text-sm text-muted-foreground">
+              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <p>
+                Personalize suggestions by adding your brand profile. You can
+                skip this and still create or schedule posts.
+              </p>
+            </div>
+          )}
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="industry-or-niche">Industry or niche</Label>
+              <Input
+                id="industry-or-niche"
+                value={brandProfile.industryOrNiche}
+                onChange={(event) =>
+                  updateBrandProfileField("industryOrNiche", event.target.value)
+                }
+                disabled={!canEdit || savingBrandProfile}
+                placeholder="Fitness coaching, SaaS, real estate..."
+                maxLength={120}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brand-tone">Brand tone</Label>
+              <Select
+                value={brandProfile.brandTone || "none"}
+                onValueChange={(value) =>
+                  updateBrandProfileField(
+                    "brandTone",
+                    value === "none" ? "" : value
+                  )
+                }
+                disabled={!canEdit || savingBrandProfile}
+              >
+                <SelectTrigger id="brand-tone">
+                  <SelectValue placeholder="Select tone" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No preference</SelectItem>
+                  {BRAND_TONES.map((tone) => (
+                    <SelectItem key={tone} value={tone}>
+                      {tone}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="target-audience">Target audience</Label>
+              <Textarea
+                id="target-audience"
+                value={brandProfile.targetAudience}
+                onChange={(event) =>
+                  updateBrandProfileField("targetAudience", event.target.value)
+                }
+                disabled={!canEdit || savingBrandProfile}
+                placeholder="Who you want to reach and what they care about"
+                maxLength={240}
+                size="sm"
+              />
+            </div>
+
+            <BrandProfileListField
+              id="content-goals"
+              label="Content goals"
+              value={brandProfile.contentGoals}
+              disabled={!canEdit || savingBrandProfile}
+              placeholder="Awareness, leads, education"
+              onChange={(value) => updateBrandProfileField("contentGoals", value)}
+            />
+
+            <BrandProfileListField
+              id="content-pillars"
+              label="Content pillars"
+              value={brandProfile.contentPillars}
+              disabled={!canEdit || savingBrandProfile}
+              placeholder="Tips, customer stories, product updates"
+              onChange={(value) =>
+                updateBrandProfileField("contentPillars", value)
+              }
+            />
+
+            <BrandProfileListField
+              id="brand-keywords"
+              label="Keywords"
+              value={brandProfile.keywords}
+              disabled={!canEdit || savingBrandProfile}
+              placeholder="Scheduling, productivity, creator tools"
+              onChange={(value) => updateBrandProfileField("keywords", value)}
+            />
+
+            <BrandProfileListField
+              id="topics-to-avoid"
+              label="Topics to avoid"
+              value={brandProfile.topicsToAvoid}
+              disabled={!canEdit || savingBrandProfile}
+              placeholder="Discount claims, politics, competitor mentions"
+              onChange={(value) =>
+                updateBrandProfileField("topicsToAvoid", value)
+              }
+            />
+
+            <div className="space-y-2">
+              <Label htmlFor="primary-location">Primary location</Label>
+              <Input
+                id="primary-location"
+                value={brandProfile.primaryLocation}
+                onChange={(event) =>
+                  updateBrandProfileField("primaryLocation", event.target.value)
+                }
+                disabled={!canEdit || savingBrandProfile}
+                placeholder="Lagos, London, North America..."
+                maxLength={120}
+              />
+            </div>
+          </div>
+
+          {!canEdit && (
+            <p className="text-sm text-muted-foreground">
+              {isCreatorWorkspace
+                ? "Only the workspace owner can change brand profile details."
+                : "Only organization owners and admins can change brand profile details."}
+            </p>
+          )}
+
+          <div className="flex justify-end">
+            <Button
+              onClick={handleSaveBrandProfile}
+              disabled={!canEdit || savingBrandProfile}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {savingBrandProfile ? "Saving..." : "Save brand profile"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
+  );
+}
+
+function BrandProfileListField({
+  id,
+  label,
+  value,
+  disabled,
+  placeholder,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  disabled: boolean;
+  placeholder: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <Textarea
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={disabled}
+        placeholder={placeholder}
+        helperText="Separate items with commas or new lines."
+        size="sm"
+      />
+    </div>
+  );
+}
+
+function formatBrandProfileForForm(profile: any): BrandProfileForm {
+  if (!profile) return EMPTY_BRAND_PROFILE;
+  return {
+    industryOrNiche: profile.industryOrNiche ?? "",
+    targetAudience: profile.targetAudience ?? "",
+    contentGoals: formatList(profile.contentGoals),
+    brandTone: profile.brandTone ?? "",
+    contentPillars: formatList(profile.contentPillars),
+    keywords: formatList(profile.keywords),
+    topicsToAvoid: formatList(profile.topicsToAvoid),
+    primaryLocation: profile.primaryLocation ?? "",
+  };
+}
+
+function buildBrandProfilePayload(profile: BrandProfileForm) {
+  return {
+    industryOrNiche: nullableTrim(profile.industryOrNiche),
+    targetAudience: nullableTrim(profile.targetAudience),
+    contentGoals: parseList(profile.contentGoals),
+    brandTone: nullableTrim(profile.brandTone),
+    contentPillars: parseList(profile.contentPillars),
+    keywords: parseList(profile.keywords),
+    topicsToAvoid: parseList(profile.topicsToAvoid),
+    primaryLocation: nullableTrim(profile.primaryLocation),
+  };
+}
+
+function nullableTrim(value: string) {
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+}
+
+function parseList(value: string) {
+  return Array.from(
+    new Set(
+      value
+        .split(/[,\n]/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+    )
+  ).slice(0, 12);
+}
+
+function formatList(value: unknown) {
+  return Array.isArray(value) ? value.join(", ") : "";
+}
+
+function hasMeaningfulBrandProfile(profile: any) {
+  if (!profile || typeof profile !== "object") return false;
+  return Object.values(profile).some((value) =>
+    Array.isArray(value) ? value.length > 0 : Boolean(value)
   );
 }

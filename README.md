@@ -1,11 +1,27 @@
-# React + TypeScript + Vite
+# Skedlii App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Authenticated Skedlii dashboard app built with React, TypeScript, Vite, Zustand, TanStack Query, and Tailwind/Radix UI.
 
-Currently, two official plugins are available:
+Production defaults:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Marketing site: `https://www.skedlii.com`
+- App: `https://app.skedlii.com`
+- API: `https://api.skedlii.com`
+
+Current capabilities include authentication, organization switching, organization settings/members, invitations, teams, social accounts, post creation, scheduled posts, billing, and admin job views.
+
+## Development
+
+- `npm run dev` - start Vite dev server
+- `npm run build` - TypeScript build and Vite production build
+- `npm run lint` - run ESLint
+- `npm run preview` - preview production build
+
+Relevant environment variables:
+
+- `VITE_API_V2_URL=https://api.skedlii.com/api`
+- `VITE_MARKETING_APP_BASE=https://www.skedlii.com`
+- `VITE_USE_V2_API=true`
 
 ## Expanding the ESLint configuration
 

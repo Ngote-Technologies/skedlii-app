@@ -12,6 +12,7 @@ import {
   FileText,
   Building,
   History,
+  Palette,
 } from "lucide-react";
 
 export interface BreadcrumbSegment {
@@ -300,6 +301,10 @@ export const staticBreadcrumbMap: Record<
   billing: {
     label: "Billing",
     icon: <CreditCard className="w-4 h-4" />,
+  },
+  "brand-settings": {
+    label: "Brand Settings",
+    icon: <Palette className="w-4 h-4" />,
   },
   help: {
     label: "Help & Support",

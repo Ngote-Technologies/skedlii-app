@@ -1,15 +1,120 @@
 import axiosInstance from "./axios";
-import { ContentItem, ContentCollection, AnalysisTemplate } from "../types";
-import { AIAssistantRequest, AIAssistantResponse } from "../types/aiAssistant";
+import {
+  ContentItem,
+  ContentCollection,
+  AnalysisTemplate,
+  RecommendationProfile,
+} from "../types";
+import {
+  AIAssistantRequest,
+  AIAssistantResponse,
+  ContentPurpose,
+  ContentTone,
+} from "../types/aiAssistant";
+import { useAuthStore } from "../store/authStore";
 
 // AI Content Generation
 export const generateContent = async (
   request: AIAssistantRequest
 ): Promise<AIAssistantResponse> => {
-  const response = await axiosInstance.post("/content/generate", request, {
-    timeout: 60000, // 60 seconds specifically for AI generation
-  });
+  const response = await axiosInstance.post(
+    "/content/generate",
+    withRecommendationProfileContext(request),
+    {
+      timeout: 60000, // 60 seconds specifically for AI generation
+    }
+  );
   return response.data;
+};
+
+const CONTENT_TONES: ContentTone[] = [
+  "professional",
+  "casual",
+  "friendly",
+  "humorous",
+  "informative",
+  "persuasive",
+];
+
+const PURPOSE_BY_GOAL: Array<[RegExp, ContentPurpose]> = [
+  [/lead|prospect|demo|consult/i, "lead_generation"],
+  [/sale|conversion|revenue|offer|promo/i, "sales"],
+  [/educat|teach|learn|guide|tip/i, "education"],
+  [/aware|reach|visibility|brand/i, "awareness"],
+  [/entertain|fun|humor/i, "entertainment"],
+  [/engage|community|comment|conversation/i, "engagement"],
+];
+
+const withRecommendationProfileContext = (
+  request: AIAssistantRequest
+): AIAssistantRequest => {
+  const profile = useAuthStore.getState().organization?.recommendationProfile;
+  if (!hasMeaningfulRecommendationProfile(profile)) return request;
+
+  const profileKeywords = [
+    ...(profile.keywords ?? []),
+    ...(profile.contentPillars ?? []),
+  ];
+  const mergedKeywords = uniqueStrings([
+    ...(request.context.keywords ?? []),
+    ...profileKeywords,
+  ]);
+  const profileTone = normalizeTone(profile.brandTone);
+  const profilePurpose = normalizePurpose(profile.contentGoals);
+
+  return {
+    ...request,
+    context: {
+      ...request.context,
+      targetAudience:
+        request.context.targetAudience?.trim() ||
+        profile.targetAudience ||
+        request.context.targetAudience,
+      keywords: mergedKeywords,
+      tone: request.context.tone || profileTone || request.context.tone,
+      purpose:
+        request.context.purpose || profilePurpose || request.context.purpose,
+      contentStyle:
+        request.context.contentStyle ||
+        profile.contentPillars?.join(", ") ||
+        request.context.contentStyle,
+      brandProfile: profile,
+    },
+    constraints: {
+      ...request.constraints,
+      mustExclude: uniqueStrings([
+        ...(request.constraints?.mustExclude ?? []),
+        ...(profile.topicsToAvoid ?? []),
+      ]),
+    },
+  };
+};
+
+const uniqueStrings = (values: string[]) =>
+  Array.from(
+    new Set(values.map((value) => value.trim()).filter(Boolean))
+  );
+
+const normalizeTone = (tone?: string | null): ContentTone | undefined => {
+  if (!tone) return undefined;
+  const lower = tone.toLowerCase();
+  return CONTENT_TONES.find((item) => lower.includes(item));
+};
+
+const normalizePurpose = (
+  goals?: string[] | null
+): ContentPurpose | undefined => {
+  const goalText = goals?.join(" ") ?? "";
+  return PURPOSE_BY_GOAL.find(([pattern]) => pattern.test(goalText))?.[1];
+};
+
+const hasMeaningfulRecommendationProfile = (
+  profile: RecommendationProfile | null | undefined
+): profile is RecommendationProfile => {
+  if (!profile || typeof profile !== "object") return false;
+  return Object.values(profile).some((value) =>
+    Array.isArray(value) ? value.length > 0 : Boolean(value)
+  );
 };
 
 // Content Management
